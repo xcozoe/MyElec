@@ -1,0 +1,172 @@
+import type {
+  Disjoncteur,
+  EntiteType,
+  Modification,
+  ModificationType,
+  Rangee,
+  Tableau,
+} from '../types/electrical'
+
+function uuid(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID()
+  }
+  return `mod-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function libelleEntite(entite: EntiteType): string {
+  switch (entite) {
+    case 'tableau':
+      return 'Tableau'
+    case 'rangee':
+      return 'Rangée'
+    case 'disjoncteur':
+      return 'Disjoncteur'
+  }
+}
+
+export function creationEntry(
+  entite: EntiteType,
+  entiteId: string,
+  description?: string,
+): Modification {
+  return {
+    id: uuid(),
+    date: new Date().toISOString(),
+    type: 'creation',
+    entite,
+    entite_id: entiteId,
+    description: description ?? `${libelleEntite(entite)} créé(e) (${entiteId}).`,
+  }
+}
+
+export function suppressionEntry(
+  entite: EntiteType,
+  entiteId: string,
+  description?: string,
+): Modification {
+  return {
+    id: uuid(),
+    date: new Date().toISOString(),
+    type: 'suppression',
+    entite,
+    entite_id: entiteId,
+    description:
+      description ?? `${libelleEntite(entite)} supprimé(e) (${entiteId}).`,
+  }
+}
+
+function formatValeur(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined
+  if (typeof value === 'string') return value
+  return JSON.stringify(value)
+}
+
+const CHAMPS_DISJONCTEUR: (keyof Disjoncteur)[] = [
+  'etiquette',
+  'type_protection',
+  'calibre',
+  'poles',
+  'phase_affectation',
+  'differentiel_parent_id',
+  'statut',
+  'appareil_pilote',
+  'notes',
+  'position',
+]
+
+const CHAMPS_RANGEE: (keyof Rangee)[] = [
+  'libelle',
+  'phase',
+  'numero',
+  'differentiel_id',
+  'notes',
+]
+
+const CHAMPS_TABLEAU: (keyof Tableau)[] = [
+  'nom',
+  'emplacement',
+  'alimentation',
+  'arrivee_phases',
+  'parent_tableau_id',
+  'parent_disjoncteur_id',
+  'notes',
+]
+
+function diffFields<T extends object>(
+  before: T,
+  after: T,
+  fields: (keyof T)[],
+): { champ: string; ancienne?: string; nouvelle?: string }[] {
+  const changes: { champ: string; ancienne?: string; nouvelle?: string }[] = []
+  for (const field of fields) {
+    const ancienne = formatValeur(before[field])
+    const nouvelle = formatValeur(after[field])
+    if (ancienne !== nouvelle) {
+      changes.push({ champ: String(field), ancienne, nouvelle })
+    }
+  }
+  return changes
+}
+
+export function diffDisjoncteur(
+  before: Disjoncteur,
+  after: Disjoncteur,
+  description?: string,
+): Modification[] {
+  return diffFields(before, after, CHAMPS_DISJONCTEUR).map((change) => ({
+    id: uuid(),
+    date: new Date().toISOString(),
+    type: 'modification' as ModificationType,
+    entite: 'disjoncteur' as EntiteType,
+    entite_id: after.id,
+    champ_modifie: change.champ,
+    ancienne_valeur: change.ancienne,
+    nouvelle_valeur: change.nouvelle,
+    description:
+      description ??
+      `Disjoncteur ${after.id} — ${change.champ} : ${change.ancienne ?? '∅'} → ${change.nouvelle ?? '∅'}.`,
+  }))
+}
+
+export function diffRangee(
+  before: Rangee,
+  after: Rangee,
+  description?: string,
+): Modification[] {
+  return diffFields(before, after, CHAMPS_RANGEE).map((change) => ({
+    id: uuid(),
+    date: new Date().toISOString(),
+    type: 'modification' as ModificationType,
+    entite: 'rangee' as EntiteType,
+    entite_id: after.id,
+    champ_modifie: change.champ,
+    ancienne_valeur: change.ancienne,
+    nouvelle_valeur: change.nouvelle,
+    description:
+      description ??
+      `Rangée ${after.id} — ${change.champ} : ${change.ancienne ?? '∅'} → ${change.nouvelle ?? '∅'}.`,
+  }))
+}
+
+export function diffTableau(
+  before: Tableau,
+  after: Tableau,
+  description?: string,
+): Modification[] {
+  return diffFields(before, after, CHAMPS_TABLEAU).map((change) => ({
+    id: uuid(),
+    date: new Date().toISOString(),
+    type: 'modification' as ModificationType,
+    entite: 'tableau' as EntiteType,
+    entite_id: after.id,
+    champ_modifie: change.champ,
+    ancienne_valeur: change.ancienne,
+    nouvelle_valeur: change.nouvelle,
+    description:
+      description ??
+      `Tableau ${after.id} — ${change.champ} : ${change.ancienne ?? '∅'} → ${change.nouvelle ?? '∅'}.`,
+  }))
+}
+
+export { uuid }
