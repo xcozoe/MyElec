@@ -1,0 +1,14 @@
+[
+  {
+    "id": "mod-2026-05-22-bascule-piscine",
+    "date": "2026-05-22T10:00:00.000Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TI-LOCAL-PISCINE",
+    "champ_modifie": "phase_affectation",
+    "ancienne_valeur": "L1",
+    "nouvelle_valeur": "L3",
+    "description": "Passage de l'abonnement de 12 kVA à 18 kVA (Itron réglé à 30 A/phase par Enedis). Bascule du départ Local Piscine de la phase L1 vers la phase L3 (déplacement du fil de la borne 2 vers la borne 4 en aval du Hager CDC 440F). Validation Linky : phase 1 = 200 VA, phase 2 = 200 VA, phase 3 = 3 800 VA en fonctionnement piscine. Disjonctions intempestives résolues.",
+    "utilisateur": "Rémi"
+  }
+]

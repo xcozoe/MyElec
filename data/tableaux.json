@@ -1,0 +1,782 @@
+[
+  {
+    "id": "tableau-principal",
+    "nom": "Tableau Principal",
+    "emplacement": "Garage, arrivée principale du courant",
+    "alimentation": "triphase",
+    "arrivee_phases": "TRI",
+    "notes": "Tableau Merlin Gerin, organisé en 4 rangées. Disjoncteur de branchement Itron 4 pôles 500 mA sélectif réglé à 30 A par phase situé en amont (coffret extérieur Enedis à ~150 m).",
+    "rangees": [
+      {
+        "id": "tp-r1",
+        "numero": 1,
+        "libelle": "R1 — TRI — Générale Prise TRI + compresseur",
+        "phase": "TRI",
+        "notes": "Rangée largement sous-utilisée.",
+        "disjoncteurs": [
+          {
+            "id": "TP-R1-PRISE-TRI",
+            "position": 1,
+            "etiquette": "Générale Prise TRI + compresseur",
+            "type_protection": "disjoncteur_diff_dedie",
+            "calibre": "C20 30 mA",
+            "poles": "tetra_diff",
+            "phase_affectation": "TRI",
+            "statut": "actif",
+            "notes": "Disjoncteur différentiel tétrapolaire C20 30 mA — alimente la prise triphasée et le compresseur."
+          }
+        ]
+      },
+      {
+        "id": "tp-r2",
+        "numero": 2,
+        "libelle": "R2 — Phase L2 — Générale prises + éclairage",
+        "phase": "L2",
+        "differentiel_id": "TP-R2-DIFF",
+        "notes": "Différentiel Legrand 40 A 30 mA Type AC en tête, 12 départs monophasés.",
+        "disjoncteurs": [
+          {
+            "id": "TP-R2-DIFF",
+            "position": 1,
+            "etiquette": "Différentiel R2",
+            "type_protection": "differentiel_tete_rangee",
+            "calibre": "40 A 30 mA Type AC",
+            "poles": "bipol_diff",
+            "phase_affectation": "L2",
+            "statut": "actif",
+            "notes": "Legrand 40 A 30 mA Type AC en tête de rangée."
+          },
+          {
+            "id": "TP-R2-LV",
+            "position": 2,
+            "etiquette": "LV",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif",
+            "notes": "Lave-vaisselle."
+          },
+          {
+            "id": "TP-R2-FOUR",
+            "position": 3,
+            "etiquette": "Four",
+            "type_protection": "disjoncteur",
+            "calibre": "C20",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-PC-CUI-A",
+            "position": 4,
+            "etiquette": "PC Cuisine A",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-PC-CUI-B",
+            "position": 5,
+            "etiquette": "PC Cuisine B",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-BUA",
+            "position": 6,
+            "etiquette": "Buanderie",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-PC-CH",
+            "position": 7,
+            "etiquette": "PC Chambres",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-PC-SEJ",
+            "position": 8,
+            "etiquette": "PC Séjour",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-ECL-CUI",
+            "position": 9,
+            "etiquette": "Éclairage cuisine",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-ECL-SEJ",
+            "position": 10,
+            "etiquette": "Éclairage séjour",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-ECL-COU",
+            "position": 11,
+            "etiquette": "Éclairage couloir / entrée",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-ECL-CH",
+            "position": 12,
+            "etiquette": "Éclairage chambres",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R2-ECL-SDB",
+            "position": 13,
+            "etiquette": "Éclairage SDB",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L2",
+            "differentiel_parent_id": "TP-R2-DIFF",
+            "statut": "actif"
+          }
+        ]
+      },
+      {
+        "id": "tp-r3",
+        "numero": 3,
+        "libelle": "R3 — Phase L1 — Forte puissance + asservissements",
+        "phase": "L1",
+        "differentiel_id": "TP-R3-DIFF",
+        "notes": "Différentiel Legrand 63 A 30 mA Type A en tête, 12 départs incluant la plaque induction C32, alarme, contacteur HC/HP.",
+        "disjoncteurs": [
+          {
+            "id": "TP-R3-DIFF",
+            "position": 1,
+            "etiquette": "Différentiel R3",
+            "type_protection": "differentiel_tete_rangee",
+            "calibre": "63 A 30 mA Type A",
+            "poles": "bipol_diff",
+            "phase_affectation": "L1",
+            "statut": "actif",
+            "notes": "Legrand 63 A 30 mA Type A en tête de rangée (Type A car protège la plaque induction)."
+          },
+          {
+            "id": "TP-R3-PLAQUE",
+            "position": 2,
+            "etiquette": "Plaque induction",
+            "type_protection": "disjoncteur",
+            "calibre": "C32",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R3-ALARME",
+            "position": 3,
+            "etiquette": "Alarme",
+            "type_protection": "disjoncteur",
+            "calibre": "C2",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R3-CONTACTEUR-HCHP",
+            "position": 4,
+            "etiquette": "Contacteur HC/HP",
+            "type_protection": "contacteur",
+            "calibre": "25 A",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "appareil_pilote": "Asservissement heures creuses (chauffe-eau / autres)",
+            "notes": "Contacteur jour/nuit piloté par le signal HC du compteur."
+          },
+          {
+            "id": "TP-R3-CHAUFFE-EAU",
+            "position": 5,
+            "etiquette": "Chauffe-eau",
+            "type_protection": "disjoncteur",
+            "calibre": "C20",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "notes": "À confirmer — typiquement aval contacteur HC/HP."
+          },
+          {
+            "id": "TP-R3-LIBRE-1",
+            "position": 6,
+            "etiquette": "LIBRE",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "libre"
+          },
+          {
+            "id": "TP-R3-LIBRE-2",
+            "position": 7,
+            "etiquette": "LIBRE",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "libre"
+          },
+          {
+            "id": "TP-R3-INCONNU-1",
+            "position": 8,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          },
+          {
+            "id": "TP-R3-INCONNU-2",
+            "position": 9,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          },
+          {
+            "id": "TP-R3-INCONNU-3",
+            "position": 10,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          },
+          {
+            "id": "TP-R3-INCONNU-4",
+            "position": 11,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          },
+          {
+            "id": "TP-R3-INCONNU-5",
+            "position": 12,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          },
+          {
+            "id": "TP-R3-INCONNU-6",
+            "position": 13,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L1",
+            "differentiel_parent_id": "TP-R3-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          }
+        ]
+      },
+      {
+        "id": "tp-r4",
+        "numero": 4,
+        "libelle": "R4 — Phase L3 — Générale prises + volets + éclairage",
+        "phase": "L3",
+        "differentiel_id": "TP-R4-DIFF",
+        "notes": "Différentiel Legrand 40 A 30 mA Type AC en tête, 12 départs monophasés.",
+        "disjoncteurs": [
+          {
+            "id": "TP-R4-DIFF",
+            "position": 1,
+            "etiquette": "Différentiel R4",
+            "type_protection": "differentiel_tete_rangee",
+            "calibre": "40 A 30 mA Type AC",
+            "poles": "bipol_diff",
+            "phase_affectation": "L3",
+            "statut": "actif",
+            "notes": "Legrand 40 A 30 mA Type AC en tête de rangée."
+          },
+          {
+            "id": "TP-R4-LL",
+            "position": 2,
+            "etiquette": "LL",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif",
+            "notes": "Lave-linge."
+          },
+          {
+            "id": "TP-R4-FRIGO",
+            "position": 3,
+            "etiquette": "Frigo",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-PC-SEJ",
+            "position": 4,
+            "etiquette": "PC Séjour",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-VR-RDJ",
+            "position": 5,
+            "etiquette": "Volets roulants RDJ",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-VR-CH",
+            "position": 6,
+            "etiquette": "Volets roulants chambres",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-TELERUPTEUR",
+            "position": 7,
+            "etiquette": "Télérupteur",
+            "type_protection": "telerupteur",
+            "calibre": "16 A",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif",
+            "appareil_pilote": "Éclairage centralisé maison"
+          },
+          {
+            "id": "TP-R4-ECL-EXT",
+            "position": 8,
+            "etiquette": "Éclairage extérieur",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-ECL-SDB",
+            "position": 9,
+            "etiquette": "Éclairage SDB / WC",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-VMC",
+            "position": 10,
+            "etiquette": "VMC",
+            "type_protection": "disjoncteur",
+            "calibre": "C2",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-BOX",
+            "position": 11,
+            "etiquette": "Box / réseau",
+            "type_protection": "disjoncteur",
+            "calibre": "C2",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif"
+          },
+          {
+            "id": "TP-R4-INCONNU-1",
+            "position": 12,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          },
+          {
+            "id": "TP-R4-INCONNU-2",
+            "position": 13,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TP-R4-DIFF",
+            "statut": "actif",
+            "notes": "Étiquette manuscrite peu lisible — à identifier physiquement."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tableau-secondaire-garage",
+    "nom": "Tableau Secondaire Garage",
+    "emplacement": "Garage",
+    "alimentation": "triphase",
+    "arrivee_phases": "TRI",
+    "parent_tableau_id": "tableau-principal",
+    "parent_disjoncteur_id": "TP-R1-PRISE-TRI",
+    "notes": "Tableau Merlin Gerin secondaire, alimenté en triphasé depuis le tableau principal via un disjoncteur Hager NFT840 4 pôles 40 A 30 mA. Redistribue en monophasé sur une seule phase à identifier.",
+    "rangees": [
+      {
+        "id": "tsg-r1",
+        "numero": 1,
+        "libelle": "R1 — Arrivée TRI + départs mono (phase à identifier)",
+        "phase": "inconnue",
+        "differentiel_id": "TSG-R1-DIFF-ARRIVEE",
+        "notes": "Phase exacte de la redistribution mono à confirmer.",
+        "disjoncteurs": [
+          {
+            "id": "TSG-R1-DIFF-ARRIVEE",
+            "position": 1,
+            "etiquette": "Arrivée TRI (Hager NFT840)",
+            "type_protection": "differentiel_tete_tableau",
+            "calibre": "40 A 30 mA",
+            "poles": "tetra_diff",
+            "phase_affectation": "TRI",
+            "statut": "actif",
+            "notes": "Hager NFT840 4 pôles 40 A 30 mA — alimente le tableau depuis TP-R1."
+          },
+          {
+            "id": "TSG-R1-PC-BULL",
+            "position": 2,
+            "etiquette": "Prises Bull",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-ARRIVEE",
+            "statut": "actif",
+            "notes": "Phase d'affectation à identifier."
+          },
+          {
+            "id": "TSG-R1-PC-GARAGE",
+            "position": 3,
+            "etiquette": "Prises Garage",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-ARRIVEE",
+            "statut": "actif",
+            "notes": "Phase d'affectation à identifier."
+          },
+          {
+            "id": "TSG-R1-VR-GARAGE",
+            "position": 4,
+            "etiquette": "Volets Garage",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-ARRIVEE",
+            "statut": "actif",
+            "notes": "Phase d'affectation à identifier."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tableau-secondaire-chaufferie",
+    "nom": "Tableau Secondaire Chaufferie",
+    "emplacement": "Chaufferie",
+    "alimentation": "triphase",
+    "arrivee_phases": "TRI",
+    "parent_tableau_id": "tableau-principal",
+    "notes": "Tableau triphasé en chaufferie. Différentiel général Hager CDC 440F 40 A 30 mA Type AC tétrapolaire. Récepteur Sauter HC/HP KRT 30 (HN96-S-82) pour asservissement heures creuses.",
+    "rangees": [
+      {
+        "id": "ti-r1",
+        "numero": 1,
+        "libelle": "R1 — Différentiel général + récepteur HC/HP + départs",
+        "phase": "TRI",
+        "differentiel_id": "TI-R1-DIFF-GEN",
+        "notes": "Repère TI (Tableau Intermédiaire) dans la convention de nommage.",
+        "disjoncteurs": [
+          {
+            "id": "TI-R1-DIFF-GEN",
+            "position": 1,
+            "etiquette": "Différentiel général",
+            "type_protection": "differentiel_tete_tableau",
+            "calibre": "40 A 30 mA Type AC",
+            "poles": "tetra_diff",
+            "phase_affectation": "TRI",
+            "statut": "actif",
+            "notes": "Hager CDC 440F 40 A 30 mA Type AC (tétrapolaire) en tête de tableau."
+          },
+          {
+            "id": "TI-R1-RECEPTEUR-HCHP",
+            "position": 2,
+            "etiquette": "Récepteur HC/HP",
+            "type_protection": "horloge",
+            "calibre": "—",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "statut": "actif",
+            "appareil_pilote": "Asservissement heures creuses (signal vers TP-R3-CONTACTEUR-HCHP)",
+            "notes": "Sauter KRT 30 HN96-S-82."
+          },
+          {
+            "id": "TI-LUMIERE-LOCAL",
+            "position": 3,
+            "etiquette": "Lumière du local",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "statut": "actif",
+            "notes": "MFS 710 C10 mono. Phase à identifier."
+          },
+          {
+            "id": "TI-LIBRE-1",
+            "position": 4,
+            "etiquette": "LIBRE",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "statut": "libre",
+            "notes": "MFN 716 C16 mono. Anciennement étiqueté Pompe Chaleur."
+          },
+          {
+            "id": "TI-LIBRE-2",
+            "position": 5,
+            "etiquette": "LIBRE",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "statut": "libre",
+            "notes": "MFN 716 C16 mono. Anciennement étiqueté Pompe Chaleur."
+          },
+          {
+            "id": "TI-LIBRE-3",
+            "position": 6,
+            "etiquette": "LIBRE",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "statut": "libre",
+            "notes": "MFN 716 C16 mono. Anciennement étiqueté Pompe Chaleur."
+          },
+          {
+            "id": "TI-CHAUDIERE-PELLETS",
+            "position": 7,
+            "etiquette": "Chaudière à pellets ÖkoFEN PES36",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "tetra",
+            "phase_affectation": "TRI",
+            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "statut": "actif",
+            "notes": "NF 416 C16 tétrapolaire. Chaudière à pellets ÖkoFEN Pellematic PES36 en triphasé."
+          },
+          {
+            "id": "TI-PRISE-FACADE",
+            "position": 8,
+            "etiquette": "Prise Élec façade tableau",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "statut": "actif",
+            "notes": "MFS 716 C16 mono."
+          },
+          {
+            "id": "TI-LOCAL-PISCINE",
+            "position": 9,
+            "etiquette": "Local Piscine",
+            "type_protection": "disjoncteur_diff_dedie",
+            "calibre": "C32 30 mA",
+            "poles": "mono_diff",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "statut": "actif",
+            "notes": "MJT 732 C32 mono différentiel. Basculé de la phase L1 vers L3 le 22/05/2026 (déplacement du fil borne 2 → borne 4 en aval du Hager CDC 440F) — disjonctions intempestives résolues."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tableau-local-piscine",
+    "nom": "Tableau Local Piscine",
+    "emplacement": "Local technique piscine",
+    "alimentation": "monophase",
+    "arrivee_phases": "L3",
+    "parent_tableau_id": "tableau-secondaire-chaufferie",
+    "parent_disjoncteur_id": "TI-LOCAL-PISCINE",
+    "notes": "Petit tableau alimenté en monophasé depuis TI-LOCAL-PISCINE (phase L3 depuis le 22/05/2026).",
+    "rangees": [
+      {
+        "id": "tlp-r1",
+        "numero": 1,
+        "libelle": "R1 — Différentiel + départs piscine",
+        "phase": "L3",
+        "differentiel_id": "TLP-R1-DIFF",
+        "disjoncteurs": [
+          {
+            "id": "TLP-R1-DIFF",
+            "position": 1,
+            "etiquette": "Différentiel de tête",
+            "type_protection": "differentiel_tete_tableau",
+            "calibre": "63 A 30 mA",
+            "poles": "bipol_diff",
+            "phase_affectation": "L3",
+            "statut": "actif",
+            "notes": "Schneider iID 63 A 30 mA."
+          },
+          {
+            "id": "TLP-R1-INCONNU-1",
+            "position": 2,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TLP-R1-DIFF",
+            "statut": "actif",
+            "notes": "Onesto KCN-T C16. Usage à identifier."
+          },
+          {
+            "id": "TLP-R1-INCONNU-2",
+            "position": 3,
+            "etiquette": "?",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TLP-R1-DIFF",
+            "statut": "actif",
+            "notes": "Onesto KCN-T C16. Usage à identifier."
+          },
+          {
+            "id": "TLP-R1-FILTRATION",
+            "position": 4,
+            "etiquette": "F — Filtration",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TLP-R1-DIFF",
+            "statut": "actif",
+            "notes": "Legrand DNX3 C16. Pompe de filtration piscine."
+          },
+          {
+            "id": "TLP-R1-PAC",
+            "position": 5,
+            "etiquette": "PAC — Pompe à chaleur piscine",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "L3",
+            "differentiel_parent_id": "TLP-R1-DIFF",
+            "statut": "actif",
+            "notes": "Legrand DNX3 C16. PAC piscine."
+          }
+        ]
+      }
+    ]
+  }
+]
