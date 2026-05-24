@@ -117,5 +117,17 @@
     "entite": "endpoint",
     "entite_id": "IN_BIB_ME_1",
     "description": "End-point créé(e) (IN_BIB_ME_1)."
+  },
+  {
+    "id": "fix-2026-05-24-chaufferie-2-rangees",
+    "date": "2026-05-24T08:30:00.000Z",
+    "type": "modification",
+    "entite": "tableau",
+    "entite_id": "tableau-secondaire-chaufferie",
+    "champ_modifie": "rangees",
+    "ancienne_valeur": "1 rangée",
+    "nouvelle_valeur": "2 rangées",
+    "description": "Restructuration du tableau secondaire chaufferie suite à inspection photo. Ajout d'une rangée 2 contenant le départ Local Piscine (TI-LOCAL-PISCINE — MJT 732). La rangée 1 conserve le différentiel général, le récepteur HC/HP et les 6 autres départs. L'ID TI-LOCAL-PISCINE est conservé tel quel (pas de préfixe R2) pour préserver les références historiques et la cascade vers le Tableau Local Piscine.",
+    "utilisateur": "Rémi"
   }
 ]

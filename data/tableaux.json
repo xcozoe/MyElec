@@ -671,7 +671,7 @@
     "alimentation": "triphase",
     "arrivee_phases": "TRI",
     "parent_tableau_id": "tableau-principal",
-    "notes": "Tableau triphasé en chaufferie. Différentiel général Hager CDC 440F 40 A 30 mA Type AC tétrapolaire. Récepteur Sauter HC/HP KRT 30 (HN96-S-82) pour asservissement heures creuses.",
+    "notes": "Tableau Hager 2 rangées en chaufferie. Différentiel général Hager CDC 440F 40 A 30 mA Type AC tétrapolaire en tête de rangée 1. Récepteur Sauter HC/HP KRT 30 (HN96-S-82) pour asservissement heures creuses. Une prise élec de service est intégrée à droite de la rangée 2.",
     "rangees": [
       {
         "id": "ti-r1",
@@ -679,7 +679,7 @@
         "libelle": "R1 — Différentiel général + récepteur HC/HP + départs",
         "phase": "TRI",
         "differentiel_id": "TI-R1-DIFF-GEN",
-        "notes": "Repère TI (Tableau Intermédiaire) dans la convention de nommage.",
+        "notes": "Rangée du haut. Repère TI (Tableau Intermédiaire) dans la convention de nommage.",
         "disjoncteurs": [
           {
             "id": "TI-R1-DIFF-GEN",
@@ -775,10 +775,19 @@
             "differentiel_parent_id": "TI-R1-DIFF-GEN",
             "statut": "actif",
             "notes": "MFS 716 C16 mono."
-          },
+          }
+        ]
+      },
+      {
+        "id": "ti-r2",
+        "numero": 2,
+        "libelle": "R2 — Départ Local Piscine + slots libres",
+        "phase": "TRI",
+        "notes": "Rangée du bas. Comprend le départ Local Piscine (MJT 732) à gauche, plusieurs slots libres masqués par un cache, et une prise élec de service (2P+T) intégrée au tableau à droite (alimentation à confirmer).",
+        "disjoncteurs": [
           {
             "id": "TI-LOCAL-PISCINE",
-            "position": 9,
+            "position": 1,
             "etiquette": "Local Piscine",
             "type_protection": "disjoncteur_diff_dedie",
             "calibre": "C32 30 mA",
@@ -786,7 +795,7 @@
             "phase_affectation": "L3",
             "differentiel_parent_id": "TI-R1-DIFF-GEN",
             "statut": "actif",
-            "notes": "MJT 732 C32 mono différentiel. Basculé de la phase L1 vers L3 le 22/05/2026 (déplacement du fil borne 2 → borne 4 en aval du Hager CDC 440F) — disjonctions intempestives résolues."
+            "notes": "Hager MJT 732 C32 mono différentiel. Basculé de la phase L1 vers L3 le 22/05/2026 (déplacement du fil borne 2 → borne 4 en aval du Hager CDC 440F) — disjonctions intempestives résolues. ID conservé sous TI-LOCAL-PISCINE (sans prefix R2) pour préserver les références historiques et la cascade vers Tableau Local Piscine."
           }
         ]
       }
