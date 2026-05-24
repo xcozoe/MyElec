@@ -1,10 +1,15 @@
 import type {
+  AppareilFixe,
   Disjoncteur,
+  EndPoint,
   EntiteType,
+  Ligne,
   Modification,
   ModificationType,
+  Piece,
   Rangee,
   Tableau,
+  Volet,
 } from '../types/electrical'
 
 function uuid(): string {
@@ -72,37 +77,6 @@ function formatValeur(value: unknown): string | undefined {
   return JSON.stringify(value)
 }
 
-const CHAMPS_DISJONCTEUR: (keyof Disjoncteur)[] = [
-  'etiquette',
-  'type_protection',
-  'calibre',
-  'poles',
-  'phase_affectation',
-  'differentiel_parent_id',
-  'statut',
-  'appareil_pilote',
-  'notes',
-  'position',
-]
-
-const CHAMPS_RANGEE: (keyof Rangee)[] = [
-  'libelle',
-  'phase',
-  'numero',
-  'differentiel_id',
-  'notes',
-]
-
-const CHAMPS_TABLEAU: (keyof Tableau)[] = [
-  'nom',
-  'emplacement',
-  'alimentation',
-  'arrivee_phases',
-  'parent_tableau_id',
-  'parent_disjoncteur_id',
-  'notes',
-]
-
 function diffFields<T extends object>(
   before: T,
   after: T,
@@ -119,64 +93,126 @@ function diffFields<T extends object>(
   return changes
 }
 
-export function diffDisjoncteur(
-  before: Disjoncteur,
-  after: Disjoncteur,
-  description?: string,
-): Modification[] {
-  return diffFields(before, after, CHAMPS_DISJONCTEUR).map((change) => ({
-    id: uuid(),
-    date: new Date().toISOString(),
-    type: 'modification' as ModificationType,
-    entite: 'disjoncteur' as EntiteType,
-    entite_id: after.id,
-    champ_modifie: change.champ,
-    ancienne_valeur: change.ancienne,
-    nouvelle_valeur: change.nouvelle,
-    description:
-      description ??
-      `Disjoncteur ${after.id} — ${change.champ} : ${change.ancienne ?? '∅'} → ${change.nouvelle ?? '∅'}.`,
-  }))
+function makeDiff<T extends { id: string }>(
+  entite: EntiteType,
+  fields: (keyof T)[],
+) {
+  const label = libelleEntite(entite)
+  return (before: T, after: T, description?: string): Modification[] => {
+    return diffFields(before, after, fields).map((change) => ({
+      id: uuid(),
+      date: new Date().toISOString(),
+      type: 'modification' as ModificationType,
+      entite,
+      entite_id: after.id,
+      champ_modifie: change.champ,
+      ancienne_valeur: change.ancienne,
+      nouvelle_valeur: change.nouvelle,
+      description:
+        description ??
+        `${label} ${after.id} — ${change.champ} : ${change.ancienne ?? '∅'} → ${change.nouvelle ?? '∅'}.`,
+    }))
+  }
 }
 
-export function diffRangee(
-  before: Rangee,
-  after: Rangee,
-  description?: string,
-): Modification[] {
-  return diffFields(before, after, CHAMPS_RANGEE).map((change) => ({
-    id: uuid(),
-    date: new Date().toISOString(),
-    type: 'modification' as ModificationType,
-    entite: 'rangee' as EntiteType,
-    entite_id: after.id,
-    champ_modifie: change.champ,
-    ancienne_valeur: change.ancienne,
-    nouvelle_valeur: change.nouvelle,
-    description:
-      description ??
-      `Rangée ${after.id} — ${change.champ} : ${change.ancienne ?? '∅'} → ${change.nouvelle ?? '∅'}.`,
-  }))
-}
+// ----- Phase 1 -----
 
-export function diffTableau(
-  before: Tableau,
-  after: Tableau,
-  description?: string,
-): Modification[] {
-  return diffFields(before, after, CHAMPS_TABLEAU).map((change) => ({
-    id: uuid(),
-    date: new Date().toISOString(),
-    type: 'modification' as ModificationType,
-    entite: 'tableau' as EntiteType,
-    entite_id: after.id,
-    champ_modifie: change.champ,
-    ancienne_valeur: change.ancienne,
-    nouvelle_valeur: change.nouvelle,
-    description:
-      description ??
-      `Tableau ${after.id} — ${change.champ} : ${change.ancienne ?? '∅'} → ${change.nouvelle ?? '∅'}.`,
-  }))
-}
+export const diffDisjoncteur = makeDiff<Disjoncteur>('disjoncteur', [
+  'etiquette',
+  'type_protection',
+  'calibre',
+  'poles',
+  'phase_affectation',
+  'differentiel_parent_id',
+  'statut',
+  'appareil_pilote',
+  'notes',
+  'position',
+])
+
+export const diffRangee = makeDiff<Rangee>('rangee', [
+  'libelle',
+  'phase',
+  'numero',
+  'differentiel_id',
+  'notes',
+])
+
+export const diffTableau = makeDiff<Tableau>('tableau', [
+  'nom',
+  'emplacement',
+  'alimentation',
+  'arrivee_phases',
+  'parent_tableau_id',
+  'parent_disjoncteur_id',
+  'notes',
+])
+
+// ----- Phase 2 -----
+
+export const diffPiece = makeDiff<Piece>('piece', [
+  'trigramme',
+  'nom',
+  'niveau',
+  'categorie',
+  'surface_m2',
+  'notes',
+])
+
+export const diffLigne = makeDiff<Ligne>('ligne', [
+  'libelle',
+  'disjoncteur_id',
+  'section_mm2',
+  'longueur_estimee_m',
+  'parcours',
+  'notes',
+])
+
+export const diffEndPoint = makeDiff<EndPoint>('endpoint', [
+  'type',
+  'piece_id',
+  'ligne_id',
+  'mur',
+  'numero',
+  'position_detail',
+  'type_prise',
+  'nb_combinees',
+  'usage_principal',
+  'type_luminaire',
+  'commande',
+  'puissance_w',
+  'nb_sources',
+  'lumens_unitaires',
+  'notes',
+])
+
+export const diffVolet = makeDiff<Volet>('volet', [
+  'piece_id',
+  'numero',
+  'mur',
+  'type',
+  'motorisation',
+  'commande_locale',
+  'commande_centralisee',
+  'largeur_cm',
+  'ligne_id',
+  'notes',
+])
+
+export const diffAppareilFixe = makeDiff<AppareilFixe>('appareil_fixe', [
+  'piece_id',
+  'numero',
+  'nom',
+  'categorie',
+  'marque',
+  'modele',
+  'puissance_nominale_w',
+  'puissance_pic_w',
+  'profil_usage',
+  'ligne_id',
+  'branche_sur',
+  'usage_principal',
+  'notes',
+])
 
 export { uuid }

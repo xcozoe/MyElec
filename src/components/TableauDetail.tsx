@@ -4,7 +4,7 @@ import type {
   Rangee,
   Tableau,
 } from '../types/electrical'
-import type { MyElecState } from '../hooks/useTableaux'
+import type { Store } from '../hooks/useStore'
 import { PHASE_STYLES } from '../utils/phaseStyle'
 import { DisjoncteurEditor } from './DisjoncteurEditor'
 import { RangeeEditor } from './RangeeEditor'
@@ -61,7 +61,7 @@ export function TableauDetail({
 }: {
   tableauId: string
   focusDisjoncteurId?: string
-  state: MyElecState
+  state: Store
   onBack: () => void
 }) {
   const tableau = state.tableaux.find((t) => t.id === tableauId)
@@ -226,7 +226,7 @@ export function TableauDetail({
 function renderPanel(
   panel: PanelState,
   tableau: Tableau,
-  state: MyElecState,
+  state: Store,
   close: () => void,
 ) {
   if (panel.kind === 'editDisjoncteur') {

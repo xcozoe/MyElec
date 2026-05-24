@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
-import type { MyElecState } from '../hooks/useTableaux'
+import type { Store } from '../hooks/useStore'
 
-export function ExportImport({ state }: { state: MyElecState }) {
+export function ExportImport({ state }: { state: Store }) {
   const [open, setOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
 
@@ -9,6 +9,11 @@ export function ExportImport({ state }: { state: MyElecState }) {
     const payload = {
       exported_at: new Date().toISOString(),
       tableaux: state.tableaux,
+      pieces: state.pieces,
+      lignes: state.lignes,
+      endpoints: state.endpoints,
+      volets: state.volets,
+      appareils: state.appareils,
       modifications: state.modifications,
     }
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
@@ -35,13 +40,31 @@ export function ExportImport({ state }: { state: MyElecState }) {
         : (parsed.modifications ?? [])
       if (!Array.isArray(tableaux))
         throw new Error('Le fichier ne contient pas de tableaux exploitables.')
-      if (
-        !confirm(
-          `Remplacer toutes les données par celles du fichier (${tableaux.length} tableau(x), ${modifications.length} entrée(s) d'historique) ?`,
-        )
-      )
+      const pieces = Array.isArray(parsed) ? [] : (parsed.pieces ?? [])
+      const lignes = Array.isArray(parsed) ? [] : (parsed.lignes ?? [])
+      const endpoints = Array.isArray(parsed) ? [] : (parsed.endpoints ?? [])
+      const volets = Array.isArray(parsed) ? [] : (parsed.volets ?? [])
+      const appareils = Array.isArray(parsed) ? [] : (parsed.appareils ?? [])
+      const counts = [
+        `${tableaux.length} tableau(x)`,
+        `${pieces.length} pièce(s)`,
+        `${lignes.length} ligne(s)`,
+        `${endpoints.length} end-point(s)`,
+        `${volets.length} volet(s)`,
+        `${appareils.length} appareil(s)`,
+        `${modifications.length} entrée(s) d'historique`,
+      ].join(', ')
+      if (!confirm(`Remplacer toutes les données par celles du fichier (${counts}) ?`))
         return
-      await state.importAll(tableaux, modifications)
+      await state.importAll({
+        tableaux,
+        pieces,
+        lignes,
+        endpoints,
+        volets,
+        appareils,
+        modifications,
+      })
       alert('Import effectué.')
     } catch (e) {
       alert(`Erreur d'import : ${e instanceof Error ? e.message : String(e)}`)

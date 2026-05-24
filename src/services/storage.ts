@@ -1,4 +1,12 @@
-import type { Modification, Tableau } from '../types/electrical'
+import type {
+  AppareilFixe,
+  EndPoint,
+  Ligne,
+  Modification,
+  Piece,
+  Tableau,
+  Volet,
+} from '../types/electrical'
 
 const API_BASE = '/api'
 
@@ -15,23 +23,36 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T
 }
 
-export const storage = {
-  loadTableaux: () => http<Tableau[]>('/tableaux'),
-  saveTableaux: (tableaux: Tableau[]) =>
-    http<{ ok: true }>('/tableaux', {
-      method: 'PUT',
-      body: JSON.stringify(tableaux),
-    }),
+function makeResource<T>(path: string) {
+  return {
+    load: () => http<T[]>(path),
+    save: (items: T[]) =>
+      http<{ ok: true }>(path, {
+        method: 'PUT',
+        body: JSON.stringify(items),
+      }),
+  }
+}
 
-  loadModifications: () => http<Modification[]>('/modifications'),
-  appendModification: (modification: Modification) =>
-    http<{ ok: true }>('/modifications', {
-      method: 'POST',
-      body: JSON.stringify(modification),
-    }),
-  saveModifications: (modifications: Modification[]) =>
-    http<{ ok: true }>('/modifications', {
-      method: 'PUT',
-      body: JSON.stringify(modifications),
-    }),
+export const storage = {
+  tableaux: makeResource<Tableau>('/tableaux'),
+  pieces: makeResource<Piece>('/pieces'),
+  lignes: makeResource<Ligne>('/lignes'),
+  endpoints: makeResource<EndPoint>('/endpoints'),
+  volets: makeResource<Volet>('/volets'),
+  appareils: makeResource<AppareilFixe>('/appareils-fixes'),
+
+  modifications: {
+    load: () => http<Modification[]>('/modifications'),
+    save: (items: Modification[]) =>
+      http<{ ok: true }>('/modifications', {
+        method: 'PUT',
+        body: JSON.stringify(items),
+      }),
+    append: (modification: Modification) =>
+      http<{ ok: true }>('/modifications', {
+        method: 'POST',
+        body: JSON.stringify(modification),
+      }),
+  },
 }

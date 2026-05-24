@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Disjoncteur, Phase, Tableau } from '../types/electrical'
-import type { MyElecState } from '../hooks/useTableaux'
+import type { Store } from '../hooks/useStore'
 import { PHASE_STYLES } from '../utils/phaseStyle'
 
 interface Row {
@@ -38,7 +38,7 @@ export function CartographieEnCours({
   state,
   onOpen,
 }: {
-  state: MyElecState
+  state: Store
   onOpen: (tableauId: string, disjoncteurId: string) => void
 }) {
   const rows = useMemo(() => listInconnus(state.tableaux), [state.tableaux])

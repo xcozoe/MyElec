@@ -5,7 +5,7 @@ import { HistoriqueView } from './components/HistoriqueView'
 import { CartographieEnCours } from './components/CartographieEnCours'
 import { ExportImport } from './components/ExportImport'
 import { SearchBar } from './components/SearchBar'
-import { useTableaux } from './hooks/useTableaux'
+import { useStore } from './hooks/useStore'
 
 export type View =
   | { name: 'home' }
@@ -16,7 +16,7 @@ export type View =
 const DARK_KEY = 'myelec.dark'
 
 export function App() {
-  const state = useTableaux()
+  const state = useStore()
   const [view, setView] = useState<View>({ name: 'home' })
   const [dark, setDark] = useState<boolean>(() => {
     if (typeof localStorage === 'undefined') return false
