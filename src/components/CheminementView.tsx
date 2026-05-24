@@ -13,11 +13,12 @@ interface Props {
 }
 
 /**
- * Schéma haut niveau de l'installation : Linky → Itron → tableaux en cascade.
- * À l'intérieur de chaque tableau, on déplie l'arborescence des disjoncteurs
- * en suivant `differentiel_parent_id` (top-level = ceux sans parent dans
- * cette rangée). Les sous-tableaux sont attachés à leur disjoncteur source
- * via `parent_disjoncteur_id`.
+ * Schéma haut niveau : Linky → Itron → tableau racine, puis chaque
+ * tableau enfant est rendu SOUS son parent (légèrement indenté), comme
+ * une boîte autonome avec un badge « alimenté depuis [disjoncteur source] »
+ * en haut. À l'intérieur d'un tableau, on affiche uniquement ses
+ * disjoncteurs internes — pas les sous-tableaux — pour garder la
+ * lecture aérée.
  */
 export function CheminementView({ store, onOpenTableau }: Props) {
   const rootTableau = useMemo(
@@ -28,8 +29,7 @@ export function CheminementView({ store, onOpenTableau }: Props) {
   if (!rootTableau) {
     return (
       <div className="text-sm text-slate-500 dark:text-slate-400">
-        Aucun tableau racine trouvé. Vérifie que l'un des tableaux n'a pas de
-        parent_tableau_id.
+        Aucun tableau racine trouvé.
       </div>
     )
   }
@@ -54,10 +54,11 @@ export function CheminementView({ store, onOpenTableau }: Props) {
           sub="Disjoncteur de branchement 4P 500 mA sélectif (coffret extérieur)"
         />
         <Connector />
-        <TableauNode
+        <TableauBranch
           tableau={rootTableau}
           store={store}
           onOpenTableau={onOpenTableau}
+          depth={0}
         />
       </div>
 
@@ -68,8 +69,7 @@ export function CheminementView({ store, onOpenTableau }: Props) {
         </span>
         <span className="mx-3">·</span>
         <span>
-          La cascade électrique est déduite des champs{' '}
-          <code>differentiel_parent_id</code>,{' '}
+          Cascade déduite de <code>differentiel_parent_id</code>,{' '}
           <code>parent_tableau_id</code> et <code>parent_disjoncteur_id</code>.
         </span>
       </div>
@@ -102,7 +102,56 @@ function Connector({ height = 24 }: { height?: number }) {
   )
 }
 
-function TableauNode({
+/**
+ * Rend une "branche" : un tableau et ses tableaux enfants directement
+ * en dessous (indentés).
+ */
+function TableauBranch({
+  tableau,
+  store,
+  onOpenTableau,
+  depth,
+}: {
+  tableau: Tableau
+  store: Store
+  onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
+  depth: number
+}) {
+  const childTableaux = store.tableaux.filter(
+    (t) => t.parent_tableau_id === tableau.id,
+  )
+
+  return (
+    <div className="w-full max-w-3xl">
+      <TableauBox
+        tableau={tableau}
+        store={store}
+        onOpenTableau={onOpenTableau}
+      />
+
+      {childTableaux.length > 0 && (
+        <div className="mt-3 ml-6 pl-4 border-l-2 border-slate-300 dark:border-slate-700 space-y-3">
+          {childTableaux.map((child) => (
+            <TableauBranch
+              key={child.id}
+              tableau={child}
+              store={store}
+              onOpenTableau={onOpenTableau}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Rend une boîte tableau avec son contenu interne (disjoncteurs en
+ * cascade), SANS les sous-tableaux (qui sont rendus séparément par
+ * TableauBranch).
+ */
+function TableauBox({
   tableau,
   store,
   onOpenTableau,
@@ -112,22 +161,35 @@ function TableauNode({
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
-  // Roots = disjoncteurs sans differentiel_parent_id ou dont le parent
-  // est hors de ce tableau.
-  const allInTableau = new Set<string>()
-  for (const r of tableau.rangees)
-    for (const d of r.disjoncteurs) allInTableau.add(d.id)
 
+  // Source disjoncteur (badge "alimenté depuis ...")
+  const sourceDj = useMemo(() => {
+    if (!tableau.parent_disjoncteur_id) return undefined
+    for (const t of store.tableaux) {
+      for (const r of t.rangees) {
+        const d = r.disjoncteurs.find(
+          (x) => x.id === tableau.parent_disjoncteur_id,
+        )
+        if (d) return { tableau: t, disjoncteur: d }
+      }
+    }
+    return undefined
+  }, [store.tableaux, tableau.parent_disjoncteur_id])
+
+  // Roots internes = disjoncteurs sans differentiel_parent_id ou dont
+  // le parent est hors de ce tableau.
+  const allIds = new Set<string>()
+  for (const r of tableau.rangees)
+    for (const d of r.disjoncteurs) allIds.add(d.id)
   const roots: { rangee: Rangee; disjoncteur: Disjoncteur }[] = []
   for (const r of tableau.rangees) {
     for (const d of r.disjoncteurs) {
       const parent = d.differentiel_parent_id
-      if (!parent || !allInTableau.has(parent)) {
+      if (!parent || !allIds.has(parent)) {
         roots.push({ rangee: r, disjoncteur: d })
       }
     }
   }
-  // Tri pour stabilité : par rangée puis par position
   roots.sort((a, b) =>
     a.rangee.numero !== b.rangee.numero
       ? a.rangee.numero - b.rangee.numero
@@ -136,8 +198,26 @@ function TableauNode({
 
   return (
     <div
-      className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} px-4 py-3 w-full max-w-3xl`}
+      className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} px-4 py-3 w-full`}
     >
+      {sourceDj && (
+        <div className="-mt-1 mb-2 text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+          <span aria-hidden>⏎</span>
+          <span>
+            Alimenté depuis{' '}
+            <button
+              onClick={() =>
+                onOpenTableau(sourceDj.tableau.id, sourceDj.disjoncteur.id)
+              }
+              className="font-mono underline decoration-dotted hover:opacity-80"
+            >
+              {sourceDj.disjoncteur.id}
+            </button>{' '}
+            ({sourceDj.disjoncteur.etiquette}) — dans {sourceDj.tableau.nom}
+          </span>
+        </div>
+      )}
+
       <button
         onClick={() => onOpenTableau(tableau.id)}
         className="w-full text-left hover:opacity-80"
@@ -169,7 +249,7 @@ function TableauNode({
               tableau={tableau}
               disjoncteur={disjoncteur}
               store={store}
-              onOpenTableau={onOpenTableau}
+              onOpen={(djId) => onOpenTableau(tableau.id, djId)}
             />
           ))}
         </div>
@@ -182,14 +262,13 @@ function DisjoncteurSubtree({
   tableau,
   disjoncteur,
   store,
-  onOpenTableau,
+  onOpen,
 }: {
   tableau: Tableau
   disjoncteur: Disjoncteur
   store: Store
-  onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
+  onOpen: (disjoncteurId: string) => void
 }) {
-  // Enfants : disjoncteurs du même tableau dont differentiel_parent_id = nous
   const children: { rangee: Rangee; disjoncteur: Disjoncteur }[] = []
   for (const r of tableau.rangees) {
     for (const d of r.disjoncteurs) {
@@ -204,19 +283,14 @@ function DisjoncteurSubtree({
       : a.disjoncteur.position - b.disjoncteur.position,
   )
 
-  // Tableaux enfants attachés à ce disjoncteur via parent_disjoncteur_id
-  const childTableaux = store.tableaux.filter(
+  // Existe-t-il un tableau enfant rattaché à ce disjoncteur ? Si oui, on
+  // affiche une pastille « → [nom du tableau] » à côté.
+  const childTableau = store.tableaux.find(
     (t) => t.parent_disjoncteur_id === disjoncteur.id,
   )
 
-  // Groupement compact des feuilles (>3 enfants sans sous-arbre → on les
-  // groupe en une seule carte « N départs ») — utile pour les rangées
-  // avec beaucoup de petits disjoncteurs.
   const leafChildren = children.filter(
     (c) =>
-      !store.tableaux.some(
-        (t) => t.parent_disjoncteur_id === c.disjoncteur.id,
-      ) &&
       !tableau.rangees.some((r) =>
         r.disjoncteurs.some(
           (d) => d.differentiel_parent_id === c.disjoncteur.id,
@@ -230,10 +304,11 @@ function DisjoncteurSubtree({
     <div>
       <DisjoncteurChip
         disjoncteur={disjoncteur}
-        onClick={() => onOpenTableau(tableau.id, disjoncteur.id)}
+        childTableau={childTableau}
+        onClick={() => onOpen(disjoncteur.id)}
       />
 
-      {(children.length > 0 || childTableaux.length > 0) && (
+      {children.length > 0 && (
         <div className="mt-2 ml-4 pl-4 border-l-2 border-slate-300 dark:border-slate-700 space-y-3">
           {nonLeafChildren.map(({ disjoncteur: d }) => (
             <DisjoncteurSubtree
@@ -241,15 +316,14 @@ function DisjoncteurSubtree({
               tableau={tableau}
               disjoncteur={d}
               store={store}
-              onOpenTableau={onOpenTableau}
+              onOpen={onOpen}
             />
           ))}
 
           {groupLeaves ? (
             <LeavesGroup
-              tableau={tableau}
               leaves={leafChildren.map((c) => c.disjoncteur)}
-              onOpen={(djId) => onOpenTableau(tableau.id, djId)}
+              onOpen={onOpen}
             />
           ) : (
             leafChildren.map(({ disjoncteur: d }) => (
@@ -258,19 +332,10 @@ function DisjoncteurSubtree({
                 tableau={tableau}
                 disjoncteur={d}
                 store={store}
-                onOpenTableau={onOpenTableau}
+                onOpen={onOpen}
               />
             ))
           )}
-
-          {childTableaux.map((sub) => (
-            <TableauNode
-              key={sub.id}
-              tableau={sub}
-              store={store}
-              onOpenTableau={onOpenTableau}
-            />
-          ))}
         </div>
       )}
     </div>
@@ -279,9 +344,11 @@ function DisjoncteurSubtree({
 
 function DisjoncteurChip({
   disjoncteur,
+  childTableau,
   onClick,
 }: {
   disjoncteur: Disjoncteur
+  childTableau?: Tableau
   onClick: () => void
 }) {
   const phaseStyle = PHASE_STYLES[disjoncteur.phase_affectation]
@@ -295,7 +362,7 @@ function DisjoncteurChip({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm ring-1 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} ${phaseStyle.text} hover:shadow`}
+      className={`w-full text-left inline-flex flex-wrap items-center gap-2 rounded-md px-3 py-1.5 text-sm ring-1 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} ${phaseStyle.text} hover:shadow`}
     >
       <span className={`h-2 w-2 rounded-full ${phaseStyle.dot}`} aria-hidden />
       <span className="font-mono text-xs">{disjoncteur.id}</span>
@@ -310,6 +377,11 @@ function DisjoncteurChip({
           Diff
         </span>
       )}
+      {childTableau && (
+        <span className="text-[10px] uppercase rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 px-1.5 py-0.5">
+          → {childTableau.nom}
+        </span>
+      )}
       <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 ml-auto">
         {disjoncteur.calibre}
       </span>
@@ -318,18 +390,17 @@ function DisjoncteurChip({
 }
 
 function LeavesGroup({
-  tableau,
   leaves,
   onOpen,
 }: {
-  tableau: Tableau
   leaves: Disjoncteur[]
   onOpen: (disjoncteurId: string) => void
 }) {
   return (
     <div className="rounded-md border border-dashed border-slate-300 dark:border-slate-700 p-2">
       <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-1">
-        {leaves.length} départs en {tableau.nom}
+        {leaves.length} départ{leaves.length > 1 ? 's' : ''} feuille
+        {leaves.length > 1 ? 's' : ''}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {leaves.map((d) => (
