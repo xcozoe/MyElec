@@ -119,6 +119,30 @@
     "description": "End-point créé(e) (IN_BIB_ME_1)."
   },
   {
+    "id": "fix-2026-05-24-tsg-r1-tetra",
+    "date": "2026-05-24T11:30:00.000Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R1-DIFF-LEGRAND",
+    "champ_modifie": "poles + phase_affectation",
+    "ancienne_valeur": "bipol_diff / inconnue",
+    "nouvelle_valeur": "tetra_diff / TRI",
+    "description": "Correction d'après photos précises du Legrand 086 94 : c'est un différentiel tétrapolaire 4 pôles (3P+N) 40 A 30 mA Type AC (schéma N-1-3-5 / N-2-4-6), pas bipolaire. Phase d'affectation = TRI puisqu'il protège l'ensemble des 3 phases. Notes complétées avec références exactes (Im=500 A, IΔm=1000 A, IΔn=0,03 A, bouton TEST « Fréquent / Frequently »).",
+    "utilisateur": "Rémi"
+  },
+  {
+    "id": "fix-2026-05-24-tsg-r1-hager",
+    "date": "2026-05-24T11:30:01.000Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R1-DISJ-HAGER",
+    "champ_modifie": "differentiel_parent_id + notes",
+    "ancienne_valeur": "TSG-R1-DIFF-LEGRAND (faux : il est en amont)",
+    "nouvelle_valeur": "(vide)",
+    "description": "Correction d'après photos : le Hager NFT 840 C40 est EN AMONT du différentiel Legrand, donc il ne doit pas avoir de differentiel_parent_id (rien ne le protège différentiellement). Notes complétées : c'est un tétrapolaire 4 pôles (3P+N, 3 manettes commutées + neutre passant), pouvoir de coupure 6000 A / Icn 10 kA, courbe C, EN 60947-2.",
+    "utilisateur": "Rémi"
+  },
+  {
     "id": "fix-2026-05-24-chaufferie-2-rangees",
     "date": "2026-05-24T08:30:00.000Z",
     "type": "modification",
@@ -129,5 +153,141 @@
     "nouvelle_valeur": "2 rangées",
     "description": "Restructuration du tableau secondaire chaufferie suite à inspection photo. Ajout d'une rangée 2 contenant le départ Local Piscine (TI-LOCAL-PISCINE — MJT 732). La rangée 1 conserve le différentiel général, le récepteur HC/HP et les 6 autres départs. L'ID TI-LOCAL-PISCINE est conservé tel quel (pas de préfixe R2) pour préserver les références historiques et la cascade vers le Tableau Local Piscine.",
     "utilisateur": "Rémi"
+  },
+  {
+    "id": "e2e522da-ef90-4588-b385-f1833dc41d9a",
+    "date": "2026-05-24T09:30:58.916Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TI-R1-RECEPTEUR-HCHP",
+    "champ_modifie": "position",
+    "ancienne_valeur": "ti-r1:2",
+    "nouvelle_valeur": "ti-r1:3",
+    "description": "Disjoncteur TI-R1-RECEPTEUR-HCHP réordonné dans ti-r1 (position 3)."
+  },
+  {
+    "id": "aa5a69e0-3b51-4c0c-8ae3-c84a603eca68",
+    "date": "2026-05-24T09:31:00.187Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TI-R1-RECEPTEUR-HCHP",
+    "champ_modifie": "position",
+    "ancienne_valeur": "ti-r1:3",
+    "nouvelle_valeur": "ti-r1:2",
+    "description": "Disjoncteur TI-R1-RECEPTEUR-HCHP réordonné dans ti-r1 (position 2)."
+  },
+  {
+    "id": "3f79f1b9-adee-4a1d-8cb6-680b88a51864",
+    "date": "2026-05-24T09:31:04.929Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TI-PRISE-FACADE",
+    "champ_modifie": "rangee_id + position",
+    "ancienne_valeur": "ti-r1:8",
+    "nouvelle_valeur": "ti-r2:1",
+    "description": "Disjoncteur TI-PRISE-FACADE déplacé de la rangée ti-r1 vers ti-r2 (position 1). differentiel_parent_id réinitialisé."
+  },
+  {
+    "id": "50ffc65a-55f6-4f74-87bc-57144f74fed7",
+    "date": "2026-05-24T09:31:06.716Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TI-PRISE-FACADE",
+    "champ_modifie": "rangee_id + position",
+    "ancienne_valeur": "ti-r2:1",
+    "nouvelle_valeur": "ti-r1:8",
+    "description": "Disjoncteur TI-PRISE-FACADE déplacé de la rangée ti-r2 vers ti-r1 (position 8). differentiel_parent_id réinitialisé."
+  },
+  {
+    "id": "42175dc5-14a3-4dd8-9afa-6202d1802ed9",
+    "date": "2026-05-24T09:59:56.124Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-ECL-GARAGE",
+    "champ_modifie": "etiquette",
+    "ancienne_valeur": "Lumière garage",
+    "nouvelle_valeur": "Lumière garage extérieur et écran interphone intérieur ",
+    "description": "Disjoncteur TSG-R2-ECL-GARAGE — etiquette : Lumière garage → Lumière garage extérieur et écran interphone intérieur ."
+  },
+  {
+    "id": "3eedfe3d-d18f-4aa3-af6b-8a8e629c148d",
+    "date": "2026-05-24T09:59:56.124Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-ECL-GARAGE",
+    "champ_modifie": "notes",
+    "ancienne_valeur": "Legrand DNX³ C10. [?] 2e circuit éclairage garage (le 1er étant TSG-R2-ECL-CUISINE-GARAGE position 6) — répartition à clarifier (par ex. partie atelier vs partie remisage).",
+    "nouvelle_valeur": "Legrand DNX³ C10.\nÉclairage garage extérieur.\nÉcran interphone intérieur.",
+    "description": "Disjoncteur TSG-R2-ECL-GARAGE — notes : Legrand DNX³ C10. [?] 2e circuit éclairage garage (le 1er étant TSG-R2-ECL-CUISINE-GARAGE position 6) — répartition à clarifier (par ex. partie atelier vs partie remisage). → Legrand DNX³ C10.\nÉclairage garage extérieur.\nÉcran interphone intérieur.."
+  },
+  {
+    "id": "6ecce9c0-24ee-447b-8d7c-b827da36c027",
+    "date": "2026-05-24T10:01:51.020Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-ECL-CUISINE-GARAGE",
+    "champ_modifie": "etiquette",
+    "ancienne_valeur": "Lumière cuisine + garage",
+    "nouvelle_valeur": "Lumière garage et zone stockage",
+    "description": "Disjoncteur TSG-R2-ECL-CUISINE-GARAGE — etiquette : Lumière cuisine + garage → Lumière garage et zone stockage."
+  },
+  {
+    "id": "7106542c-70ba-4866-9e9e-511fbc1461e7",
+    "date": "2026-05-24T10:01:51.020Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-ECL-CUISINE-GARAGE",
+    "champ_modifie": "notes",
+    "ancienne_valeur": "Legrand DNX³ C10. Circuit mixte éclairage cuisine et garage. [?] À recouper avec TP-R2-ECL-CUI — possible doublon ou répartition partielle. Notez aussi le doublon partiel garage avec TSG-R2-ECL-GARAGE (position 8) — 2 circuits éclairage garage à clarifier.",
+    "nouvelle_valeur": "Legrand DNX³ C10.\nGlobalement assure éclairage sous-sol ",
+    "description": "Disjoncteur TSG-R2-ECL-CUISINE-GARAGE — notes : Legrand DNX³ C10. Circuit mixte éclairage cuisine et garage. [?] À recouper avec TP-R2-ECL-CUI — possible doublon ou répartition partielle. Notez aussi le doublon partiel garage avec TSG-R2-ECL-GARAGE (position 8) — 2 circuits éclairage garage à clarifier. → Legrand DNX³ C10.\nGlobalement assure éclairage sous-sol ."
+  },
+  {
+    "id": "73d4180b-7d99-4f8c-b766-dec90a60588f",
+    "date": "2026-05-24T10:03:44.823Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-VR",
+    "champ_modifie": "etiquette",
+    "ancienne_valeur": "Volet roulant",
+    "nouvelle_valeur": "Volet roulant garage",
+    "description": "Disjoncteur TSG-R2-VR — etiquette : Volet roulant → Volet roulant garage."
+  },
+  {
+    "id": "1a0b443b-6928-494a-93db-6fb6d64c0971",
+    "date": "2026-05-24T14:16:53.251Z",
+    "type": "creation",
+    "entite": "ligne",
+    "entite_id": "L-VR-GAR",
+    "description": "Ligne créé(e) (L-VR-GAR)."
+  },
+  {
+    "id": "954b26d7-7905-42aa-9811-6c08c195ef9d",
+    "date": "2026-05-24T14:17:31.232Z",
+    "type": "creation",
+    "entite": "volet",
+    "entite_id": "VR_GAR_1",
+    "description": "Volet créé(e) (VR_GAR_1)."
+  },
+  {
+    "id": "a3ff510f-3729-4e80-b39e-7c17a18eee44",
+    "date": "2026-05-24T14:17:52.803Z",
+    "type": "modification",
+    "entite": "ligne",
+    "entite_id": "L-VR-GAR",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "VR",
+    "nouvelle_valeur": "Alimentation volet roulant garage",
+    "description": "Ligne L-VR-GAR — libelle : VR → Alimentation volet roulant garage."
+  },
+  {
+    "id": "58893c46-4bae-4941-9b76-6c10546a4ee9",
+    "date": "2026-05-24T14:19:54.662Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R1-DISJ-HAGER",
+    "champ_modifie": "differentiel_parent_id",
+    "nouvelle_valeur": "TSG-R1-DIFF-LEGRAND",
+    "description": "Disjoncteur TSG-R1-DISJ-HAGER — differentiel_parent_id : ∅ → TSG-R1-DIFF-LEGRAND."
   }
 ]

@@ -510,7 +510,7 @@
     "arrivee_phases": "TRI",
     "parent_tableau_id": "tableau-principal",
     "parent_disjoncteur_id": "TP-R1-PRISE-TRI",
-    "notes": "Tableau secondaire alimenté depuis TP-R1-PRISE-TRI (Garage). Organisation en 2 rangées : RANGÉE 1 = arrivée + protection (interrupteur différentiel Legrand 2P 40 A 30 mA Type AC avec bouton TEST / manette rouge 1-ON, puis disjoncteur Hager NFT840 C40 tripolaire 3P). RANGÉE 2 = 9 disjoncteurs Legrand DNX³ monophasés. Cheminement électrique : TP-R1-PRISE-TRI (TRI) → Hager NFT840 C40 tripolaire (protection arrivée TRI) → Legrand 2P 40 A 30 mA Type AC (différentiel mono tête de tableau) → 9 départs DNX³ mono en rangée 2. Phase de redistribution mono à identifier.",
+    "notes": "Tableau secondaire alimenté depuis TP-R1-PRISE-TRI (Garage). Organisation en 2 rangées : RANGÉE 1 = arrivée + protection (disjoncteur Hager NFT 840 C40 tétrapolaire 3P+N + interrupteur différentiel Legrand 086 94 tétrapolaire 40 A 30 mA Type AC, bouton TEST / manette rouge 1-ON). RANGÉE 2 = 9 disjoncteurs Legrand DNX³ monophasés. Cheminement électrique : TP-R1-PRISE-TRI (TRI) → Hager NFT 840 C40 tétra (protection arrivée TRI) → Legrand 086 94 tétra 30 mA (différentiel tête de tableau, protège l'ensemble de la rangée 2) → 9 départs DNX³ mono. Phase de redistribution mono à identifier (les 9 DNX³ étant monophasés, ils tirent sur une seule des 3 phases sortant du différentiel).",
     "rangees": [
       {
         "id": "tsg-r1",
@@ -518,29 +518,29 @@
         "libelle": "R1 — Différentiel Legrand + arrivée TRI Hager NFT840",
         "phase": "inconnue",
         "differentiel_id": "TSG-R1-DIFF-LEGRAND",
-        "notes": "Rangée arrivée/protection. Cheminement électrique : Hager NFT840 (amont, TRI) → Legrand 2P 40 A 30 mA Type AC (différentiel mono tête de tableau, alimente la rangée 2).",
+        "notes": "Rangée arrivée/protection. Cheminement électrique : Hager NFT 840 C40 tétrapolaire (amont, TRI depuis TP-R1-PRISE-TRI) → Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (différentiel tête de tableau, alimente la rangée 2).",
         "disjoncteurs": [
           {
             "id": "TSG-R1-DIFF-LEGRAND",
             "position": 1,
-            "etiquette": "Différentiel arrivée",
+            "etiquette": "Différentiel tête de tableau",
             "type_protection": "differentiel_tete_tableau",
             "calibre": "40 A 30 mA Type AC",
-            "poles": "bipol_diff",
-            "phase_affectation": "inconnue",
+            "poles": "tetra_diff",
+            "phase_affectation": "TRI",
             "statut": "actif",
-            "notes": "Legrand 2 pôles 40 A 30 mA Type AC (bouton TEST, manette rouge marquée 1-ON). Différentiel mono tête de tableau pour les 9 départs DNX³ de la rangée 2. Électriquement en aval du Hager NFT840."
+            "notes": "Legrand 086 94 — interrupteur différentiel tétrapolaire 4 pôles (3P+N) 40 A 30 mA Type AC, 400 V~, Im=500 A, IΔm=1000 A, IΔn=0,03 A. Bouton TEST (marqué « Fréquent / Frequently »), manette rouge 1-ON. Schéma N-1-3-5 / N-2-4-6. Protège différentiellement les 9 départs DNX³ de la rangée 2. Électriquement en aval du Hager NFT 840."
           },
           {
             "id": "TSG-R1-DISJ-HAGER",
             "position": 2,
-            "etiquette": "Arrivée TRI (Hager NFT840)",
+            "etiquette": "Arrivée TRI (Hager NFT 840 C40)",
             "type_protection": "disjoncteur",
             "calibre": "C40",
             "poles": "tetra",
             "phase_affectation": "TRI",
             "statut": "actif",
-            "notes": "Hager NFT840 C40 tripolaire (3P sans neutre — représenté en « tetra » faute de valeur « tripol » dans le schéma). Disjoncteur d'arrivée triphasée depuis TP-R1-PRISE-TRI. Électriquement EN AMONT du différentiel Legrand : l'arrivée TRI principale entre par ce disjoncteur, puis une phase + neutre traverse le différentiel Legrand 30 mA avant d'alimenter les 9 départs de la rangée 2."
+            "notes": "Hager NFT 840 C40 — disjoncteur tétrapolaire 4 pôles (3P+N, 3 manettes commutées pour les 3 phases, neutre passant), pouvoir de coupure 6000 A / Icn 10 kA, courbe C, conforme EN 60947-2. Schéma IN-1-3-5 / IN-2-4-6. Disjoncteur d'arrivée triphasée depuis TP-R1-PRISE-TRI, EN AMONT du différentiel Legrand qui couvre l'ensemble de la rangée 2."
           }
         ]
       },
@@ -615,14 +615,14 @@
           {
             "id": "TSG-R2-ECL-CUISINE-GARAGE",
             "position": 6,
-            "etiquette": "Lumière cuisine + garage",
+            "etiquette": "Lumière garage et zone stockage",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
             "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Legrand DNX³ C10. Circuit mixte éclairage cuisine et garage. [?] À recouper avec TP-R2-ECL-CUI — possible doublon ou répartition partielle. Notez aussi le doublon partiel garage avec TSG-R2-ECL-GARAGE (position 8) — 2 circuits éclairage garage à clarifier."
+            "notes": "Legrand DNX³ C10.\nGlobalement assure éclairage sous-sol "
           },
           {
             "id": "TSG-R2-PC-GARAGE",
@@ -639,19 +639,19 @@
           {
             "id": "TSG-R2-ECL-GARAGE",
             "position": 8,
-            "etiquette": "Lumière garage",
+            "etiquette": "Lumière garage extérieur et écran interphone intérieur ",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
             "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Legrand DNX³ C10. [?] 2e circuit éclairage garage (le 1er étant TSG-R2-ECL-CUISINE-GARAGE position 6) — répartition à clarifier (par ex. partie atelier vs partie remisage)."
+            "notes": "Legrand DNX³ C10.\nÉclairage garage extérieur.\nÉcran interphone intérieur."
           },
           {
             "id": "TSG-R2-VR",
             "position": 9,
-            "etiquette": "Volet roulant",
+            "etiquette": "Volet roulant garage",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
@@ -772,7 +772,6 @@
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TI-R1-DIFF-GEN",
             "statut": "actif",
             "notes": "MFS 716 C16 mono."
           }
