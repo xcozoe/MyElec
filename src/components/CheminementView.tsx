@@ -217,10 +217,11 @@ function TableauTree({
         onOpenTableau={onOpenTableau}
       />
 
-      {/* Rangée enfants : alignée avec les jonctions ci-dessus via
-          le même nombre d'items et le même justify-around. Chaque
-          colonne contient une ligne verticale + flèche au-dessus du
-          sous-tableau, créant la continuité visuelle. */}
+      {/* Rangée enfants : alignée avec les jonctions ci-dessus.
+          Chaque colonne commence par une ligne verticale qui démarre
+          NÉGATIVEMENT (margin-top négative) pour s'enfoncer dans la
+          padding-bottom du tableau au-dessus, créant la continuité
+          visuelle qui « traverse » le bord du tableau. */}
       {junctions.length > 0 && (
         <div className="flex justify-around items-start gap-3 sm:gap-4">
           {junctions.map(({ child }) => (
@@ -228,9 +229,12 @@ function TableauTree({
               key={child.id}
               className="flex flex-col items-center min-w-0 flex-1"
             >
-              {/* Ligne verticale + flèche descendant vers l'enfant */}
-              <div className="h-3 w-px bg-slate-500 dark:bg-slate-400" />
-              <div className="text-slate-500 dark:text-slate-400 text-xs leading-none">
+              {/* Ligne qui pénètre dans le tableau parent : -mt-4
+                  recule de 16 px dans la zone du chip, et la couleur
+                  identique à la ligne intérieure rend l'ensemble
+                  visuellement continu. */}
+              <div className="-mt-4 h-8 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
+              <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
                 ▼
               </div>
               <div className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1 text-center">
@@ -352,13 +356,11 @@ function TableauBox({
         </div>
       )}
 
-      {/* Jonctions à l'intérieur du tableau.
-          Chaque colonne a une ligne verticale en bas qui dépasse la
-          padding-bottom du tableau (pb-0 + -mb-px) pour assurer la
-          continuité visuelle avec la flèche du sous-tableau placé en
-          dessous (qui a la même position horizontale via flex). */}
+      {/* Jonctions à l'intérieur du tableau. La continuité visuelle
+          jusqu'au sous-tableau est assurée par la ligne extérieure
+          qui remonte (margin-top négatif) — voir TableauTree. */}
       {junctions.length > 0 && (
-        <div className="flex justify-around items-stretch gap-3 sm:gap-4 pb-0">
+        <div className="flex justify-around items-stretch gap-3 sm:gap-4 pb-6">
           {junctions.map(({ sourceDj, child }) => (
             <div
               key={sourceDj.id}
@@ -371,9 +373,6 @@ function TableauBox({
                   onClick={() => onOpenTableau(tableau.id, sourceDj.id)}
                 />
               </div>
-              {/* Ligne qui descend de la chip jusqu'au bord inférieur
-                  du tableau, traversant la padding-bottom. */}
-              <div className="h-3 w-px bg-slate-500 dark:bg-slate-400 -mb-px" />
             </div>
           ))}
         </div>
