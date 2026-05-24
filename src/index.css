@@ -2,23 +2,60 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --color-phase-L1: #f59e0b;
-  --color-phase-L1-bg: #fffbeb;
-  --color-phase-L1-bg-dark: #44290a;
-  --color-phase-L2: #eab308;
-  --color-phase-L2-bg: #fefce8;
-  --color-phase-L2-bg-dark: #3a3208;
-  --color-phase-L3: #3b82f6;
-  --color-phase-L3-bg: #eff6ff;
-  --color-phase-L3-bg-dark: #0e2a5c;
-  --color-phase-TRI: #10b981;
-  --color-phase-TRI-bg: #ecfdf5;
-  --color-phase-TRI-bg-dark: #0c3a2a;
-  --color-phase-inconnue: #6b7280;
-  --color-phase-inconnue-bg: #f3f4f6;
-  --color-phase-inconnue-bg-dark: #2a2d36;
+/* === Phase colors — défauts ===
+   Surchargés à chaud par le SettingsContext qui appelle
+   document.documentElement.style.setProperty('--phase-L1', '#xxx').
+*/
+:root {
+  --phase-L1: #f59e0b;
+  --phase-L2: #eab308;
+  --phase-L3: #3b82f6;
+  --phase-TRI: #10b981;
+  --phase-inconnue: #94a3b8;
 }
+
+/* Classes utilitaires par phase : variantes ring (couleur uniquement —
+   width et inset restent via les utilities Tailwind ring-1 ring-inset),
+   bg pastel + dark mode, texte foncé/clair selon thème, et dot solide. */
+.phase-ring-L1 { --tw-ring-color: color-mix(in srgb, var(--phase-L1) 50%, transparent); }
+.dark .phase-ring-L1 { --tw-ring-color: color-mix(in srgb, var(--phase-L1) 60%, transparent); }
+.phase-bg-L1 { background-color: color-mix(in srgb, var(--phase-L1) 10%, transparent); }
+.dark .phase-bg-L1 { background-color: color-mix(in srgb, var(--phase-L1) 22%, transparent); }
+.phase-text-L1 { color: color-mix(in srgb, var(--phase-L1) 85%, black); }
+.dark .phase-text-L1 { color: color-mix(in srgb, var(--phase-L1) 60%, white); }
+.phase-dot-L1 { background-color: var(--phase-L1); }
+
+.phase-ring-L2 { --tw-ring-color: color-mix(in srgb, var(--phase-L2) 50%, transparent); }
+.dark .phase-ring-L2 { --tw-ring-color: color-mix(in srgb, var(--phase-L2) 60%, transparent); }
+.phase-bg-L2 { background-color: color-mix(in srgb, var(--phase-L2) 10%, transparent); }
+.dark .phase-bg-L2 { background-color: color-mix(in srgb, var(--phase-L2) 22%, transparent); }
+.phase-text-L2 { color: color-mix(in srgb, var(--phase-L2) 85%, black); }
+.dark .phase-text-L2 { color: color-mix(in srgb, var(--phase-L2) 60%, white); }
+.phase-dot-L2 { background-color: var(--phase-L2); }
+
+.phase-ring-L3 { --tw-ring-color: color-mix(in srgb, var(--phase-L3) 50%, transparent); }
+.dark .phase-ring-L3 { --tw-ring-color: color-mix(in srgb, var(--phase-L3) 60%, transparent); }
+.phase-bg-L3 { background-color: color-mix(in srgb, var(--phase-L3) 10%, transparent); }
+.dark .phase-bg-L3 { background-color: color-mix(in srgb, var(--phase-L3) 22%, transparent); }
+.phase-text-L3 { color: color-mix(in srgb, var(--phase-L3) 85%, black); }
+.dark .phase-text-L3 { color: color-mix(in srgb, var(--phase-L3) 60%, white); }
+.phase-dot-L3 { background-color: var(--phase-L3); }
+
+.phase-ring-TRI { --tw-ring-color: color-mix(in srgb, var(--phase-TRI) 50%, transparent); }
+.dark .phase-ring-TRI { --tw-ring-color: color-mix(in srgb, var(--phase-TRI) 60%, transparent); }
+.phase-bg-TRI { background-color: color-mix(in srgb, var(--phase-TRI) 10%, transparent); }
+.dark .phase-bg-TRI { background-color: color-mix(in srgb, var(--phase-TRI) 22%, transparent); }
+.phase-text-TRI { color: color-mix(in srgb, var(--phase-TRI) 85%, black); }
+.dark .phase-text-TRI { color: color-mix(in srgb, var(--phase-TRI) 60%, white); }
+.phase-dot-TRI { background-color: var(--phase-TRI); }
+
+.phase-ring-inconnue { --tw-ring-color: color-mix(in srgb, var(--phase-inconnue) 50%, transparent); }
+.dark .phase-ring-inconnue { --tw-ring-color: color-mix(in srgb, var(--phase-inconnue) 60%, transparent); }
+.phase-bg-inconnue { background-color: color-mix(in srgb, var(--phase-inconnue) 10%, transparent); }
+.dark .phase-bg-inconnue { background-color: color-mix(in srgb, var(--phase-inconnue) 22%, transparent); }
+.phase-text-inconnue { color: color-mix(in srgb, var(--phase-inconnue) 85%, black); }
+.dark .phase-text-inconnue { color: color-mix(in srgb, var(--phase-inconnue) 60%, white); }
+.phase-dot-inconnue { background-color: var(--phase-inconnue); }
 
 html,
 body,

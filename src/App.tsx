@@ -11,6 +11,7 @@ import { EndPointEditor, emptyEndPoint } from './components/EndPointEditor'
 import { LigneList } from './components/LigneList'
 import { LigneDetail } from './components/LigneDetail'
 import { LigneEditor, emptyLigne } from './components/LigneEditor'
+import { SettingsPanel } from './components/SettingsPanel'
 import { EquipementList } from './components/EquipementList'
 import { AppareilFixeEditor, emptyAppareil } from './components/AppareilFixeEditor'
 import { VoletEditor, emptyVolet } from './components/VoletEditor'
@@ -46,6 +47,7 @@ type Panel =
   | { kind: 'editAppareil'; appareilId: string }
   | { kind: 'createVolet'; pieceId?: string }
   | { kind: 'editVolet'; voletId: string }
+  | { kind: 'settings' }
 
 const DARK_KEY = 'myelec.dark'
 
@@ -81,6 +83,9 @@ export function App() {
   const closePanel = () => setPanel({ kind: 'none' })
 
   const renderPanel = () => {
+    if (panel.kind === 'settings') {
+      return <SettingsPanel onClose={closePanel} />
+    }
     if (panel.kind === 'createPiece') {
       return (
         <PieceEditor
@@ -441,6 +446,14 @@ export function App() {
           </div>
 
           <ExportImport state={state} />
+
+          <button
+            onClick={() => setPanel({ kind: 'settings' })}
+            className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
+            aria-label="Ouvrir les paramètres"
+          >
+            Paramètres
+          </button>
 
           <button
             onClick={() => setDark((d) => !d)}

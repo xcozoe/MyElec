@@ -8,40 +8,49 @@ export interface PhaseStyle {
   dot: string
 }
 
+/**
+ * Les classes ci-dessous sont définies dans `src/index.css` (`.phase-ring-X`,
+ * `.phase-bg-X`, `.phase-text-X`, `.phase-dot-X`) et utilisent `color-mix()`
+ * sur les CSS variables `--phase-{X}`. Ces variables sont initialisées avec
+ * les couleurs par défaut dans `:root` et sont surchargées à chaud par le
+ * SettingsContext quand l'utilisateur change une couleur dans le menu
+ * Paramètres. Les composants n'ont donc rien à modifier — ils consomment
+ * toujours `PHASE_STYLES[phase].{ring,bg,text,dot}` comme avant.
+ */
 export const PHASE_STYLES: Record<Phase, PhaseStyle> = {
   L1: {
     label: 'L1',
-    ring: 'ring-amber-400 dark:ring-amber-500',
-    bg: 'bg-amber-50 dark:bg-amber-950/40',
-    text: 'text-amber-900 dark:text-amber-200',
-    dot: 'bg-amber-500',
+    ring: 'phase-ring-L1',
+    bg: 'phase-bg-L1',
+    text: 'phase-text-L1',
+    dot: 'phase-dot-L1',
   },
   L2: {
     label: 'L2',
-    ring: 'ring-yellow-400 dark:ring-yellow-500',
-    bg: 'bg-yellow-50 dark:bg-yellow-950/40',
-    text: 'text-yellow-900 dark:text-yellow-200',
-    dot: 'bg-yellow-500',
+    ring: 'phase-ring-L2',
+    bg: 'phase-bg-L2',
+    text: 'phase-text-L2',
+    dot: 'phase-dot-L2',
   },
   L3: {
     label: 'L3',
-    ring: 'ring-blue-400 dark:ring-blue-500',
-    bg: 'bg-blue-50 dark:bg-blue-950/40',
-    text: 'text-blue-900 dark:text-blue-200',
-    dot: 'bg-blue-500',
+    ring: 'phase-ring-L3',
+    bg: 'phase-bg-L3',
+    text: 'phase-text-L3',
+    dot: 'phase-dot-L3',
   },
   TRI: {
     label: 'TRI',
-    ring: 'ring-emerald-400 dark:ring-emerald-500',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/40',
-    text: 'text-emerald-900 dark:text-emerald-200',
-    dot: 'bg-emerald-500',
+    ring: 'phase-ring-TRI',
+    bg: 'phase-bg-TRI',
+    text: 'phase-text-TRI',
+    dot: 'phase-dot-TRI',
   },
   inconnue: {
     label: '?',
-    ring: 'ring-slate-300 dark:ring-slate-600',
-    bg: 'bg-slate-100 dark:bg-slate-800/60',
-    text: 'text-slate-700 dark:text-slate-300',
-    dot: 'bg-slate-400',
+    ring: 'phase-ring-inconnue',
+    bg: 'phase-bg-inconnue',
+    text: 'phase-text-inconnue',
+    dot: 'phase-dot-inconnue',
   },
 }
