@@ -494,5 +494,140 @@
     "ancienne_valeur": "L-VR-RDJ-TEST",
     "nouvelle_valeur": "L-VR-RDJ",
     "description": "Ligne renommée : L-VR-RDJ-TEST → L-VR-RDJ. Cascade ligne_id : 0 end-point(s), 0 appareil(s), 3 volet(s)."
+  },
+  {
+    "id": "9a0d4e89-17ad-40c1-bb5f-11b5a86cb4b4",
+    "date": "2026-05-24T15:39:44.507Z",
+    "type": "modification",
+    "entite": "ligne",
+    "entite_id": "L-PR-GAR",
+    "champ_modifie": "id",
+    "ancienne_valeur": "L-PR-",
+    "nouvelle_valeur": "L-PR-GAR",
+    "description": "Ligne renommée : L-PR- → L-PR-GAR. Cascade ligne_id : 0 end-point(s), 1 appareil(s), 0 volet(s)."
+  },
+  {
+    "id": "99753d50-633e-457e-9491-dabada5a364a",
+    "date": "2026-05-24T15:46:09.871Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-DETECT-LUM",
+    "champ_modifie": "id",
+    "ancienne_valeur": "TSG-R2-ECL-GARAGE",
+    "nouvelle_valeur": "TSG-R2-DETECT-LUM",
+    "description": "Disjoncteur renommé : TSG-R2-ECL-GARAGE → TSG-R2-DETECT-LUM. Cascade : references mises à jour dans les autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id) et lignes (disjoncteur_id, 1 affectée(s))."
+  },
+  {
+    "id": "88b07219-a217-47b4-acdf-25388ab4605e",
+    "date": "2026-05-24T15:46:09.871Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-DETECT-LUM",
+    "champ_modifie": "etiquette",
+    "ancienne_valeur": "Lumière garage extérieur et écran interphone intérieur ",
+    "nouvelle_valeur": "Détecteur Lumineux présence et écran interphone intérieur ",
+    "description": "Disjoncteur TSG-R2-DETECT-LUM — etiquette : Lumière garage extérieur et écran interphone intérieur  → Détecteur Lumineux présence et écran interphone intérieur ."
+  },
+  {
+    "id": "2c8cf413-c3b3-44cd-8f6f-68a153d9e766",
+    "date": "2026-05-24T15:47:30.358Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tsg-r1",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R1 — Différentiel Legrand + arrivée TRI Hager NFT840",
+    "nouvelle_valeur": "Différentiel + arrivée TRI",
+    "description": "Rangée tsg-r1 — libelle : R1 — Différentiel Legrand + arrivée TRI Hager NFT840 → Différentiel + arrivée TRI."
+  },
+  {
+    "id": "51c0fa06-dd31-42b3-8358-eee128c7af51",
+    "date": "2026-05-24T15:48:19.122Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tsg-r2",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R2 — 9 départs Legrand DNX³ mono",
+    "nouvelle_valeur": "9 départs Legrand DNX³ mono",
+    "description": "Rangée tsg-r2 — libelle : R2 — 9 départs Legrand DNX³ mono → 9 départs Legrand DNX³ mono."
+  },
+  {
+    "id": "3cd0c004-b2c1-4a5f-b316-110252729018",
+    "date": "2026-05-24T15:54:09.394Z",
+    "type": "creation",
+    "entite": "ligne",
+    "entite_id": "L-PL-GARAGE",
+    "description": "Ligne créé(e) (L-PL-GARAGE)."
+  },
+  {
+    "id": "58f2251a-984d-4852-9fde-8d7675fbbfc9",
+    "date": "2026-05-24T15:55:28.207Z",
+    "type": "creation",
+    "entite": "endpoint",
+    "entite_id": "PL_GAR_PL_1",
+    "description": "End-point créé(e) (PL_GAR_PL_1)."
+  },
+  {
+    "id": "cbcbc0d9-0d6f-485b-a644-13e101d9ccd4",
+    "date": "2026-05-24T15:56:13.973Z",
+    "type": "creation",
+    "entite": "endpoint",
+    "entite_id": "PC_GAR_MD_1",
+    "description": "End-point créé(e) (PC_GAR_MD_1)."
+  },
+  {
+    "id": "4aa4f19a-edd6-48a4-8f6d-48e0509b1737",
+    "date": "2026-05-24T15:58:38.221Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tp-r1",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R1 — TRI — Générale Prise TRI + compresseur",
+    "nouvelle_valeur": "Générale Prise TRI + compresseur",
+    "description": "Rangée tp-r1 — libelle : R1 — TRI — Générale Prise TRI + compresseur → Générale Prise TRI + compresseur."
+  },
+  {
+    "id": "9db35879-7763-4253-be67-fb808fadc747",
+    "date": "2026-05-24T15:58:55.403Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tp-r2",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R2 — Phase L2 — Générale prises + éclairage",
+    "nouvelle_valeur": "Générale prises + éclairage",
+    "description": "Rangée tp-r2 — libelle : R2 — Phase L2 — Générale prises + éclairage → Générale prises + éclairage."
+  },
+  {
+    "id": "c2d1b9da-de1c-4848-97b4-9ce6dca1aff5",
+    "date": "2026-05-24T15:59:08.328Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tp-r3",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R3 — Phase L1 — Forte puissance + asservissements",
+    "nouvelle_valeur": "Forte puissance + asservissements",
+    "description": "Rangée tp-r3 — libelle : R3 — Phase L1 — Forte puissance + asservissements → Forte puissance + asservissements."
+  },
+  {
+    "id": "d9984212-aa62-40ac-8367-7d3952323110",
+    "date": "2026-05-24T15:59:25.096Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tp-r4",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R4 — Phase L3 — Générale prises + volets + éclairage",
+    "nouvelle_valeur": "Générale prises + volets + éclairage",
+    "description": "Rangée tp-r4 — libelle : R4 — Phase L3 — Générale prises + volets + éclairage → Générale prises + volets + éclairage."
+  },
+  {
+    "id": "a52eadef-dc0b-4733-9a27-9f9d125c4fb6",
+    "date": "2026-05-24T16:56:12.998Z",
+    "type": "modification",
+    "entite": "tableau",
+    "entite_id": "tableau-principal",
+    "champ_modifie": "topology",
+    "ancienne_valeur": "Principal = tableau Merlin Gerin (4 rangées, ~40 disjoncteurs) ; Secondaire Garage = tableau Hager (Legrand 086 94 + Hager NFT 840 C40 + 9 DNX³)",
+    "nouvelle_valeur": "Principal = tableau Hager (différentiel Legrand 086 94 principal de la maison, Hager NFT 840 C40 → Chaufferie, jonction TRI directe → Secondaire Garage, 9 départs DNX³ locaux) ; Secondaire Garage = tableau Merlin Gerin (4 rangées, alimenté en TRI direct depuis le Principal)",
+    "description": "Inversion de topologie suite à clarification : le tableau historiquement appelé « Secondaire Garage » est en fait le point d'entrée principal de l'électricité Enedis, et son différentiel Legrand 086 94 protège toute l'installation. L'ancien « Tableau Principal » devient le Tableau Secondaire Garage (alimenté en jonction directe TRI). Cascade automatique : préfixes d'IDs disjoncteurs swappés (TP-* ↔ TSG-*) ; differentiel_parent_id, differentiel_id, parent_disjoncteur_id et disjoncteur_id des lignes mis à jour. Le tableau Secondaire Chaufferie est désormais explicitement alimenté via TP-R1-DISJ-HAGER (anciennement TSG-R1-DISJ-HAGER).",
+    "utilisateur": "Rémi"
   }
 ]

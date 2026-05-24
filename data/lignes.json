@@ -2,21 +2,26 @@
   {
     "id": "L-VR-RDJ",
     "libelle": "Alimentation Volets Roulants RDJ",
-    "disjoncteur_id": "TP-R4-VR-RDJ"
+    "disjoncteur_id": "TSG-R4-VR-RDJ"
   },
   {
     "id": "L-VR-GAR",
     "libelle": "Alimentation volet roulant garage",
-    "disjoncteur_id": "TSG-R2-VR"
+    "disjoncteur_id": "TP-R2-VR"
   },
   {
     "id": "L-PL-GAR",
     "libelle": "Alimentation détecteur lumineux garage",
-    "disjoncteur_id": "TSG-R2-ECL-GARAGE"
+    "disjoncteur_id": "TP-R2-DETECT-LUM"
   },
   {
-    "id": "L-PR-",
+    "id": "L-PR-GAR",
     "libelle": "Alimentation Pompe Relevage",
-    "disjoncteur_id": "TSG-R2-POMPE-RELEVAGE"
+    "disjoncteur_id": "TP-R2-POMPE-RELEVAGE"
+  },
+  {
+    "id": "L-PL-GARAGE",
+    "libelle": "Alimentation réseau luminaires ",
+    "disjoncteur_id": "TP-R2-ECL-CUISINE-GARAGE"
   }
 ]
