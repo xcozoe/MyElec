@@ -305,8 +305,6 @@ function VoletsView({
     [volets, filterPieceId],
   )
 
-  if (filtered.length === 0) return <Empty>Aucun volet enregistré.</Empty>
-
   const byPiece = useMemo(() => {
     const groups = new Map<string, Volet[]>()
     for (const v of filtered) {
@@ -316,6 +314,8 @@ function VoletsView({
     }
     return [...groups.entries()]
   }, [filtered])
+
+  if (filtered.length === 0) return <Empty>Aucun volet enregistré.</Empty>
 
   return (
     <div className="space-y-4">
