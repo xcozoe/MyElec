@@ -26,7 +26,7 @@ export function SidePanel({
         onClick={onClose}
         aria-hidden
       />
-      <aside className="w-full sm:w-[480px] h-full overflow-y-auto bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 p-5 shadow-xl">
+      <aside className="w-full sm:w-[480px] h-full overflow-y-auto bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 p-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-xl">
         {children}
       </aside>
     </div>

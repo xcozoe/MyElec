@@ -35,7 +35,7 @@ export function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur pt-[env(safe-area-inset-top)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3">
           <button
             onClick={() => goTo({ name: 'home' })}
@@ -145,7 +145,7 @@ export function App() {
         )}
       </main>
 
-      <footer className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 text-xs text-slate-500 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800">
+      <footer className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] text-xs text-slate-500 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800">
         MyElec — Phase 1 — base de référence locale (données dans data/*.json)
       </footer>
     </div>
