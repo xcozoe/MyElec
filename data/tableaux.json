@@ -48,7 +48,8 @@
             "phase_affectation": "TRI",
             "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Bornier Legrand de répartition triphasée (passif, sans protection). En aval du différentiel Legrand 086 94 (qui protège différentiellement tout ce qui passe par le bornier). Le bornier ramifie l'alimentation TRI en deux sorties physiques : (1) jonction TRI directe vers le Tableau Secondaire Garage, (2) départs phase mono vers les 9 disjoncteurs DNX³ de la rangée 2 (chacun puise sur une seule des 3 phases du bornier)."
+            "notes": "Bornier Legrand 048 86 — bornier de répartition tétrapolaire (3P+N) à 2 niveaux, 125 A — 500 V~ — Ui 500V — Uimp 6 kV — Ipk 20 kA — EN 60947-1 — montage rail DIN 35 mm — fonctionnement -40 °C à +40 °C — degré de pollution 3. Capots de protection transparents. Connexions : Ø5.3 (1.5–10 mm² / 2.5–10 mm²), Ø7.5 (6–16 mm² / 10–25 mm²), Ø9 (10–16 mm² / 10–35 mm² / 25 mm²). Couple de serrage 2 N·m. Passif, sans protection : en aval du différentiel Legrand 086 94 qui assure la protection différentielle. Ramifie l'alimentation TRI vers : (1) jonction TRI directe → Tableau Secondaire Garage, (2) départs mono → 9 disjoncteurs DNX³ de la rangée 2.",
+            "photo_url": "/sources/legrand-048-86.png"
           }
         ]
       },
