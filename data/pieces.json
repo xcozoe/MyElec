@@ -1,0 +1,34 @@
+[
+  { "id": "CUI", "trigramme": "CUI", "nom": "Cuisine", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "BUA", "trigramme": "BUA", "nom": "Buanderie", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "SEJ", "trigramme": "SEJ", "nom": "Séjour", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "BIB", "trigramme": "BIB", "nom": "Bibliothèque", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "ENT", "trigramme": "ENT", "nom": "Entrée", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "COU", "trigramme": "COU", "nom": "Couloir", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "CH1", "trigramme": "CH1", "nom": "Chambre 1", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "CH2", "trigramme": "CH2", "nom": "Chambre 2", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "CH3", "trigramme": "CH3", "nom": "Chambre 3", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "CH4", "trigramme": "CH4", "nom": "Chambre 4", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "SBH", "trigramme": "SBH", "nom": "Salle de Bain Haut", "niveau": "Rez de jardin", "categorie": "interieur" },
+  { "id": "WCH", "trigramme": "WCH", "nom": "WC Haut", "niveau": "Rez de jardin", "categorie": "interieur" },
+
+  { "id": "ESS", "trigramme": "ESS", "nom": "Escalier sous-sol", "niveau": "Sous-sol", "categorie": "interieur" },
+  { "id": "CIN", "trigramme": "CIN", "nom": "Salle Cinéma", "niveau": "Sous-sol", "categorie": "interieur" },
+  { "id": "DRE", "trigramme": "DRE", "nom": "Dressing", "niveau": "Sous-sol", "categorie": "interieur" },
+  { "id": "SBB", "trigramme": "SBB", "nom": "Salle de Bain Bas", "niveau": "Sous-sol", "categorie": "interieur" },
+  { "id": "STO", "trigramme": "STO", "nom": "Zone Stockage", "niveau": "Sous-sol", "categorie": "interieur" },
+  { "id": "GAR", "trigramme": "GAR", "nom": "Garage", "niveau": "Sous-sol", "categorie": "technique" },
+  { "id": "CHA", "trigramme": "CHA", "nom": "Chaufferie", "niveau": "Sous-sol", "categorie": "technique" },
+
+  { "id": "LPI", "trigramme": "LPI", "nom": "Local Piscine", "niveau": "Extérieur", "categorie": "technique" },
+  { "id": "TPI", "trigramme": "TPI", "nom": "Terrasse Piscine", "niveau": "Extérieur", "categorie": "exterieur" },
+  { "id": "TSA", "trigramme": "TSA", "nom": "Terrasse Salon", "niveau": "Extérieur", "categorie": "exterieur" },
+  { "id": "TCU", "trigramme": "TCU", "nom": "Terrasse Cuisine", "niveau": "Extérieur", "categorie": "exterieur" },
+  { "id": "ZEN", "trigramme": "ZEN", "nom": "Zone Entrée", "niveau": "Extérieur", "categorie": "exterieur" },
+  { "id": "ZGA", "trigramme": "ZGA", "nom": "Zone Garage", "niveau": "Extérieur", "categorie": "exterieur" },
+  { "id": "ESE", "trigramme": "ESE", "nom": "Escalier Extérieur", "niveau": "Extérieur", "categorie": "exterieur" },
+  { "id": "JAR", "trigramme": "JAR", "nom": "Jardin", "niveau": "Extérieur", "categorie": "exterieur" },
+
+  { "id": "MAI", "trigramme": "MAI", "nom": "Maison (transversal)", "niveau": "Transversal", "categorie": "virtuelle", "notes": "Pièce virtuelle pour les équipements transversaux : VMC, alarme, box, télérupteur centralisé." },
+  { "id": "EXG", "trigramme": "EXG", "nom": "Extérieur Général", "niveau": "Transversal", "categorie": "virtuelle", "notes": "Pièce virtuelle pour : portail, sonnette, irrigation, et autres équipements extérieurs non rattachés à une zone précise." }
+]

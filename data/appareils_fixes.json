@@ -1,0 +1,112 @@
+[
+  {
+    "id": "AP_CUI_1",
+    "piece_id": "CUI",
+    "numero": 1,
+    "nom": "Lave-vaisselle",
+    "categorie": "electromenager",
+    "profil_usage": "cyclique",
+    "notes": "Raccordement à compléter — typiquement aval TP-R2-LV."
+  },
+  {
+    "id": "AP_CUI_2",
+    "piece_id": "CUI",
+    "numero": 2,
+    "nom": "Four",
+    "categorie": "cuisson",
+    "profil_usage": "intermittent",
+    "notes": "Raccordement à compléter — typiquement aval TP-R2-FOUR."
+  },
+  {
+    "id": "AP_CUI_3",
+    "piece_id": "CUI",
+    "numero": 3,
+    "nom": "Plaque induction",
+    "categorie": "cuisson",
+    "profil_usage": "intermittent",
+    "notes": "Raccordement à compléter — typiquement aval TP-R3-PLAQUE (C32)."
+  },
+  {
+    "id": "AP_CUI_4",
+    "piece_id": "CUI",
+    "numero": 4,
+    "nom": "Frigo",
+    "categorie": "electromenager",
+    "profil_usage": "continu",
+    "notes": "Raccordement à compléter — typiquement aval TP-R4-FRIGO."
+  },
+  {
+    "id": "AP_BUA_1",
+    "piece_id": "BUA",
+    "numero": 1,
+    "nom": "Lave-linge",
+    "categorie": "electromenager",
+    "profil_usage": "cyclique",
+    "notes": "Raccordement à compléter — typiquement aval TP-R4-LL."
+  },
+  {
+    "id": "AP_CHA_1",
+    "piece_id": "CHA",
+    "numero": 1,
+    "nom": "Chaudière à pellets ÖkoFEN Pellematic PES36",
+    "categorie": "chauffage",
+    "marque": "ÖkoFEN",
+    "modele": "Pellematic PES36",
+    "profil_usage": "intermittent",
+    "notes": "Raccordement triphasé — alimenté par TI-CHAUDIERE-PELLETS (NF 416 C16 tétra)."
+  },
+  {
+    "id": "AP_LPI_1",
+    "piece_id": "LPI",
+    "numero": 1,
+    "nom": "Pompe de filtration",
+    "categorie": "piscine",
+    "profil_usage": "saisonnier",
+    "notes": "Raccordement à compléter — aval TLP-R1-FILTRATION (Legrand DNX3 C16)."
+  },
+  {
+    "id": "AP_LPI_2",
+    "piece_id": "LPI",
+    "numero": 2,
+    "nom": "PAC piscine",
+    "categorie": "piscine",
+    "profil_usage": "saisonnier",
+    "notes": "Raccordement à compléter — aval TLP-R1-PAC (Legrand DNX3 C16)."
+  },
+  {
+    "id": "AP_GAR_1",
+    "piece_id": "GAR",
+    "numero": 1,
+    "nom": "Compresseur triphasé",
+    "categorie": "atelier",
+    "profil_usage": "occasionnel",
+    "notes": "Raccordement à compléter — aval TP-R1-PRISE-TRI."
+  },
+  {
+    "id": "AP_MAI_1",
+    "piece_id": "MAI",
+    "numero": 1,
+    "nom": "VMC",
+    "categorie": "ventilation",
+    "profil_usage": "continu",
+    "notes": "Raccordement à compléter — typiquement aval TP-R4-VMC."
+  },
+  {
+    "id": "AP_MAI_2",
+    "piece_id": "MAI",
+    "numero": 2,
+    "nom": "Centrale d'alarme",
+    "categorie": "securite",
+    "profil_usage": "continu",
+    "notes": "Raccordement à compléter — typiquement aval TP-R3-ALARME (C2)."
+  },
+  {
+    "id": "AP_MAI_3",
+    "piece_id": "MAI",
+    "numero": 3,
+    "nom": "Box internet + équipements réseau",
+    "categorie": "reseau",
+    "profil_usage": "continu",
+    "notes": "Raccordement à compléter — typiquement aval TP-R4-BOX."
+  }
+]

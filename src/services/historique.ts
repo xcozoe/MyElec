@@ -22,6 +22,16 @@ function libelleEntite(entite: EntiteType): string {
       return 'Rangée'
     case 'disjoncteur':
       return 'Disjoncteur'
+    case 'piece':
+      return 'Pièce'
+    case 'ligne':
+      return 'Ligne'
+    case 'endpoint':
+      return 'End-point'
+    case 'volet':
+      return 'Volet'
+    case 'appareil_fixe':
+      return 'Appareil fixe'
   }
 }
 
