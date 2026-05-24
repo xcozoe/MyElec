@@ -562,19 +562,19 @@
             "phase_affectation": "inconnue",
             "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Legrand DNX³ C20."
+            "notes": "Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté."
           },
           {
-            "id": "TSG-R2-PC-SEJOUR-A",
+            "id": "TSG-R2-PC-SEJOUR-B",
             "position": 2,
-            "etiquette": "PC Séjour A",
+            "etiquette": "PC Séjour B",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
             "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Legrand DNX³ C16. [?] À recouper avec « PC Séjour » présents en TP-R2 (TP-R2-PC-SEJ) et TP-R4 (TP-R4-PC-SEJ) — risque de doublon de nommage."
+            "notes": "Legrand DNX³ C16. Deuxième circuit « PC salle séjour » sur cette rangée — différencié en « B » par convention de nommage."
           },
           {
             "id": "TSG-R2-INCONNU",
@@ -589,16 +589,16 @@
             "notes": "Legrand DNX³ C16. [?] Étiquette à identifier physiquement."
           },
           {
-            "id": "TSG-R2-PC-SEJOUR-B",
+            "id": "TSG-R2-PC-SEJOUR-A",
             "position": 4,
-            "etiquette": "PC Séjour B",
+            "etiquette": "PC Séjour A",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
             "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Legrand DNX³ C16. Deuxième circuit « PC salle séjour » sur cette rangée — différencié en « B » par convention de nommage."
+            "notes": "Legrand DNX³ C16. [?] À recouper avec « PC Séjour » présents en TP-R2 (TP-R2-PC-SEJ) et TP-R4 (TP-R4-PC-SEJ) — risque de doublon de nommage."
           },
           {
             "id": "TSG-R2-ECL-SEJOUR",

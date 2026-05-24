@@ -3,5 +3,15 @@
     "id": "L-VR-RDJ",
     "libelle": "Alimentation Volets Roulants RDJ",
     "disjoncteur_id": "TP-R4-VR-RDJ"
+  },
+  {
+    "id": "L-VR-GAR",
+    "libelle": "Alimentation volet roulant garage",
+    "disjoncteur_id": "TSG-R2-VR"
+  },
+  {
+    "id": "L-PL-GAR",
+    "libelle": "Alimentation détecteur lumineux garage",
+    "disjoncteur_id": "TSG-R2-ECL-GARAGE"
   }
 ]

@@ -29,5 +29,16 @@
     "commande_locale": "domotique",
     "mur": "MF",
     "ligne_id": "L-VR-RDJ"
+  },
+  {
+    "id": "VR_GAR_1",
+    "piece_id": "GAR",
+    "numero": 1,
+    "type": "volet_roulant",
+    "motorisation": "electrique_radio",
+    "commande_locale": "inter_radio",
+    "commande_centralisee": "oui",
+    "mur": "ME",
+    "ligne_id": "L-VR-GAR"
   }
 ]

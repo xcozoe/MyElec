@@ -18,5 +18,16 @@
     "position_detail": "Sur la verrière ",
     "commande": "domotique",
     "alimentation": "pile"
+  },
+  {
+    "id": "PL_ZGA_ME_1",
+    "type": "PL",
+    "piece_id": "ZGA",
+    "mur": "ME",
+    "numero": 1,
+    "position_detail": "Au dessus de la porte du garage",
+    "ligne_id": "L-PL-GAR",
+    "type_luminaire": "exterieur_facade",
+    "commande": "detecteur_mouvement"
   }
 ]

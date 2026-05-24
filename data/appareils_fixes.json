@@ -158,5 +158,15 @@
     "modele": "Mac mini M4",
     "puissance_nominale_w": 8,
     "puissance_pic_w": 65
+  },
+  {
+    "id": "AP_ENT_1",
+    "piece_id": "ENT",
+    "numero": 1,
+    "nom": "Ecran Interphone",
+    "categorie": "securite",
+    "profil_usage": "continu",
+    "marque": "EZVIZ",
+    "ligne_id": "L-PL-GAR"
   }
 ]

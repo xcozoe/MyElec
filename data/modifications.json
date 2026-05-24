@@ -289,5 +289,95 @@
     "champ_modifie": "differentiel_parent_id",
     "nouvelle_valeur": "TSG-R1-DIFF-LEGRAND",
     "description": "Disjoncteur TSG-R1-DISJ-HAGER — differentiel_parent_id : ∅ → TSG-R1-DIFF-LEGRAND."
+  },
+  {
+    "id": "2e67c071-f6c4-4056-95a0-65d961e7962f",
+    "date": "2026-05-24T14:37:00.512Z",
+    "type": "creation",
+    "entite": "ligne",
+    "entite_id": "L-PL-GAR",
+    "description": "Ligne créé(e) (L-PL-GAR)."
+  },
+  {
+    "id": "19a7d902-52be-4704-b1f2-05c9a192ff17",
+    "date": "2026-05-24T14:37:55.128Z",
+    "type": "creation",
+    "entite": "endpoint",
+    "entite_id": "PL_ZGA_ME_1",
+    "description": "End-point créé(e) (PL_ZGA_ME_1)."
+  },
+  {
+    "id": "05ceb807-63d8-4789-8497-23316dfb14f8",
+    "date": "2026-05-24T14:40:13.641Z",
+    "type": "creation",
+    "entite": "appareil_fixe",
+    "entite_id": "AP_ENT_1",
+    "description": "Appareil fixe créé(e) (AP_ENT_1)."
+  },
+  {
+    "id": "5cccf652-19df-4977-b09f-87958b203b0d",
+    "date": "2026-05-24T14:48:15.009Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-ECL-SEJOUR",
+    "champ_modifie": "position",
+    "ancienne_valeur": "tsg-r2:5",
+    "nouvelle_valeur": "tsg-r2:1",
+    "description": "Disjoncteur TSG-R2-ECL-SEJOUR réordonné dans tsg-r2 (position 1)."
+  },
+  {
+    "id": "a007d314-1164-4cda-9b00-098afb430d6a",
+    "date": "2026-05-24T14:49:36.632Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-PC-SEJOUR-B",
+    "champ_modifie": "position",
+    "ancienne_valeur": "tsg-r2:5",
+    "nouvelle_valeur": "tsg-r2:1",
+    "description": "Disjoncteur TSG-R2-PC-SEJOUR-B réordonné dans tsg-r2 (position 1)."
+  },
+  {
+    "id": "9e2118b6-36ed-459d-bf54-26929335451a",
+    "date": "2026-05-24T14:49:46.830Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-RECHAUFFE-PLAQUE",
+    "champ_modifie": "position",
+    "ancienne_valeur": "tsg-r2:3",
+    "nouvelle_valeur": "tsg-r2:1",
+    "description": "Disjoncteur TSG-R2-RECHAUFFE-PLAQUE réordonné dans tsg-r2 (position 1)."
+  },
+  {
+    "id": "6a6a2d6c-5b0c-4675-b6b9-8e9871939b80",
+    "date": "2026-05-24T14:49:54.230Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-INCONNU",
+    "champ_modifie": "position",
+    "ancienne_valeur": "tsg-r2:5",
+    "nouvelle_valeur": "tsg-r2:3",
+    "description": "Disjoncteur TSG-R2-INCONNU réordonné dans tsg-r2 (position 3)."
+  },
+  {
+    "id": "30fc2a72-6aeb-4aba-bff6-6607ef2ee763",
+    "date": "2026-05-24T14:51:02.148Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-PC-SEJOUR-A",
+    "champ_modifie": "position",
+    "ancienne_valeur": "tsg-r2:5",
+    "nouvelle_valeur": "tsg-r2:4",
+    "description": "Disjoncteur TSG-R2-PC-SEJOUR-A réordonné dans tsg-r2 (position 4)."
+  },
+  {
+    "id": "6e15c206-35a2-49f7-9c9f-6933bfe0726d",
+    "date": "2026-05-24T14:58:01.054Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-RECHAUFFE-PLAQUE",
+    "champ_modifie": "notes",
+    "ancienne_valeur": "Legrand DNX³ C20.",
+    "nouvelle_valeur": "Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté.",
+    "description": "Disjoncteur TSG-R2-RECHAUFFE-PLAQUE — notes : Legrand DNX³ C20. → Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté.."
   }
 ]
