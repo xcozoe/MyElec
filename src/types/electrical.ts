@@ -17,6 +17,7 @@ export type TypeProtection =
   | 'contacteur'
   | 'telerupteur'
   | 'horloge'
+  | 'bornier_repartition'
 
 export type StatutDisjoncteur = 'actif' | 'libre' | 'desaffecte'
 
@@ -93,6 +94,7 @@ export const TYPES_PROTECTION: { value: TypeProtection; label: string }[] = [
   { value: 'contacteur', label: 'Contacteur' },
   { value: 'telerupteur', label: 'Télérupteur' },
   { value: 'horloge', label: 'Horloge' },
+  { value: 'bornier_repartition', label: 'Bornier de répartition (passif)' },
 ]
 
 export const POLES: { value: Poles; label: string }[] = [

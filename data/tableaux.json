@@ -10,10 +10,10 @@
       {
         "id": "tsg-r1",
         "numero": 1,
-        "libelle": "Différentiel + arrivée TRI",
+        "libelle": "Arrivée principale + Différentiel maison + repartition TRI",
         "phase": "TRI",
         "differentiel_id": "TP-R1-DIFF-LEGRAND",
-        "notes": "Rangée arrivée/protection. Cheminement électrique : Hager NFT 840 C40 tétrapolaire (amont, TRI depuis TP-R1-PRISE-TRI) → Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (différentiel tête de tableau, alimente la rangée 2).",
+        "notes": "Rangée arrivée/protection.\nCheminement électrique : Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (tête de tableau)\n=> Hager NFT 840 C40 tétrapolaire -> tableau secondaire chaufferie\n=> bornier de répartition tri\nLe bornier transmet directement :\n=> vers tableau secondaire garage\n=> vers la rangée 2 du coffret",
         "disjoncteurs": [
           {
             "id": "TP-R1-DIFF-LEGRAND",
@@ -36,6 +36,18 @@
             "phase_affectation": "TRI",
             "statut": "actif",
             "notes": "Hager NFT 840 C40 — disjoncteur tétrapolaire 4 pôles (3P+N, 3 manettes commutées pour les 3 phases, neutre passant), pouvoir de coupure 6000 A / Icn 10 kA, courbe C, conforme EN 60947-2. Schéma IN-1-3-5 / IN-2-4-6. Disjoncteur d'arrivée triphasée depuis TP-R1-PRISE-TRI, EN AMONT du différentiel Legrand qui couvre l'ensemble de la rangée 2."
+          },
+          {
+            "id": "TP-R1-BORNIER",
+            "position": 3,
+            "etiquette": "Bornier répartition TRI",
+            "type_protection": "bornier_repartition",
+            "calibre": "40 A",
+            "poles": "tetra",
+            "phase_affectation": "TRI",
+            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "statut": "actif",
+            "notes": "Bornier Legrand de répartition triphasée (passif, sans protection). En aval du différentiel Legrand 086 94 (qui protège différentiellement tout ce qui passe par le bornier). Le bornier ramifie l'alimentation TRI en deux sorties physiques : (1) jonction TRI directe vers le Tableau Secondaire Garage, (2) départs phase mono vers les 9 disjoncteurs DNX³ de la rangée 2 (chacun puise sur une seule des 3 phases du bornier)."
           }
         ]
       },
@@ -55,7 +67,7 @@
             "calibre": "C20",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté."
           },
@@ -67,7 +79,7 @@
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C16. Deuxième circuit « PC salle séjour » sur cette rangée — différencié en « B » par convention de nommage."
           },
@@ -79,7 +91,7 @@
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C16. [?] Étiquette à identifier physiquement."
           },
@@ -91,7 +103,7 @@
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C16. [?] À recouper avec « PC Séjour » présents en TP-R2 (TP-R2-PC-SEJ) et TP-R4 (TP-R4-PC-SEJ) — risque de doublon de nommage."
           },
@@ -103,7 +115,7 @@
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C10. [?] À recouper avec TP-R2-ECL-SEJ (du tableau principal) — possible doublon ou circuits distincts."
           },
@@ -115,7 +127,7 @@
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C10.\nGlobalement assure éclairage sous-sol "
           },
@@ -127,7 +139,7 @@
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C16."
           },
@@ -139,7 +151,7 @@
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C10.\nÉclairage garage extérieur.\nÉcran interphone intérieur."
           },
@@ -151,7 +163,7 @@
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-BORNIER",
             "statut": "actif",
             "notes": "Legrand DNX³ C10. [?] Volet roulant — à préciser quel(s) volet(s) (garage ? autre ?)."
           }
@@ -661,7 +673,8 @@
         ]
       }
     ],
-    "parent_tableau_id": "tableau-principal"
+    "parent_tableau_id": "tableau-principal",
+    "parent_disjoncteur_id": "TP-R1-BORNIER"
   },
   {
     "id": "tableau-secondaire-chaufferie",
@@ -675,7 +688,7 @@
       {
         "id": "ti-r1",
         "numero": 1,
-        "libelle": "R1 — Différentiel général + récepteur HC/HP + départs",
+        "libelle": "Différentiel tableau + récepteur HC/HP + départs",
         "phase": "TRI",
         "differentiel_id": "TI-R1-DIFF-GEN",
         "notes": "Rangée du haut. Repère TI (Tableau Intermédiaire) dans la convention de nommage.",
@@ -779,7 +792,7 @@
       {
         "id": "ti-r2",
         "numero": 2,
-        "libelle": "R2 — Départ Local Piscine + slots libres",
+        "libelle": "Départ Local Piscine",
         "phase": "TRI",
         "notes": "Rangée du bas. Comprend le départ Local Piscine (MJT 732) à gauche, plusieurs slots libres masqués par un cache, et une prise élec de service (2P+T) intégrée au tableau à droite (alimentation à confirmer).",
         "disjoncteurs": [

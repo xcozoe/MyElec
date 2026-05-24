@@ -8,6 +8,7 @@ import { PieceList } from './components/PieceList'
 import { PieceDetail } from './components/PieceDetail'
 import { PieceEditor } from './components/PieceEditor'
 import { EndPointEditor, emptyEndPoint } from './components/EndPointEditor'
+import { CheminementView } from './components/CheminementView'
 import { LigneList } from './components/LigneList'
 import { LigneDetail } from './components/LigneDetail'
 import { LigneEditor, emptyLigne } from './components/LigneEditor'
@@ -28,6 +29,7 @@ export type View =
   | { name: 'lignes' }
   | { name: 'ligne'; ligneId: string }
   | { name: 'equipements' }
+  | { name: 'cheminement' }
   | { name: 'historique' }
   | { name: 'cartographie' }
 
@@ -384,6 +386,12 @@ export function App() {
               Équipements
             </NavButton>
             <NavButton
+              active={view.name === 'cheminement'}
+              onClick={() => goTo({ name: 'cheminement' })}
+            >
+              Cheminement
+            </NavButton>
+            <NavButton
               active={view.name === 'cartographie'}
               onClick={() => goTo({ name: 'cartographie' })}
             >
@@ -579,6 +587,13 @@ export function App() {
             onCreateVolet={() => setPanel({ kind: 'createVolet' })}
             onOpenLigne={(ligneId) => goTo({ name: 'ligne', ligneId })}
             onOpenPiece={(pieceId) => goTo({ name: 'piece', pieceId })}
+          />
+        ) : view.name === 'cheminement' ? (
+          <CheminementView
+            store={state}
+            onOpenTableau={(tableauId, focusDisjoncteurId) =>
+              goTo({ name: 'tableau', tableauId, focusDisjoncteurId })
+            }
           />
         ) : view.name === 'historique' ? (
           <HistoriqueView

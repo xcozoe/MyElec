@@ -629,5 +629,61 @@
     "nouvelle_valeur": "Principal = tableau Hager (différentiel Legrand 086 94 principal de la maison, Hager NFT 840 C40 → Chaufferie, jonction TRI directe → Secondaire Garage, 9 départs DNX³ locaux) ; Secondaire Garage = tableau Merlin Gerin (4 rangées, alimenté en TRI direct depuis le Principal)",
     "description": "Inversion de topologie suite à clarification : le tableau historiquement appelé « Secondaire Garage » est en fait le point d'entrée principal de l'électricité Enedis, et son différentiel Legrand 086 94 protège toute l'installation. L'ancien « Tableau Principal » devient le Tableau Secondaire Garage (alimenté en jonction directe TRI). Cascade automatique : préfixes d'IDs disjoncteurs swappés (TP-* ↔ TSG-*) ; differentiel_parent_id, differentiel_id, parent_disjoncteur_id et disjoncteur_id des lignes mis à jour. Le tableau Secondaire Chaufferie est désormais explicitement alimenté via TP-R1-DISJ-HAGER (anciennement TSG-R1-DISJ-HAGER).",
     "utilisateur": "Rémi"
+  },
+  {
+    "id": "792e0947-51a3-46cd-9640-e06ac21600ad",
+    "date": "2026-05-24T17:04:20.820Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tsg-r1",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "Différentiel + arrivée TRI",
+    "nouvelle_valeur": "Arrivée principale + Différentiel maison + repartition TRI",
+    "description": "Rangée tsg-r1 — libelle : Différentiel + arrivée TRI → Arrivée principale + Différentiel maison + repartition TRI."
+  },
+  {
+    "id": "0a5651b6-294a-4c45-83be-8350adc09cd4",
+    "date": "2026-05-24T17:04:20.820Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tsg-r1",
+    "champ_modifie": "notes",
+    "ancienne_valeur": "Rangée arrivée/protection. Cheminement électrique : Hager NFT 840 C40 tétrapolaire (amont, TRI depuis TP-R1-PRISE-TRI) → Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (différentiel tête de tableau, alimente la rangée 2).",
+    "nouvelle_valeur": "Rangée arrivée/protection.\nCheminement électrique : Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (tête de tableau)\n=> Hager NFT 840 C40 tétrapolaire -> tableau secondaire chaufferie\n=> bornier de répartition tri\nLe bornier transmet directement :\n=> vers tableau secondaire garage\n=> vers la rangée 2 du coffret",
+    "description": "Rangée tsg-r1 — notes : Rangée arrivée/protection. Cheminement électrique : Hager NFT 840 C40 tétrapolaire (amont, TRI depuis TP-R1-PRISE-TRI) → Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (différentiel tête de tableau, alimente la rangée 2). → Rangée arrivée/protection.\nCheminement électrique : Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (tête de tableau)\n=> Hager NFT 840 C40 tétrapolaire -> tableau secondaire chaufferie\n=> bornier de répartition tri\nLe bornier transmet directement :\n=> vers tableau secondaire garage\n=> vers la rangée 2 du coffret."
+  },
+  {
+    "id": "186fdc15-191c-4953-8ce7-c81718c2857c",
+    "date": "2026-05-24T17:06:54.333Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "ti-r1",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R1 — Différentiel général + récepteur HC/HP + départs",
+    "nouvelle_valeur": "Différentiel tableau + récepteur HC/HP + départs",
+    "description": "Rangée ti-r1 — libelle : R1 — Différentiel général + récepteur HC/HP + départs → Différentiel tableau + récepteur HC/HP + départs."
+  },
+  {
+    "id": "8f03cd82-e404-4f92-8937-bc2f375ae8c2",
+    "date": "2026-05-24T17:07:16.743Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "ti-r2",
+    "champ_modifie": "libelle",
+    "ancienne_valeur": "R2 — Départ Local Piscine + slots libres",
+    "nouvelle_valeur": "Départ Local Piscine",
+    "description": "Rangée ti-r2 — libelle : R2 — Départ Local Piscine + slots libres → Départ Local Piscine."
+  },
+  {
+    "id": "59f8e02c-fe1c-46fa-9049-cad4e114fd04",
+    "date": "2026-05-24T17:48:12.593Z",
+    "type": "modification",
+    "entite": "tableau",
+    "entite_id": "tableau-principal",
+    "champ_modifie": "structure",
+    "ancienne_valeur": "Pas de bornier modélisé",
+    "nouvelle_valeur": "TP-R1-BORNIER (bornier_repartition)",
+    "description": "Ajout du bornier Legrand de répartition TRI (passif) en R1 position 3, en aval du différentiel Legrand 086 94. Cascade : 9 disjoncteurs DNX³ de R2 ont leur differentiel_parent_id redirigé du Legrand vers le Bornier (la protection différentielle reste cascadée via le Legrand en amont du Bornier). Le Tableau Secondaire Garage prend pour parent_disjoncteur_id le Bornier (jonction TRI directe sans disjoncteur supplémentaire entre les deux).",
+    "utilisateur": "Rémi"
   }
 ]
