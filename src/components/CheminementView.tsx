@@ -108,7 +108,7 @@ function SourceNode({
   const hasSpecs = specs && specs.length > 0
 
   return (
-    <div className="rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-2 max-w-2xl">
+    <div className="rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-2 w-full max-w-2xl">
       <div className="flex items-center gap-3">
         {image && (
           <button
@@ -279,29 +279,25 @@ function TableauBox({
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
   const [photoZoom, setPhotoZoom] = useState(false)
 
-  const mainDiff = useMemo(() => {
-    for (const r of tableau.rangees) {
-      for (const d of r.disjoncteurs) {
-        if (
-          d.type_protection === 'differentiel_tete_tableau' ||
-          d.type_protection === 'differentiel_tete_rangee'
-        ) {
-          return d
-        }
-      }
-    }
-    return undefined
-  }, [tableau])
+  // Construit la chaîne hiérarchique des « chips clés » du tableau :
+  // - différentiel(s) principaux (tête de tableau / tête de rangée)
+  // - disjoncteurs « jonction » (qui alimentent un sous-tableau)
+  // - bornier de répartition
+  // L'ordre suit differentiel_parent_id : on part des roots (pas de
+  // parent dans ce tableau) et on descend en profondeur.
+  const keyChips = useMemo(
+    () => buildCascade(tableau, junctions),
+    [tableau, junctions],
+  )
 
   const nbDj = tableau.rangees.reduce(
     (acc, r) => acc + r.disjoncteurs.length,
     0,
   )
-  const junctionIds = new Set(junctions.map((j) => j.sourceDj.id))
 
   return (
     <div
-      className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} px-4 pt-3 pb-0 w-full`}
+      className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} px-4 pt-3 pb-6 w-full`}
     >
       <div className="flex items-start gap-3 pb-3">
         {tableau.photo_url && (
@@ -341,42 +337,33 @@ function TableauBox({
         </button>
       </div>
 
-      {/* Différentiel principal */}
-      {mainDiff && !junctionIds.has(mainDiff.id) && (
-        <div className="flex flex-col items-center gap-1 pb-2">
-          <div className="w-full max-w-xs">
-            <DisjoncteurChip
-              dj={mainDiff}
-              onClick={() => onOpenTableau(tableau.id, mainDiff.id)}
-            />
-          </div>
-          {junctions.length > 0 && (
-            <div className="h-3 w-px bg-slate-400 dark:bg-slate-600" />
-          )}
-        </div>
-      )}
-
-      {/* Jonctions à l'intérieur du tableau. La continuité visuelle
-          jusqu'au sous-tableau est assurée par la ligne extérieure
-          qui remonte (margin-top négatif) — voir TableauTree. */}
-      {junctions.length > 0 && (
-        <div className="flex justify-around items-stretch gap-3 sm:gap-4 pb-6">
-          {junctions.map(({ sourceDj, child }) => (
-            <div
-              key={sourceDj.id}
-              className="flex flex-col items-center min-w-0 flex-1"
-            >
-              <div className="w-full">
-                <DisjoncteurChip
-                  dj={sourceDj}
-                  target={child.nom}
-                  onClick={() => onOpenTableau(tableau.id, sourceDj.id)}
-                />
-              </div>
+      {/* Cascade verticale des chips clés. Chaque chip = un module clé
+          (différentiel, bornier, jonction vers sous-tableau). Une flèche
+          ↓ apparaît entre chaque chip pour matérialiser le sens du
+          courant. */}
+      {keyChips.map((node, i) => {
+        const isLast = i === keyChips.length - 1
+        const junction = junctions.find((j) => j.sourceDj.id === node.dj.id)
+        return (
+          <div key={node.dj.id} className="flex flex-col items-center">
+            <div className="w-full max-w-md">
+              <DisjoncteurChip
+                dj={node.dj}
+                target={junction?.child.nom}
+                onClick={() => onOpenTableau(tableau.id, node.dj.id)}
+              />
             </div>
-          ))}
-        </div>
-      )}
+            {!isLast && (
+              <div className="flex flex-col items-center py-1">
+                <div className="h-3 w-0.5 bg-slate-500 dark:bg-slate-400" />
+                <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                  ▼
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })}
 
       {photoZoom && tableau.photo_url && (
         <Lightbox
@@ -388,6 +375,55 @@ function TableauBox({
       )}
     </div>
   )
+}
+
+/**
+ * Construit la liste linéaire des « chips clés » d'un tableau, dans
+ * l'ordre du cheminement électrique (du différentiel d'entrée vers les
+ * feuilles utiles). On inclut :
+ *  - tous les différentiels (tête de tableau / tête de rangée / dédié)
+ *  - tous les borniers de répartition
+ *  - tous les disjoncteurs qui alimentent un sous-tableau (jonctions)
+ *
+ * On exclut les disjoncteurs « feuilles » (départs locaux) pour garder
+ * la vue lisible.
+ */
+function buildCascade(
+  tableau: Tableau,
+  junctions: Junction[],
+): { dj: Disjoncteur }[] {
+  const junctionIds = new Set(junctions.map((j) => j.sourceDj.id))
+  const allDjs = tableau.rangees.flatMap((r) => r.disjoncteurs)
+  const allIds = new Set(allDjs.map((d) => d.id))
+
+  const isKey = (d: Disjoncteur) =>
+    junctionIds.has(d.id) ||
+    d.type_protection === 'differentiel_tete_tableau' ||
+    d.type_protection === 'differentiel_tete_rangee' ||
+    d.type_protection === 'differentiel_dedie' ||
+    d.type_protection === 'disjoncteur_diff_dedie' ||
+    d.type_protection === 'bornier_repartition'
+
+  // BFS depuis les roots (pas de differentiel_parent_id ou parent hors
+  // tableau). On garde uniquement les chips clés dans l'ordre rencontré.
+  const result: { dj: Disjoncteur }[] = []
+  const visited = new Set<string>()
+  const queue: Disjoncteur[] = allDjs.filter(
+    (d) => !d.differentiel_parent_id || !allIds.has(d.differentiel_parent_id),
+  )
+  while (queue.length > 0) {
+    const current = queue.shift()!
+    if (visited.has(current.id)) continue
+    visited.add(current.id)
+    if (isKey(current)) result.push({ dj: current })
+    // Ajoute les enfants directs
+    for (const d of allDjs) {
+      if (d.differentiel_parent_id === current.id && !visited.has(d.id)) {
+        queue.push(d)
+      }
+    }
+  }
+  return result
 }
 
 // ----- Chip disjoncteur (avec photo si présente) -----
