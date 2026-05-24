@@ -7,10 +7,11 @@ import { ExportImport } from './components/ExportImport'
 import { PieceList } from './components/PieceList'
 import { PieceDetail } from './components/PieceDetail'
 import { PieceEditor } from './components/PieceEditor'
+import { EndPointEditor, emptyEndPoint } from './components/EndPointEditor'
 import { SearchBar } from './components/SearchBar'
 import { SidePanel } from './components/SidePanel'
 import { useStore } from './hooks/useStore'
-import type { Piece } from './types/electrical'
+import type { EndPointType, Piece } from './types/electrical'
 
 export type View =
   | { name: 'home' }
@@ -24,6 +25,12 @@ type PiecePanel =
   | { kind: 'none' }
   | { kind: 'createPiece' }
   | { kind: 'editPiece'; pieceId: string }
+  | {
+      kind: 'createEndpoint'
+      pieceId: string
+      type: EndPointType
+    }
+  | { kind: 'editEndpoint'; endpointId: string }
 
 const DARK_KEY = 'myelec.dark'
 
@@ -67,6 +74,63 @@ export function App() {
           allPieces={state.pieces}
           onSave={async (next, desc) => {
             await state.pieceOps.upsert(next, desc)
+            closePiecePanel()
+          }}
+          onCancel={closePiecePanel}
+        />
+      )
+    }
+    if (piecePanel.kind === 'createEndpoint') {
+      const initial = emptyEndPoint(
+        piecePanel.pieceId,
+        state.pieces,
+        state.endpoints,
+        piecePanel.type,
+      )
+      return (
+        <EndPointEditor
+          mode="create"
+          initial={initial}
+          pieces={state.pieces}
+          lignes={state.lignes}
+          allEndpoints={state.endpoints}
+          onSave={async (next, desc, options) => {
+            await state.endpointOps.upsert(next, desc)
+            if (options?.thenNew) {
+              // On garde le panneau ouvert sur un nouveau formulaire vide
+              // (saisie rapide pour le terrain).
+              setPiecePanel({
+                kind: 'createEndpoint',
+                pieceId: next.piece_id,
+                type: next.type,
+              })
+            } else {
+              closePiecePanel()
+            }
+          }}
+          onCancel={closePiecePanel}
+        />
+      )
+    }
+    if (piecePanel.kind === 'editEndpoint') {
+      const ep = state.endpoints.find((x) => x.id === piecePanel.endpointId)
+      if (!ep) return <div>End-point introuvable.</div>
+      return (
+        <EndPointEditor
+          mode="edit"
+          initial={ep}
+          pieces={state.pieces}
+          lignes={state.lignes}
+          allEndpoints={state.endpoints}
+          onSave={async (next, desc) => {
+            await state.endpointOps.upsert(next, desc)
+            closePiecePanel()
+          }}
+          onDelete={async () => {
+            await state.endpointOps.remove(
+              ep.id,
+              `Suppression de l'end-point ${ep.id}.`,
+            )
             closePiecePanel()
           }}
           onCancel={closePiecePanel}
@@ -216,6 +280,16 @@ export function App() {
             onBack={() => goTo({ name: 'pieces' })}
             onEditPiece={() =>
               setPiecePanel({ kind: 'editPiece', pieceId: view.pieceId })
+            }
+            onCreateEndpoint={(type) =>
+              setPiecePanel({
+                kind: 'createEndpoint',
+                pieceId: view.pieceId,
+                type: type ?? 'PC',
+              })
+            }
+            onEditEndpoint={(endpointId) =>
+              setPiecePanel({ kind: 'editEndpoint', endpointId })
             }
           />
         ) : view.name === 'historique' ? (
