@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Store } from '../hooks/useStore'
 import type { Disjoncteur, Tableau } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
+import { Lightbox } from './Lightbox'
 
 interface Props {
   store: Store
@@ -49,6 +50,21 @@ export function CheminementView({ store, onOpenTableau }: Props) {
         <SourceNode
           label="Itron 30 A / phase"
           sub="Disjoncteur de branchement 4P 500 mA sélectif (coffret extérieur, ~150 m du tableau principal)"
+          image="/sources/itron.png"
+          specs={[
+            ['Marque', 'Itron'],
+            ['Type', 'Disjoncteur différentiel 4 pôles'],
+            ['Référence', 'IID 4-63 II'],
+            ['IΔn (sensibilité)', '500 mA — sélectif'],
+            ['Ir (courant réglable)', '10 à 30 A (réglé à 30 A par Enedis)'],
+            ['Tension nominale', '440 V ~ 50 Hz'],
+            ['Nombre de pôles', '4 (3 phases + neutre)'],
+            ['Pouvoir de coupure', 'SDB II'],
+            ['Norme', 'EN 60947-1'],
+            ['Indice de protection', 'IP 20 (façade)'],
+            ['Dimensions', '100 × 185 mm (profondeur ~77 mm)'],
+            ['Emplacement', 'Coffret extérieur Enedis, ~150 m du tableau principal'],
+          ]}
         />
         <VerticalLink />
         <TableauBranch tableau={root} store={store} onOpenTableau={onOpenTableau} />
@@ -59,14 +75,83 @@ export function CheminementView({ store, onOpenTableau }: Props) {
 
 // ----- Sources externes -----
 
-function SourceNode({ label, sub }: { label: string; sub?: string }) {
+function SourceNode({
+  label,
+  sub,
+  image,
+  specs,
+}: {
+  label: string
+  sub?: string
+  image?: string
+  specs?: [string, string][]
+}) {
+  const [zoom, setZoom] = useState(false)
+  const [showSpecs, setShowSpecs] = useState(false)
+  const interactive = !!image || !!specs
+
   return (
-    <div className="rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-2 max-w-md">
-      <div className="text-sm font-semibold">⚡ {label}</div>
-      {sub && (
-        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-          {sub}
+    <div className="rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-2 max-w-2xl">
+      <div className="flex items-center gap-3">
+        {image && (
+          <button
+            onClick={() => setZoom(true)}
+            className="shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white p-1 hover:shadow"
+            aria-label={`Agrandir l'image de ${label}`}
+            title={`Agrandir : ${label}`}
+          >
+            <img
+              src={image}
+              alt={label}
+              className="h-16 w-16 object-contain"
+              onError={(e) => {
+                // Cache le bouton si l'image n'est pas (encore) déposée
+                ;(e.currentTarget.parentElement as HTMLElement).style.display =
+                  'none'
+              }}
+            />
+          </button>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold">⚡ {label}</div>
+          {sub && (
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              {sub}
+            </div>
+          )}
+          {interactive && specs && specs.length > 0 && (
+            <button
+              onClick={() => setShowSpecs((s) => !s)}
+              className="mt-1 text-[11px] underline decoration-dotted text-slate-600 dark:text-slate-300 hover:opacity-80"
+            >
+              {showSpecs ? 'Masquer les caractéristiques' : 'Voir les caractéristiques'}
+            </button>
+          )}
         </div>
+      </div>
+
+      {showSpecs && specs && (
+        <dl className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+          {specs.map(([k, v]) => (
+            <div key={k} className="flex gap-2">
+              <dt className="text-slate-500 dark:text-slate-400 shrink-0">
+                {k} :
+              </dt>
+              <dd className="text-slate-700 dark:text-slate-200 break-words">
+                {v}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {zoom && image && (
+        <Lightbox
+          src={image}
+          alt={label}
+          caption={`${label}${sub ? ' — ' + sub : ''}`}
+          onClose={() => setZoom(false)}
+        />
       )}
     </div>
   )
