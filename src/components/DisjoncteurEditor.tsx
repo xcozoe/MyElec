@@ -4,8 +4,13 @@ import {
   POLES,
   STATUTS,
   TYPES_PROTECTION,
+  endpointTypeLabel,
+  type AppareilFixe,
   type Disjoncteur,
+  type EndPoint,
+  type Ligne,
   type Phase,
+  type Piece,
   type Poles,
   type StatutDisjoncteur,
   type Tableau,
@@ -22,6 +27,12 @@ export interface DisjoncteurEditorProps {
   onSave: (next: Disjoncteur, description?: string) => Promise<void> | void
   onDelete?: () => Promise<void> | void
   onCancel: () => void
+  // Cross-ref Phase 2 (optionnel — affiché si fourni)
+  lignes?: Ligne[]
+  endpoints?: EndPoint[]
+  appareils?: AppareilFixe[]
+  pieces?: Piece[]
+  onOpenLigne?: (ligneId: string) => void
 }
 
 export function DisjoncteurEditor({
@@ -32,6 +43,11 @@ export function DisjoncteurEditor({
   onSave,
   onDelete,
   onCancel,
+  lignes,
+  endpoints,
+  appareils,
+  pieces,
+  onOpenLigne,
 }: DisjoncteurEditorProps) {
   const [d, setD] = useState<Disjoncteur>(initial)
   const [description, setDescription] = useState('')
@@ -270,6 +286,17 @@ export function DisjoncteurEditor({
         />
       </Field>
 
+      {mode === 'edit' && lignes && endpoints && appareils && (
+        <CrossRef
+          disjoncteurId={d.id}
+          lignes={lignes}
+          endpoints={endpoints}
+          appareils={appareils}
+          pieces={pieces ?? []}
+          onOpenLigne={onOpenLigne}
+        />
+      )}
+
       {error && (
         <div className="text-sm text-red-700 dark:text-red-300">{error}</div>
       )}
@@ -330,5 +357,155 @@ function Field({
         </span>
       )}
     </label>
+  )
+}
+
+function CrossRef({
+  disjoncteurId,
+  lignes,
+  endpoints,
+  appareils,
+  pieces,
+  onOpenLigne,
+}: {
+  disjoncteurId: string
+  lignes: Ligne[]
+  endpoints: EndPoint[]
+  appareils: AppareilFixe[]
+  pieces: Piece[]
+  onOpenLigne?: (ligneId: string) => void
+}) {
+  const lignesDuDj = useMemo(
+    () => lignes.filter((l) => l.disjoncteur_id === disjoncteurId),
+    [lignes, disjoncteurId],
+  )
+  const lignesIds = new Set(lignesDuDj.map((l) => l.id))
+  const endpointsDuDj = endpoints.filter((e) => e.ligne_id && lignesIds.has(e.ligne_id))
+  const appareilsDirect = appareils.filter((a) => a.ligne_id && lignesIds.has(a.ligne_id))
+  const endpointIds = new Set(endpointsDuDj.map((e) => e.id))
+  const appareilsViaPrise = appareils.filter(
+    (a) => a.branche_sur && endpointIds.has(a.branche_sur),
+  )
+
+  if (
+    lignesDuDj.length === 0 &&
+    endpointsDuDj.length === 0 &&
+    appareilsDirect.length === 0 &&
+    appareilsViaPrise.length === 0
+  ) {
+    return (
+      <div className="rounded-md border border-dashed border-slate-300 dark:border-slate-700 px-3 py-3 text-xs text-slate-500 dark:text-slate-400">
+        Aucune ligne, end-point ni appareil ne référence ce disjoncteur pour
+        le moment. Créez une ligne depuis l'onglet « Lignes » pour démarrer
+        la cartographie aval.
+      </div>
+    )
+  }
+
+  return (
+    <details
+      open
+      className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
+    >
+      <summary className="cursor-pointer px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+        Cartographie aval ({lignesDuDj.length} ligne
+        {lignesDuDj.length > 1 ? 's' : ''}, {endpointsDuDj.length} end-point
+        {endpointsDuDj.length > 1 ? 's' : ''},{' '}
+        {appareilsDirect.length + appareilsViaPrise.length} appareil
+        {appareilsDirect.length + appareilsViaPrise.length > 1 ? 's' : ''})
+      </summary>
+      <div className="px-3 py-2 space-y-3">
+        {lignesDuDj.length > 0 && (
+          <CrossSection title="Lignes au départ">
+            <ul className="space-y-1">
+              {lignesDuDj.map((l) => (
+                <li key={l.id} className="text-xs">
+                  <button
+                    onClick={() => onOpenLigne?.(l.id)}
+                    className="underline decoration-dotted hover:opacity-80 font-mono"
+                  >
+                    {l.id}
+                  </button>{' '}
+                  — {l.libelle}
+                  {l.section_mm2 && (
+                    <span className="text-slate-500 dark:text-slate-400">
+                      {' '}· {l.section_mm2} mm²
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </CrossSection>
+        )}
+
+        {endpointsDuDj.length > 0 && (
+          <CrossSection title="End-points desservis">
+            <ul className="space-y-1">
+              {endpointsDuDj.map((e) => {
+                const piece = pieces.find((p) => p.id === e.piece_id)
+                return (
+                  <li key={e.id} className="text-xs">
+                    <code className="rounded bg-white dark:bg-slate-800 px-1 py-0.5">
+                      {e.id}
+                    </code>{' '}
+                    {endpointTypeLabel(e.type)}
+                    {e.usage_principal && (
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {' '}— {e.usage_principal}
+                      </span>
+                    )}
+                    {piece && (
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {' '}· {piece.nom}
+                      </span>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </CrossSection>
+        )}
+
+        {(appareilsDirect.length > 0 || appareilsViaPrise.length > 0) && (
+          <CrossSection title="Appareils desservis">
+            <ul className="space-y-1">
+              {appareilsDirect.map((a) => (
+                <li key={a.id} className="text-xs">
+                  <strong>{a.nom}</strong>{' '}
+                  <span className="text-slate-500 dark:text-slate-400">
+                    (direct sur ligne)
+                  </span>
+                </li>
+              ))}
+              {appareilsViaPrise.map((a) => (
+                <li key={a.id} className="text-xs">
+                  <strong>{a.nom}</strong>{' '}
+                  <span className="text-slate-500 dark:text-slate-400">
+                    (via prise {a.branche_sur})
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CrossSection>
+        )}
+      </div>
+    </details>
+  )
+}
+
+function CrossSection({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
+        {title}
+      </div>
+      {children}
+    </div>
   )
 }

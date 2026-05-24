@@ -58,11 +58,13 @@ export function TableauDetail({
   focusDisjoncteurId,
   state,
   onBack,
+  onOpenLigne,
 }: {
   tableauId: string
   focusDisjoncteurId?: string
   state: Store
   onBack: () => void
+  onOpenLigne?: (ligneId: string) => void
 }) {
   const tableau = state.tableaux.find((t) => t.id === tableauId)
   const [panel, setPanel] = useState<PanelState>({ kind: 'none' })
@@ -217,7 +219,7 @@ export function TableauDetail({
         open={panel.kind !== 'none'}
         onClose={() => setPanel({ kind: 'none' })}
       >
-        {renderPanel(panel, tableau, state, () => setPanel({ kind: 'none' }))}
+        {renderPanel(panel, tableau, state, () => setPanel({ kind: 'none' }), onOpenLigne)}
       </SidePanel>
     </div>
   )
@@ -228,6 +230,7 @@ function renderPanel(
   tableau: Tableau,
   state: Store,
   close: () => void,
+  onOpenLigne?: (ligneId: string) => void,
 ) {
   if (panel.kind === 'editDisjoncteur') {
     const rangee = tableau.rangees.find((r) => r.id === panel.rangeeId)
@@ -242,6 +245,11 @@ function renderPanel(
         tableau={tableau}
         rangeeId={rangee.id}
         initial={disjoncteur}
+        lignes={state.lignes}
+        endpoints={state.endpoints}
+        appareils={state.appareils}
+        pieces={state.pieces}
+        onOpenLigne={onOpenLigne}
         onSave={async (next, desc) => {
           await state.upsertDisjoncteur(tableau.id, rangee.id, next, desc)
           close()

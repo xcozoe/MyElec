@@ -8,6 +8,9 @@ import { PieceList } from './components/PieceList'
 import { PieceDetail } from './components/PieceDetail'
 import { PieceEditor } from './components/PieceEditor'
 import { EndPointEditor, emptyEndPoint } from './components/EndPointEditor'
+import { LigneList } from './components/LigneList'
+import { LigneDetail } from './components/LigneDetail'
+import { LigneEditor, emptyLigne } from './components/LigneEditor'
 import { SearchBar } from './components/SearchBar'
 import { SidePanel } from './components/SidePanel'
 import { useStore } from './hooks/useStore'
@@ -18,10 +21,12 @@ export type View =
   | { name: 'tableau'; tableauId: string; focusDisjoncteurId?: string }
   | { name: 'pieces' }
   | { name: 'piece'; pieceId: string }
+  | { name: 'lignes' }
+  | { name: 'ligne'; ligneId: string }
   | { name: 'historique' }
   | { name: 'cartographie' }
 
-type PiecePanel =
+type Panel =
   | { kind: 'none' }
   | { kind: 'createPiece' }
   | { kind: 'editPiece'; pieceId: string }
@@ -31,6 +36,8 @@ type PiecePanel =
       type: EndPointType
     }
   | { kind: 'editEndpoint'; endpointId: string }
+  | { kind: 'createLigne' }
+  | { kind: 'editLigne'; ligneId: string }
 
 const DARK_KEY = 'myelec.dark'
 
@@ -47,7 +54,7 @@ function emptyPiece(): Piece {
 export function App() {
   const state = useStore()
   const [view, setView] = useState<View>({ name: 'home' })
-  const [piecePanel, setPiecePanel] = useState<PiecePanel>({ kind: 'none' })
+  const [panel, setPanel] = useState<Panel>({ kind: 'none' })
   const [dark, setDark] = useState<boolean>(() => {
     if (typeof localStorage === 'undefined') return false
     const stored = localStorage.getItem(DARK_KEY)
@@ -63,10 +70,10 @@ export function App() {
 
   const goTo = (next: View) => setView(next)
 
-  const closePiecePanel = () => setPiecePanel({ kind: 'none' })
+  const closePanel = () => setPanel({ kind: 'none' })
 
-  const renderPiecePanel = () => {
-    if (piecePanel.kind === 'createPiece') {
+  const renderPanel = () => {
+    if (panel.kind === 'createPiece') {
       return (
         <PieceEditor
           mode="create"
@@ -74,18 +81,18 @@ export function App() {
           allPieces={state.pieces}
           onSave={async (next, desc) => {
             await state.pieceOps.upsert(next, desc)
-            closePiecePanel()
+            closePanel()
           }}
-          onCancel={closePiecePanel}
+          onCancel={closePanel}
         />
       )
     }
-    if (piecePanel.kind === 'createEndpoint') {
+    if (panel.kind === 'createEndpoint') {
       const initial = emptyEndPoint(
-        piecePanel.pieceId,
+        panel.pieceId,
         state.pieces,
         state.endpoints,
-        piecePanel.type,
+        panel.type,
       )
       return (
         <EndPointEditor
@@ -99,21 +106,21 @@ export function App() {
             if (options?.thenNew) {
               // On garde le panneau ouvert sur un nouveau formulaire vide
               // (saisie rapide pour le terrain).
-              setPiecePanel({
+              setPanel({
                 kind: 'createEndpoint',
                 pieceId: next.piece_id,
                 type: next.type,
               })
             } else {
-              closePiecePanel()
+              closePanel()
             }
           }}
-          onCancel={closePiecePanel}
+          onCancel={closePanel}
         />
       )
     }
-    if (piecePanel.kind === 'editEndpoint') {
-      const ep = state.endpoints.find((x) => x.id === piecePanel.endpointId)
+    if (panel.kind === 'editEndpoint') {
+      const ep = state.endpoints.find((x) => x.id === panel.endpointId)
       if (!ep) return <div>End-point introuvable.</div>
       return (
         <EndPointEditor
@@ -124,21 +131,67 @@ export function App() {
           allEndpoints={state.endpoints}
           onSave={async (next, desc) => {
             await state.endpointOps.upsert(next, desc)
-            closePiecePanel()
+            closePanel()
           }}
           onDelete={async () => {
             await state.endpointOps.remove(
               ep.id,
               `Suppression de l'end-point ${ep.id}.`,
             )
-            closePiecePanel()
+            closePanel()
           }}
-          onCancel={closePiecePanel}
+          onCancel={closePanel}
         />
       )
     }
-    if (piecePanel.kind === 'editPiece') {
-      const piece = state.pieces.find((p) => p.id === piecePanel.pieceId)
+    if (panel.kind === 'createLigne') {
+      return (
+        <LigneEditor
+          mode="create"
+          initial={emptyLigne()}
+          tableaux={state.tableaux}
+          allLignes={state.lignes}
+          onSave={async (next, desc, options) => {
+            await state.ligneOps.upsert(next, desc)
+            if (options?.thenNew) {
+              setPanel({ kind: 'createLigne' })
+            } else {
+              closePanel()
+            }
+          }}
+          onCancel={closePanel}
+        />
+      )
+    }
+    if (panel.kind === 'editLigne') {
+      const ligne = state.lignes.find((l) => l.id === panel.ligneId)
+      if (!ligne) return <div>Ligne introuvable.</div>
+      return (
+        <LigneEditor
+          mode="edit"
+          initial={ligne}
+          tableaux={state.tableaux}
+          allLignes={state.lignes}
+          onSave={async (next, desc) => {
+            await state.ligneOps.upsert(next, desc)
+            closePanel()
+          }}
+          onDelete={async () => {
+            await state.ligneOps.remove(
+              ligne.id,
+              `Suppression de la ligne ${ligne.id} (${ligne.libelle}).`,
+            )
+            closePanel()
+            if (view.name === 'ligne' && view.ligneId === ligne.id) {
+              goTo({ name: 'lignes' })
+            }
+          }}
+          onCancel={closePanel}
+        />
+      )
+    }
+    if (panel.kind === 'editPiece') {
+      const piece = state.pieces.find((p) => p.id === panel.pieceId)
       if (!piece) return <div>Pièce introuvable.</div>
       return (
         <PieceEditor
@@ -147,7 +200,7 @@ export function App() {
           allPieces={state.pieces}
           onSave={async (next, desc) => {
             await state.pieceOps.upsert(next, desc)
-            closePiecePanel()
+            closePanel()
           }}
           onDelete={async () => {
             const nbEp = state.endpoints.filter((e) => e.piece_id === piece.id).length
@@ -163,12 +216,12 @@ export function App() {
               piece.id,
               `Suppression de la pièce ${piece.nom} (${piece.trigramme}).`,
             )
-            closePiecePanel()
+            closePanel()
             if (view.name === 'piece' && view.pieceId === piece.id) {
               goTo({ name: 'pieces' })
             }
           }}
-          onCancel={closePiecePanel}
+          onCancel={closePanel}
         />
       )
     }
@@ -198,6 +251,12 @@ export function App() {
               onClick={() => goTo({ name: 'pieces' })}
             >
               Pièces
+            </NavButton>
+            <NavButton
+              active={view.name === 'lignes' || view.name === 'ligne'}
+              onClick={() => goTo({ name: 'lignes' })}
+            >
+              Lignes
             </NavButton>
             <NavButton
               active={view.name === 'cartographie'}
@@ -263,6 +322,7 @@ export function App() {
             focusDisjoncteurId={view.focusDisjoncteurId}
             state={state}
             onBack={() => goTo({ name: 'home' })}
+            onOpenLigne={(ligneId) => goTo({ name: 'ligne', ligneId })}
           />
         ) : view.name === 'pieces' ? (
           <PieceList
@@ -271,7 +331,7 @@ export function App() {
             volets={state.volets}
             appareils={state.appareils}
             onOpen={(id) => goTo({ name: 'piece', pieceId: id })}
-            onCreate={() => setPiecePanel({ kind: 'createPiece' })}
+            onCreate={() => setPanel({ kind: 'createPiece' })}
           />
         ) : view.name === 'piece' ? (
           <PieceDetail
@@ -279,18 +339,49 @@ export function App() {
             store={state}
             onBack={() => goTo({ name: 'pieces' })}
             onEditPiece={() =>
-              setPiecePanel({ kind: 'editPiece', pieceId: view.pieceId })
+              setPanel({ kind: 'editPiece', pieceId: view.pieceId })
             }
             onCreateEndpoint={(type) =>
-              setPiecePanel({
+              setPanel({
                 kind: 'createEndpoint',
                 pieceId: view.pieceId,
                 type: type ?? 'PC',
               })
             }
             onEditEndpoint={(endpointId) =>
-              setPiecePanel({ kind: 'editEndpoint', endpointId })
+              setPanel({ kind: 'editEndpoint', endpointId })
             }
+            onOpenLigne={(ligneId) => goTo({ name: 'ligne', ligneId })}
+          />
+        ) : view.name === 'lignes' ? (
+          <LigneList
+            lignes={state.lignes}
+            tableaux={state.tableaux}
+            endpoints={state.endpoints}
+            appareils={state.appareils}
+            pieces={state.pieces}
+            onOpen={(id) => goTo({ name: 'ligne', ligneId: id })}
+            onCreate={() => setPanel({ kind: 'createLigne' })}
+          />
+        ) : view.name === 'ligne' ? (
+          <LigneDetail
+            ligneId={view.ligneId}
+            store={state}
+            onBack={() => goTo({ name: 'lignes' })}
+            onEditLigne={() =>
+              setPanel({ kind: 'editLigne', ligneId: view.ligneId })
+            }
+            onOpenDisjoncteur={(tableauId, disjoncteurId) =>
+              goTo({
+                name: 'tableau',
+                tableauId,
+                focusDisjoncteurId: disjoncteurId,
+              })
+            }
+            onOpenEndpoint={(endpointId) =>
+              setPanel({ kind: 'editEndpoint', endpointId })
+            }
+            onOpenPiece={(pieceId) => goTo({ name: 'piece', pieceId })}
           />
         ) : view.name === 'historique' ? (
           <HistoriqueView
@@ -323,10 +414,10 @@ export function App() {
       </footer>
 
       <SidePanel
-        open={piecePanel.kind !== 'none'}
-        onClose={closePiecePanel}
+        open={panel.kind !== 'none'}
+        onClose={closePanel}
       >
-        {renderPiecePanel()}
+        {renderPanel()}
       </SidePanel>
     </div>
   )
