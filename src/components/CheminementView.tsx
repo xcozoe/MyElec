@@ -45,7 +45,23 @@ export function CheminementView({ store, onOpenTableau }: Props) {
       </div>
 
       <div className="space-y-3">
-        <SourceNode label="Linky" sub="Compteur Enedis 18 kVA triphasé" />
+        <SourceNode
+          label="Linky"
+          sub="Compteur communicant Enedis"
+          image="/sources/linky.png"
+          imageNote="Photo illustrative (Linky Sagemcom monophasé S12C5). Le compteur réel installé est un modèle triphasé."
+          specs={[
+            ['Marque', 'Sagemcom'],
+            ['Référence', 'LNE-29080'],
+            ['Modèle', 'S34C3 (triphasé)'],
+            ['Tension nominale', '3 × 230 / 400 V ~ 50 Hz'],
+            ['Courant nominal (In)', '0,5 — 10 (60) A par phase'],
+            ['Type', 'Compteur communicant Enedis (CPL)'],
+            ['Abonnement', '18 kVA triphasé (Total Énergies)'],
+            ['Indice de protection', 'IP 51 (typique)'],
+            ['Emplacement', 'Coffret extérieur Enedis, ~150 m du tableau principal'],
+          ]}
+        />
         <VerticalLink />
         <SourceNode
           label="Itron 30 A / phase"
@@ -79,11 +95,13 @@ function SourceNode({
   label,
   sub,
   image,
+  imageNote,
   specs,
 }: {
   label: string
   sub?: string
   image?: string
+  imageNote?: string
   specs?: [string, string][]
 }) {
   const [zoom, setZoom] = useState(false)
@@ -149,7 +167,11 @@ function SourceNode({
         <Lightbox
           src={image}
           alt={label}
-          caption={`${label}${sub ? ' — ' + sub : ''}`}
+          caption={
+            imageNote
+              ? `${label}${sub ? ' — ' + sub : ''} · ${imageNote}`
+              : `${label}${sub ? ' — ' + sub : ''}`
+          }
           onClose={() => setZoom(false)}
         />
       )}
