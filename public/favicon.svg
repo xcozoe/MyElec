@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <rect width="180" height="180" fill="#0f172a"/>
+  <!-- Halo doux derrière l'éclair -->
+  <circle cx="90" cy="90" r="58" fill="#1e293b"/>
+  <!-- Éclair stylisé, centré dans la safe area iOS (~80% du canvas) -->
+  <path
+    d="M104 32 L60 100 L86 100 L76 148 L122 78 L96 78 Z"
+    fill="#ffffff"
+    stroke="#ffffff"
+    stroke-width="2"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+</svg>

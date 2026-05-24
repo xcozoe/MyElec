@@ -9,7 +9,8 @@
     "dev:api": "node server.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "icons": "rm -rf .icons-tmp && mkdir .icons-tmp && qlmanage -t -s 180 -o .icons-tmp src/assets/icon.svg >/dev/null && mv .icons-tmp/icon.svg.png public/apple-touch-icon.png && cp src/assets/icon.svg public/favicon.svg && rm -rf .icons-tmp && echo 'Icons regenerated in public/'"
   },
   "dependencies": {
     "react": "^19.2.6",
