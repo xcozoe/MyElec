@@ -1,4 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
 import type {
   Disjoncteur,
   Rangee,
@@ -68,6 +77,64 @@ export function TableauDetail({
 }) {
   const tableau = state.tableaux.find((t) => t.id === tableauId)
   const [panel, setPanel] = useState<PanelState>({ kind: 'none' })
+
+  // Sensors : un clic court ouvre l'éditeur, un drag de 8px (souris) ou un
+  // long press de 200 ms (touch iPad) déclenche le drag & drop.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 8 },
+    }),
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    if (!tableau) return
+    const { active, over } = event
+    if (!over) return
+
+    const activeRangeeId = active.data.current?.rangeeId as string | undefined
+    if (!activeRangeeId) return
+
+    // La cible peut être un autre disjoncteur (data.rangeeId)
+    // ou la zone droppable d'une rangée (id "rangee:<id>")
+    let targetRangeeId: string | undefined
+    let targetIndex: number | undefined
+
+    const overData = over.data.current as
+      | { rangeeId?: string; type?: string }
+      | undefined
+
+    if (overData?.type === 'rangee' && overData.rangeeId) {
+      // Drop sur le conteneur d'une rangée (fin de liste)
+      targetRangeeId = overData.rangeeId
+      const r = tableau.rangees.find((x) => x.id === targetRangeeId)
+      targetIndex = r ? r.disjoncteurs.length : 0
+    } else if (overData?.type === 'disjoncteur' && overData.rangeeId) {
+      targetRangeeId = overData.rangeeId
+      const r = tableau.rangees.find((x) => x.id === targetRangeeId)
+      if (r) {
+        const sorted = [...r.disjoncteurs].sort(
+          (a, b) => a.position - b.position,
+        )
+        const overIdx = sorted.findIndex((d) => d.id === over.id)
+        targetIndex = overIdx === -1 ? sorted.length : overIdx
+      }
+    }
+
+    if (!targetRangeeId || targetIndex === undefined) return
+    if (active.id === over.id && activeRangeeId === targetRangeeId) return
+
+    try {
+      await state.moveDisjoncteur(
+        tableau.id,
+        active.id as string,
+        targetRangeeId,
+        targetIndex,
+      )
+    } catch (e) {
+      console.error('[MyElec] Erreur de déplacement :', e)
+    }
+  }
 
   useEffect(() => {
     if (!focusDisjoncteurId || !tableau) return
@@ -168,52 +235,58 @@ export function TableauDetail({
         )}
       </header>
 
-      <div className="space-y-4">
-        {sortedRangees.map((r) => (
-          <RangeeView
-            key={r.id}
-            rangee={r}
-            selectedDisjoncteurId={
-              panel.kind === 'editDisjoncteur' && panel.rangeeId === r.id
-                ? panel.disjoncteurId
-                : undefined
-            }
-            onSelectDisjoncteur={(disjoncteurId) =>
-              setPanel({
-                kind: 'editDisjoncteur',
-                rangeeId: r.id,
-                disjoncteurId,
-              })
-            }
-            onEditRangee={() => setPanel({ kind: 'editRangee', rangeeId: r.id })}
-            onDeleteRangee={async () => {
-              if (
-                confirm(
-                  r.disjoncteurs.length > 0
-                    ? `Cette rangée contient ${r.disjoncteurs.length} disjoncteur(s). Supprimer quand même ?`
-                    : `Supprimer la rangée ${r.id} ?`,
-                )
-              ) {
-                await state.removeRangee(
-                  tableau.id,
-                  r.id,
-                  `Suppression de la rangée ${r.id} dans ${tableau.nom}.`,
-                )
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="space-y-4">
+          {sortedRangees.map((r) => (
+            <RangeeView
+              key={r.id}
+              rangee={r}
+              selectedDisjoncteurId={
+                panel.kind === 'editDisjoncteur' && panel.rangeeId === r.id
+                  ? panel.disjoncteurId
+                  : undefined
               }
-            }}
-            onAddDisjoncteur={() =>
-              setPanel({ kind: 'createDisjoncteur', rangeeId: r.id })
-            }
-          />
-        ))}
+              onSelectDisjoncteur={(disjoncteurId) =>
+                setPanel({
+                  kind: 'editDisjoncteur',
+                  rangeeId: r.id,
+                  disjoncteurId,
+                })
+              }
+              onEditRangee={() => setPanel({ kind: 'editRangee', rangeeId: r.id })}
+              onDeleteRangee={async () => {
+                if (
+                  confirm(
+                    r.disjoncteurs.length > 0
+                      ? `Cette rangée contient ${r.disjoncteurs.length} disjoncteur(s). Supprimer quand même ?`
+                      : `Supprimer la rangée ${r.id} ?`,
+                  )
+                ) {
+                  await state.removeRangee(
+                    tableau.id,
+                    r.id,
+                    `Suppression de la rangée ${r.id} dans ${tableau.nom}.`,
+                  )
+                }
+              }}
+              onAddDisjoncteur={() =>
+                setPanel({ kind: 'createDisjoncteur', rangeeId: r.id })
+              }
+            />
+          ))}
 
-        <button
-          onClick={() => setPanel({ kind: 'createRangee' })}
-          className="w-full rounded-md border border-dashed border-slate-300 dark:border-slate-700 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900"
-        >
-          + Ajouter une rangée
-        </button>
-      </div>
+          <button
+            onClick={() => setPanel({ kind: 'createRangee' })}
+            className="w-full rounded-md border border-dashed border-slate-300 dark:border-slate-700 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900"
+          >
+            + Ajouter une rangée
+          </button>
+        </div>
+      </DndContext>
 
       <SidePanel
         open={panel.kind !== 'none'}

@@ -1,18 +1,24 @@
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { Disjoncteur, Phase } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
 
 export function DisjoncteurCard({
   disjoncteur,
+  rangeeId,
   rangeePhase,
   isDifferentielTete,
   selected,
   onClick,
+  draggable = true,
 }: {
   disjoncteur: Disjoncteur
+  rangeeId: string
   rangeePhase: Phase
   isDifferentielTete: boolean
   selected: boolean
   onClick: () => void
+  draggable?: boolean
 }) {
   const phase = disjoncteur.phase_affectation
   const style = PHASE_STYLES[phase]
@@ -20,8 +26,32 @@ export function DisjoncteurCard({
   const isDesaffecte = disjoncteur.statut === 'desaffecte'
   const aIdentifier = phase === 'inconnue' || isLibre
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: disjoncteur.id,
+    data: { rangeeId, type: 'disjoncteur' },
+    disabled: !draggable,
+  })
+
+  const dndStyle: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    touchAction: 'none',
+  }
+
   return (
     <button
+      ref={setNodeRef}
+      style={dndStyle}
+      {...attributes}
+      {...listeners}
       onClick={onClick}
       title={`${disjoncteur.id} — ${disjoncteur.etiquette}`}
       className={[
@@ -36,7 +66,7 @@ export function DisjoncteurCard({
         selected ? 'outline outline-2 outline-offset-2 outline-slate-900 dark:outline-white' : '',
         isLibre ? 'opacity-70' : '',
         isDesaffecte ? 'line-through opacity-50' : '',
-        'hover:shadow',
+        isDragging ? 'cursor-grabbing shadow-lg z-10' : 'cursor-grab hover:shadow',
       ].join(' ')}
     >
       <div className="flex items-center justify-between gap-2">

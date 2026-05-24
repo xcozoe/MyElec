@@ -67,6 +67,13 @@ export interface Store {
     disjoncteurId: string,
     description?: string,
   ) => Promise<void>
+  moveDisjoncteur: (
+    tableauId: string,
+    disjoncteurId: string,
+    targetRangeeId: string,
+    targetIndex: number,
+    description?: string,
+  ) => Promise<void>
 
   // Entités plates (Phase 2)
   pieceOps: FlatCollection<Piece>
@@ -301,6 +308,122 @@ export function useStore(): Store {
     [tableaux, persistTableaux],
   )
 
+  const moveDisjoncteur = useCallback(
+    async (
+      tableauId: string,
+      disjoncteurId: string,
+      targetRangeeId: string,
+      targetIndex: number,
+      description?: string,
+    ) => {
+      const tableau = findTableau(tableaux, tableauId)
+      if (!tableau) throw new Error(`Tableau ${tableauId} introuvable`)
+
+      let sourceRangee: Rangee | undefined
+      let movedDj: Disjoncteur | undefined
+      for (const r of tableau.rangees) {
+        const d = findDisjoncteur(r, disjoncteurId)
+        if (d) {
+          sourceRangee = r
+          movedDj = d
+          break
+        }
+      }
+      if (!sourceRangee || !movedDj)
+        throw new Error(`Disjoncteur ${disjoncteurId} introuvable`)
+
+      const targetRangee = findRangee(tableau, targetRangeeId)
+      if (!targetRangee)
+        throw new Error(`Rangée cible ${targetRangeeId} introuvable`)
+
+      const isCrossRow = sourceRangee.id !== targetRangee.id
+
+      // Si on traverse une rangée, on retire le rattachement au différentiel
+      // qui était dans la rangée source — il ne fait plus sens.
+      const updatedDj: Disjoncteur = isCrossRow
+        ? { ...movedDj, differentiel_parent_id: undefined }
+        : movedDj
+
+      const renumber = (items: Disjoncteur[]) =>
+        items.map((d, i) => ({ ...d, position: i + 1 }))
+
+      let newSourceItems: Disjoncteur[]
+      let newTargetItems: Disjoncteur[]
+
+      if (isCrossRow) {
+        // Retire de la source
+        newSourceItems = renumber(
+          [...sourceRangee.disjoncteurs]
+            .filter((d) => d.id !== disjoncteurId)
+            .sort((a, b) => a.position - b.position),
+        )
+        // Insère dans la cible à targetIndex
+        const targetSorted = [...targetRangee.disjoncteurs].sort(
+          (a, b) => a.position - b.position,
+        )
+        const clamped = Math.max(0, Math.min(targetIndex, targetSorted.length))
+        targetSorted.splice(clamped, 0, updatedDj)
+        newTargetItems = renumber(targetSorted)
+      } else {
+        // Réordre intra-rangée
+        const sorted = [...sourceRangee.disjoncteurs].sort(
+          (a, b) => a.position - b.position,
+        )
+        const oldIndex = sorted.findIndex((d) => d.id === disjoncteurId)
+        if (oldIndex === -1)
+          throw new Error('Position source introuvable')
+        const [picked] = sorted.splice(oldIndex, 1)
+        const clamped = Math.max(0, Math.min(targetIndex, sorted.length))
+        sorted.splice(clamped, 0, picked)
+        newSourceItems = renumber(sorted)
+        newTargetItems = newSourceItems
+      }
+
+      const updatedTableau: Tableau = {
+        ...tableau,
+        rangees: tableau.rangees.map((r) => {
+          if (isCrossRow) {
+            if (r.id === sourceRangee!.id) return { ...r, disjoncteurs: newSourceItems }
+            if (r.id === targetRangee.id) return { ...r, disjoncteurs: newTargetItems }
+            return r
+          }
+          if (r.id === sourceRangee!.id) return { ...r, disjoncteurs: newSourceItems }
+          return r
+        }),
+      }
+      const next = tableaux.map((t) =>
+        t.id === tableauId ? updatedTableau : t,
+      )
+
+      const newPosition =
+        newTargetItems.find((d) => d.id === disjoncteurId)?.position ?? 0
+
+      const summary = isCrossRow
+        ? `Disjoncteur ${disjoncteurId} déplacé de la rangée ${sourceRangee.id} vers ${targetRangee.id} (position ${newPosition}). differentiel_parent_id réinitialisé.`
+        : `Disjoncteur ${disjoncteurId} réordonné dans ${sourceRangee.id} (position ${newPosition}).`
+
+      const mods: Modification[] = [
+        {
+          id:
+            typeof crypto !== 'undefined' && 'randomUUID' in crypto
+              ? crypto.randomUUID()
+              : `mod-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+          date: new Date().toISOString(),
+          type: 'modification',
+          entite: 'disjoncteur',
+          entite_id: disjoncteurId,
+          champ_modifie: isCrossRow ? 'rangee_id + position' : 'position',
+          ancienne_valeur: `${sourceRangee.id}:${movedDj.position}`,
+          nouvelle_valeur: `${targetRangee.id}:${newPosition}`,
+          description: description ?? summary,
+        },
+      ]
+
+      await persistTableaux(next, mods)
+    },
+    [tableaux, persistTableaux],
+  )
+
   // ---------- CRUD entités plates (factory) ----------
 
   function useFlatOps<T extends { id: string }>(
@@ -435,6 +558,7 @@ export function useStore(): Store {
       removeRangee,
       upsertDisjoncteur,
       removeDisjoncteur,
+      moveDisjoncteur,
       pieceOps,
       ligneOps,
       endpointOps,
@@ -459,6 +583,7 @@ export function useStore(): Store {
       removeRangee,
       upsertDisjoncteur,
       removeDisjoncteur,
+      moveDisjoncteur,
       pieceOps,
       ligneOps,
       endpointOps,

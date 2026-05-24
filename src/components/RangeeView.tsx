@@ -1,3 +1,8 @@
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { useDroppable } from '@dnd-kit/core'
 import type { Rangee } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
 import { DisjoncteurCard } from './DisjoncteurCard'
@@ -21,6 +26,13 @@ export function RangeeView({
   const sortedDisjoncteurs = [...rangee.disjoncteurs].sort(
     (a, b) => a.position - b.position,
   )
+
+  // Zone droppable pour la rangée entière (utile quand elle est vide ou
+  // pour déposer en fin de liste).
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: `rangee:${rangee.id}`,
+    data: { rangeeId: rangee.id, type: 'rangee' },
+  })
 
   return (
     <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -58,23 +70,35 @@ export function RangeeView({
           {rangee.notes}
         </div>
       )}
-      <div className="p-3 flex flex-wrap gap-2">
-        {sortedDisjoncteurs.length === 0 && (
-          <div className="text-xs text-slate-400 italic px-1">
-            Aucun disjoncteur. Cliquez sur « + Disjoncteur ».
-          </div>
-        )}
-        {sortedDisjoncteurs.map((d) => (
-          <DisjoncteurCard
-            key={d.id}
-            disjoncteur={d}
-            rangeePhase={rangee.phase}
-            isDifferentielTete={rangee.differentiel_id === d.id}
-            selected={selectedDisjoncteurId === d.id}
-            onClick={() => onSelectDisjoncteur(d.id)}
-          />
-        ))}
-      </div>
+      <SortableContext
+        items={sortedDisjoncteurs.map((d) => d.id)}
+        strategy={horizontalListSortingStrategy}
+      >
+        <div
+          ref={setDroppableRef}
+          className={[
+            'p-3 flex flex-wrap gap-2 min-h-[88px] transition-colors',
+            isOver ? 'bg-slate-100 dark:bg-slate-800/40 ring-2 ring-inset ring-slate-400 dark:ring-slate-600 rounded-md' : '',
+          ].join(' ')}
+        >
+          {sortedDisjoncteurs.length === 0 && (
+            <div className="text-xs text-slate-400 italic px-1 self-center">
+              Glissez un disjoncteur ici, ou cliquez sur « + Disjoncteur ».
+            </div>
+          )}
+          {sortedDisjoncteurs.map((d) => (
+            <DisjoncteurCard
+              key={d.id}
+              disjoncteur={d}
+              rangeeId={rangee.id}
+              rangeePhase={rangee.phase}
+              isDifferentielTete={rangee.differentiel_id === d.id}
+              selected={selectedDisjoncteurId === d.id}
+              onClick={() => onSelectDisjoncteur(d.id)}
+            />
+          ))}
+        </div>
+      </SortableContext>
     </section>
   )
 }

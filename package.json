@@ -13,6 +13,9 @@
     "icons": "rm -rf .icons-tmp && mkdir .icons-tmp && qlmanage -t -s 180 -o .icons-tmp src/assets/icon.svg >/dev/null && mv .icons-tmp/icon.svg.png public/apple-touch-icon.png && cp src/assets/icon.svg public/favicon.svg && rm -rf .icons-tmp && echo 'Icons regenerated in public/'"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
