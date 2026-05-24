@@ -202,17 +202,23 @@ function TableauTree({
 }) {
   // Construit la liste des chips clés (cascade) avec leur éventuel
   // sous-tableau attaché.
-  const chipNodes: ChipNode[] = useMemo(() => {
+  const { chipNodes, layout } = useMemo(() => {
     const childByDjId = new Map<string, Tableau>()
     for (const t of store.tableaux) {
       if (t.parent_tableau_id === tableau.id && t.parent_disjoncteur_id) {
         childByDjId.set(t.parent_disjoncteur_id, t)
       }
     }
-    return buildCascade(tableau, childByDjId).map((dj) => ({
+    const nodes = buildCascade(tableau, childByDjId).map((dj) => ({
       dj,
       childTableau: childByDjId.get(dj.id),
     }))
+    // Layout horizontal seulement quand le tableau a 2+ sous-tableaux
+    // — sinon la cascade verticale est plus lisible (notamment pour les
+    // tableaux qui ont beaucoup de différentiels de rangée empilés).
+    const layout: 'horizontal' | 'vertical' =
+      childByDjId.size >= 2 ? 'horizontal' : 'vertical'
+    return { chipNodes: nodes, layout }
   }, [tableau, store.tableaux])
 
   const hasAnyChild = chipNodes.some((n) => n.childTableau)
@@ -222,13 +228,13 @@ function TableauTree({
       <TableauBox
         tableau={tableau}
         chipNodes={chipNodes}
+        layout={layout}
         onOpenTableau={onOpenTableau}
       />
 
-      {/* Rangée des sous-tableaux, alignée avec les chips de la cascade
-          ci-dessus. Même nombre de colonnes (flex-1 par colonne, espace
-          fixe pour matérialiser les flèches horizontales du dessus). */}
-      {hasAnyChild && (
+      {hasAnyChild && layout === 'horizontal' && (
+        // Rangée horizontale des sous-tableaux, alignée colonne pour
+        // colonne avec les chips de la cascade ci-dessus.
         <div className="flex items-stretch justify-center gap-2">
           {chipNodes.map((node, i) => (
             <Fragment key={node.dj.id}>
@@ -255,6 +261,32 @@ function TableauTree({
               </div>
             </Fragment>
           ))}
+        </div>
+      )}
+
+      {hasAnyChild && layout === 'vertical' && (
+        // Sous-tableaux empilés verticalement (layout simple).
+        <div className="flex flex-col items-stretch gap-0">
+          {chipNodes
+            .filter((n) => n.childTableau)
+            .map((node) => (
+              <div key={node.dj.id} className="flex flex-col items-center">
+                <div className="-mt-3 h-6 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
+                <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                  ▼
+                </div>
+                <div className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1 text-center">
+                  → {node.childTableau!.nom}
+                </div>
+                <div className="w-full">
+                  <TableauTree
+                    tableau={node.childTableau!}
+                    store={store}
+                    onOpenTableau={onOpenTableau}
+                  />
+                </div>
+              </div>
+            ))}
         </div>
       )}
     </div>
@@ -307,10 +339,12 @@ function buildCascade(
 function TableauBox({
   tableau,
   chipNodes,
+  layout,
   onOpenTableau,
 }: {
   tableau: Tableau
   chipNodes: ChipNode[]
+  layout: 'horizontal' | 'vertical'
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
@@ -367,9 +401,9 @@ function TableauBox({
         </button>
       </div>
 
-      {/* Cascade horizontale : chips alignés sur une seule ligne avec
-          des flèches → entre eux. */}
-      {chipNodes.length > 0 && (
+      {/* Cascade : horizontale quand le tableau a 2+ sous-tableaux
+          (parallélisme visible), verticale sinon (compact + lisible). */}
+      {chipNodes.length > 0 && layout === 'horizontal' && (
         <div className="flex items-stretch justify-center gap-2">
           {chipNodes.map((node, i) => (
             <Fragment key={node.dj.id}>
@@ -387,8 +421,6 @@ function TableauBox({
                   target={node.childTableau?.nom}
                   onClick={() => onOpenTableau(tableau.id, node.dj.id)}
                 />
-                {/* Ligne verticale qui descend vers le sous-tableau,
-                    traverse la padding-bottom de la boîte (mt-2 -mb-6). */}
                 {node.childTableau && (
                   <div className="flex justify-center mt-2 -mb-6">
                     <div className="h-9 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
@@ -397,6 +429,36 @@ function TableauBox({
               </div>
             </Fragment>
           ))}
+        </div>
+      )}
+
+      {chipNodes.length > 0 && layout === 'vertical' && (
+        <div className="flex flex-col items-stretch gap-0">
+          {chipNodes.map((node, i) => {
+            const isLast = i === chipNodes.length - 1
+            return (
+              <Fragment key={node.dj.id}>
+                <DisjoncteurChip
+                  dj={node.dj}
+                  target={node.childTableau?.nom}
+                  onClick={() => onOpenTableau(tableau.id, node.dj.id)}
+                />
+                {!isLast && (
+                  <div className="flex flex-col items-center py-1">
+                    <div className="h-3 w-0.5 bg-slate-500 dark:bg-slate-400" />
+                    <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                      ▼
+                    </div>
+                  </div>
+                )}
+                {isLast && node.childTableau && (
+                  <div className="flex justify-center mt-2 -mb-6">
+                    <div className="h-9 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
+                  </div>
+                )}
+              </Fragment>
+            )
+          })}
         </div>
       )}
 
