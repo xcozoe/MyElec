@@ -1,1 +1,33 @@
-[]
+[
+  {
+    "id": "VR_CUI_1",
+    "piece_id": "CUI",
+    "numero": 1,
+    "type": "volet_roulant",
+    "motorisation": "electrique_radio",
+    "commande_centralisee": "oui",
+    "mur": "MG",
+    "ligne_id": "L-VR-RDJ"
+  },
+  {
+    "id": "VR_BUA_1",
+    "piece_id": "BUA",
+    "numero": 1,
+    "type": "volet_roulant",
+    "motorisation": "electrique_radio",
+    "commande_centralisee": "oui",
+    "mur": "MF",
+    "ligne_id": "L-VR-RDJ"
+  },
+  {
+    "id": "VR_BIB_1",
+    "piece_id": "BIB",
+    "numero": 1,
+    "type": "volet_roulant",
+    "motorisation": "electrique_radio",
+    "commande_centralisee": "oui",
+    "commande_locale": "domotique",
+    "mur": "MF",
+    "ligne_id": "L-VR-RDJ"
+  }
+]

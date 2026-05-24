@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "id": "PC_BIB_MF_1",
+    "type": "PC",
+    "piece_id": "BIB",
+    "mur": "MF",
+    "numero": 1,
+    "position_detail": "En bas à gauche",
+    "type_prise": "2P+T",
+    "nb_combinees": 4
+  },
+  {
+    "id": "IN_BIB_ME_1",
+    "type": "IN",
+    "piece_id": "BIB",
+    "mur": "ME",
+    "numero": 1,
+    "position_detail": "Sur la verrière ",
+    "commande": "domotique",
+    "alimentation": "pile"
+  }
+]

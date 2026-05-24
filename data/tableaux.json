@@ -510,62 +510,155 @@
     "arrivee_phases": "TRI",
     "parent_tableau_id": "tableau-principal",
     "parent_disjoncteur_id": "TP-R1-PRISE-TRI",
-    "notes": "Tableau Merlin Gerin secondaire, alimenté en triphasé depuis le tableau principal via un disjoncteur Hager NFT840 4 pôles 40 A 30 mA. Redistribue en monophasé sur une seule phase à identifier.",
+    "notes": "Tableau secondaire alimenté depuis TP-R1-PRISE-TRI (Garage). Organisation en 2 rangées : RANGÉE 1 = arrivée + protection (interrupteur différentiel Legrand 2P 40 A 30 mA Type AC avec bouton TEST / manette rouge 1-ON, puis disjoncteur Hager NFT840 C40 tripolaire 3P). RANGÉE 2 = 9 disjoncteurs Legrand DNX³ monophasés. Cheminement électrique : TP-R1-PRISE-TRI (TRI) → Hager NFT840 C40 tripolaire (protection arrivée TRI) → Legrand 2P 40 A 30 mA Type AC (différentiel mono tête de tableau) → 9 départs DNX³ mono en rangée 2. Phase de redistribution mono à identifier.",
     "rangees": [
       {
         "id": "tsg-r1",
         "numero": 1,
-        "libelle": "R1 — Arrivée TRI + départs mono (phase à identifier)",
+        "libelle": "R1 — Différentiel Legrand + arrivée TRI Hager NFT840",
         "phase": "inconnue",
-        "differentiel_id": "TSG-R1-DIFF-ARRIVEE",
-        "notes": "Phase exacte de la redistribution mono à confirmer.",
+        "differentiel_id": "TSG-R1-DIFF-LEGRAND",
+        "notes": "Rangée arrivée/protection. Cheminement électrique : Hager NFT840 (amont, TRI) → Legrand 2P 40 A 30 mA Type AC (différentiel mono tête de tableau, alimente la rangée 2).",
         "disjoncteurs": [
           {
-            "id": "TSG-R1-DIFF-ARRIVEE",
+            "id": "TSG-R1-DIFF-LEGRAND",
             "position": 1,
-            "etiquette": "Arrivée TRI (Hager NFT840)",
+            "etiquette": "Différentiel arrivée",
             "type_protection": "differentiel_tete_tableau",
-            "calibre": "40 A 30 mA",
-            "poles": "tetra_diff",
+            "calibre": "40 A 30 mA Type AC",
+            "poles": "bipol_diff",
+            "phase_affectation": "inconnue",
+            "statut": "actif",
+            "notes": "Legrand 2 pôles 40 A 30 mA Type AC (bouton TEST, manette rouge marquée 1-ON). Différentiel mono tête de tableau pour les 9 départs DNX³ de la rangée 2. Électriquement en aval du Hager NFT840."
+          },
+          {
+            "id": "TSG-R1-DISJ-HAGER",
+            "position": 2,
+            "etiquette": "Arrivée TRI (Hager NFT840)",
+            "type_protection": "disjoncteur",
+            "calibre": "C40",
+            "poles": "tetra",
             "phase_affectation": "TRI",
             "statut": "actif",
-            "notes": "Hager NFT840 4 pôles 40 A 30 mA — alimente le tableau depuis TP-R1."
+            "notes": "Hager NFT840 C40 tripolaire (3P sans neutre — représenté en « tetra » faute de valeur « tripol » dans le schéma). Disjoncteur d'arrivée triphasée depuis TP-R1-PRISE-TRI. Électriquement EN AMONT du différentiel Legrand : l'arrivée TRI principale entre par ce disjoncteur, puis une phase + neutre traverse le différentiel Legrand 30 mA avant d'alimenter les 9 départs de la rangée 2."
+          }
+        ]
+      },
+      {
+        "id": "tsg-r2",
+        "numero": 2,
+        "libelle": "R2 — 9 départs Legrand DNX³ mono",
+        "phase": "inconnue",
+        "differentiel_id": "TSG-R1-DIFF-LEGRAND",
+        "notes": "9 disjoncteurs Legrand DNX³ monophasés en aval du différentiel Legrand 40 A 30 mA Type AC (rangée 1). Lus de gauche à droite. Phase exacte à identifier.",
+        "disjoncteurs": [
+          {
+            "id": "TSG-R2-RECHAUFFE-PLAQUE",
+            "position": 1,
+            "etiquette": "Réchauffe plaque",
+            "type_protection": "disjoncteur",
+            "calibre": "C20",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
+            "statut": "actif",
+            "notes": "Legrand DNX³ C20."
           },
           {
-            "id": "TSG-R1-PC-BULL",
+            "id": "TSG-R2-PC-SEJOUR-A",
             "position": 2,
-            "etiquette": "Prises Bull",
+            "etiquette": "PC Séjour A",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TSG-R1-DIFF-ARRIVEE",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Phase d'affectation à identifier."
+            "notes": "Legrand DNX³ C16. [?] À recouper avec « PC Séjour » présents en TP-R2 (TP-R2-PC-SEJ) et TP-R4 (TP-R4-PC-SEJ) — risque de doublon de nommage."
           },
           {
-            "id": "TSG-R1-PC-GARAGE",
+            "id": "TSG-R2-INCONNU",
             "position": 3,
-            "etiquette": "Prises Garage",
+            "etiquette": "?",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TSG-R1-DIFF-ARRIVEE",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Phase d'affectation à identifier."
+            "notes": "Legrand DNX³ C16. [?] Étiquette à identifier physiquement."
           },
           {
-            "id": "TSG-R1-VR-GARAGE",
+            "id": "TSG-R2-PC-SEJOUR-B",
             "position": 4,
-            "etiquette": "Volets Garage",
+            "etiquette": "PC Séjour B",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
+            "statut": "actif",
+            "notes": "Legrand DNX³ C16. Deuxième circuit « PC salle séjour » sur cette rangée — différencié en « B » par convention de nommage."
+          },
+          {
+            "id": "TSG-R2-ECL-SEJOUR",
+            "position": 5,
+            "etiquette": "Lumière séjour",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TSG-R1-DIFF-ARRIVEE",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
             "statut": "actif",
-            "notes": "Phase d'affectation à identifier."
+            "notes": "Legrand DNX³ C10. [?] À recouper avec TP-R2-ECL-SEJ (du tableau principal) — possible doublon ou circuits distincts."
+          },
+          {
+            "id": "TSG-R2-ECL-CUISINE-GARAGE",
+            "position": 6,
+            "etiquette": "Lumière cuisine + garage",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
+            "statut": "actif",
+            "notes": "Legrand DNX³ C10. Circuit mixte éclairage cuisine et garage. [?] À recouper avec TP-R2-ECL-CUI — possible doublon ou répartition partielle. Notez aussi le doublon partiel garage avec TSG-R2-ECL-GARAGE (position 8) — 2 circuits éclairage garage à clarifier."
+          },
+          {
+            "id": "TSG-R2-PC-GARAGE",
+            "position": 7,
+            "etiquette": "PC Garage",
+            "type_protection": "disjoncteur",
+            "calibre": "C16",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
+            "statut": "actif",
+            "notes": "Legrand DNX³ C16."
+          },
+          {
+            "id": "TSG-R2-ECL-GARAGE",
+            "position": 8,
+            "etiquette": "Lumière garage",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
+            "statut": "actif",
+            "notes": "Legrand DNX³ C10. [?] 2e circuit éclairage garage (le 1er étant TSG-R2-ECL-CUISINE-GARAGE position 6) — répartition à clarifier (par ex. partie atelier vs partie remisage)."
+          },
+          {
+            "id": "TSG-R2-VR",
+            "position": 9,
+            "etiquette": "Volet roulant",
+            "type_protection": "disjoncteur",
+            "calibre": "C10",
+            "poles": "mono",
+            "phase_affectation": "inconnue",
+            "differentiel_parent_id": "TSG-R1-DIFF-LEGRAND",
+            "statut": "actif",
+            "notes": "Legrand DNX³ C10. [?] Volet roulant — à préciser quel(s) volet(s) (garage ? autre ?)."
           }
         ]
       }

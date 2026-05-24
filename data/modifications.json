@@ -10,5 +10,112 @@
     "nouvelle_valeur": "L3",
     "description": "Passage de l'abonnement de 12 kVA à 18 kVA (Itron réglé à 30 A/phase par Enedis). Bascule du départ Local Piscine de la phase L1 vers la phase L3 (déplacement du fil de la borne 2 vers la borne 4 en aval du Hager CDC 440F). Validation Linky : phase 1 = 200 VA, phase 2 = 200 VA, phase 3 = 3 800 VA en fonctionnement piscine. Disjonctions intempestives résolues.",
     "utilisateur": "Rémi"
+  },
+  {
+    "id": "a323c40e-57aa-48c6-ba54-cdab84d180bf",
+    "date": "2026-05-24T06:25:50.666Z",
+    "type": "creation",
+    "entite": "ligne",
+    "entite_id": "L-VR-RDJ",
+    "description": "Ligne créé(e) (L-VR-RDJ)."
+  },
+  {
+    "id": "8cc8e8d5-2a3f-4485-9a94-c2230c2f6c3e",
+    "date": "2026-05-24T06:26:38.547Z",
+    "type": "creation",
+    "entite": "volet",
+    "entite_id": "VR_CUI_1",
+    "description": "Volet créé(e) (VR_CUI_1)."
+  },
+  {
+    "id": "490aa68b-0f53-420b-8a52-2aae01f9ec15",
+    "date": "2026-05-24T06:42:50.174Z",
+    "type": "creation",
+    "entite": "volet",
+    "entite_id": "VR_BUA_1",
+    "description": "Volet créé(e) (VR_BUA_1)."
+  },
+  {
+    "id": "138d5672-0822-4c2f-9c05-a56e029e5f7d",
+    "date": "2026-05-24T06:44:13.267Z",
+    "type": "creation",
+    "entite": "appareil_fixe",
+    "entite_id": "AP_BUA_2",
+    "description": "Appareil fixe créé(e) (AP_BUA_2)."
+  },
+  {
+    "id": "904cb560-3328-453e-9e08-71b4c5d037ba",
+    "date": "2026-05-24T06:44:46.366Z",
+    "type": "creation",
+    "entite": "appareil_fixe",
+    "entite_id": "AP_BUA_3",
+    "description": "Appareil fixe créé(e) (AP_BUA_3)."
+  },
+  {
+    "id": "04914a69-1324-468c-aac4-5216eb7c749e",
+    "date": "2026-05-24T06:45:00.656Z",
+    "type": "creation",
+    "entite": "appareil_fixe",
+    "entite_id": "AP_BUA_4",
+    "description": "Appareil fixe créé(e) (AP_BUA_4)."
+  },
+  {
+    "id": "d059726f-e00e-4cfd-8369-8b597ea1f8b6",
+    "date": "2026-05-24T06:45:36.141Z",
+    "type": "modification",
+    "entite": "appareil_fixe",
+    "entite_id": "AP_BUA_4",
+    "champ_modifie": "nom",
+    "ancienne_valeur": "Congelateur",
+    "nouvelle_valeur": "Congélateur",
+    "description": "Appareil fixe AP_BUA_4 — nom : Congelateur → Congélateur."
+  },
+  {
+    "id": "0e4cbea4-7644-4473-9ca7-b4693254f249",
+    "date": "2026-05-24T06:49:22.642Z",
+    "type": "creation",
+    "entite": "appareil_fixe",
+    "entite_id": "AP_BIB_1",
+    "description": "Appareil fixe créé(e) (AP_BIB_1)."
+  },
+  {
+    "id": "de458917-189c-4838-b3c3-94609e59de81",
+    "date": "2026-05-24T06:51:27.842Z",
+    "type": "creation",
+    "entite": "appareil_fixe",
+    "entite_id": "AP_BIB_2",
+    "description": "Appareil fixe créé(e) (AP_BIB_2)."
+  },
+  {
+    "id": "ab51e619-a954-4cf2-8d33-1740a2cab048",
+    "date": "2026-05-24T06:52:46.500Z",
+    "type": "creation",
+    "entite": "volet",
+    "entite_id": "VR_BIB_1",
+    "description": "Volet créé(e) (VR_BIB_1)."
+  },
+  {
+    "id": "d9ef6b8b-bd49-4016-bc22-d81bd7d0ee8d",
+    "date": "2026-05-24T06:53:26.742Z",
+    "type": "creation",
+    "entite": "endpoint",
+    "entite_id": "PC_BIB_MF_1",
+    "description": "End-point créé(e) (PC_BIB_MF_1)."
+  },
+  {
+    "id": "88cf22d0-0db0-427f-a51f-ec8929d08a5f",
+    "date": "2026-05-24T06:56:23.864Z",
+    "type": "creation",
+    "entite": "endpoint",
+    "entite_id": "IN_BIB_ME_1",
+    "description": "End-point créé(e) (IN_BIB_ME_1)."
+  },
+  {
+    "id": "8a75d5d4-b462-4af9-b846-6badb8baaa5e",
+    "date": "2026-05-24T07:26:41.760Z",
+    "type": "creation",
+    "entite": "endpoint",
+    "entite_id": "IN_BIB_ME_1",
+    "description": "End-point créé(e) (IN_BIB_ME_1)."
   }
 ]

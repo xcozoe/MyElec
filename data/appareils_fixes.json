@@ -108,5 +108,55 @@
     "categorie": "reseau",
     "profil_usage": "continu",
     "notes": "Raccordement à compléter — typiquement aval TP-R4-BOX."
+  },
+  {
+    "id": "AP_BUA_2",
+    "piece_id": "BUA",
+    "numero": 2,
+    "nom": "Sèche-linge ",
+    "categorie": "electromenager",
+    "profil_usage": "cyclique",
+    "marque": "Boch"
+  },
+  {
+    "id": "AP_BUA_3",
+    "piece_id": "BUA",
+    "numero": 3,
+    "nom": "Réfrigérateur ",
+    "categorie": "electromenager",
+    "profil_usage": "continu",
+    "marque": "Boch"
+  },
+  {
+    "id": "AP_BUA_4",
+    "piece_id": "BUA",
+    "numero": 4,
+    "nom": "Congélateur",
+    "categorie": "electromenager",
+    "profil_usage": "continu"
+  },
+  {
+    "id": "AP_BIB_1",
+    "piece_id": "BIB",
+    "numero": 1,
+    "nom": "Box Internet",
+    "categorie": "reseau",
+    "profil_usage": "continu",
+    "marque": "Orange",
+    "modele": "Livebox 7",
+    "puissance_nominale_w": 8,
+    "puissance_pic_w": 12
+  },
+  {
+    "id": "AP_BIB_2",
+    "piece_id": "BIB",
+    "numero": 2,
+    "nom": "Mac Mini",
+    "categorie": "reseau",
+    "profil_usage": "continu",
+    "marque": "Apple",
+    "modele": "Mac mini M4",
+    "puissance_nominale_w": 8,
+    "puissance_pic_w": 65
   }
 ]
