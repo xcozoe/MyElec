@@ -36,7 +36,8 @@
             "poles": "tetra",
             "phase_affectation": "TRI",
             "statut": "actif",
-            "notes": "Hager NFT 840 C40 — disjoncteur tétrapolaire 4 pôles (3P+N, 3 manettes commutées pour les 3 phases, neutre passant), pouvoir de coupure 6000 A / Icn 10 kA, courbe C, conforme EN 60947-2. Schéma IN-1-3-5 / IN-2-4-6. Disjoncteur d'arrivée triphasée depuis TP-R1-PRISE-TRI, EN AMONT du différentiel Legrand qui couvre l'ensemble de la rangée 2."
+            "notes": "Hager NFT 840 C40 — disjoncteur tétrapolaire 4 pôles (3P+N, 3 manettes commutées pour les 3 phases, neutre passant), pouvoir de coupure 6000 A / Icn 10 kA, courbe C, conforme EN 60947-2. Schéma IN-1-3-5 / IN-2-4-6. Disjoncteur d'arrivée triphasée depuis TP-R1-PRISE-TRI, EN AMONT du différentiel Legrand qui couvre l'ensemble de la rangée 2.",
+            "photo_url": "/sources/hager-nft840-c40.png"
           },
           {
             "id": "TP-R1-BORNIER",
@@ -171,7 +172,8 @@
           }
         ]
       }
-    ]
+    ],
+    "photo_url": "/sources/coffret-merlin-gerin-2-rangees.png"
   },
   {
     "id": "tableau-secondaire-garage",

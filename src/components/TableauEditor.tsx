@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { PhotoField } from './PhotoField'
 import type { Tableau } from '../types/electrical'
 
 export function TableauEditor({
@@ -116,6 +117,13 @@ export function TableauEditor({
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
         />
       </Field>
+
+      <PhotoField
+        value={t.photo_url}
+        onChange={(url) => setT({ ...t, photo_url: url })}
+        alt={`${t.nom} — coffret`}
+        hint="URL d'image du coffret (ex : /sources/coffret-merlin-gerin-2-rangees.png)."
+      />
 
       <Field label="Notes">
         <textarea

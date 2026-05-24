@@ -146,6 +146,7 @@ export const diffTableau = makeDiff<Tableau>('tableau', [
   'arrivee_phases',
   'parent_tableau_id',
   'parent_disjoncteur_id',
+  'photo_url',
   'notes',
 ])
 

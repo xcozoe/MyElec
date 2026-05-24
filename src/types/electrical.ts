@@ -54,6 +54,7 @@ export interface Tableau {
   arrivee_phases?: 'TRI' | 'L1' | 'L2' | 'L3'
   parent_tableau_id?: string
   parent_disjoncteur_id?: string
+  photo_url?: string
   notes?: string
   rangees: Rangee[]
 }
