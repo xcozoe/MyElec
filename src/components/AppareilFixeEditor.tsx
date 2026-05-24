@@ -1,0 +1,448 @@
+import { useEffect, useMemo, useState } from 'react'
+import {
+  CATEGORIES_APPAREIL,
+  PROFILS_USAGE,
+  type AppareilFixe,
+  type CategorieAppareil,
+  type EndPoint,
+  type Ligne,
+  type Piece,
+  type ProfilUsage,
+} from '../types/electrical'
+import {
+  appareilId,
+  getTrigramme,
+  nextNumeroAppareil,
+} from '../utils/idGenerator'
+
+export function AppareilFixeEditor({
+  mode,
+  initial,
+  pieces,
+  lignes,
+  endpoints,
+  allAppareils,
+  onSave,
+  onDelete,
+  onCancel,
+}: {
+  mode: 'create' | 'edit'
+  initial: AppareilFixe
+  pieces: Piece[]
+  lignes: Ligne[]
+  endpoints: EndPoint[]
+  allAppareils: AppareilFixe[]
+  onSave: (
+    next: AppareilFixe,
+    description?: string,
+    options?: { thenNew?: boolean },
+  ) => Promise<void> | void
+  onDelete?: () => Promise<void> | void
+  onCancel: () => void
+}) {
+  const [a, setA] = useState<AppareilFixe>(initial)
+  const [description, setDescription] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [raccordement, setRaccordement] = useState<
+    'aucun' | 'ligne' | 'prise'
+  >(
+    initial.ligne_id ? 'ligne' : initial.branche_sur ? 'prise' : 'aucun',
+  )
+
+  useEffect(() => {
+    setA(initial)
+    setDescription('')
+    setError(null)
+    setRaccordement(
+      initial.ligne_id ? 'ligne' : initial.branche_sur ? 'prise' : 'aucun',
+    )
+  }, [initial])
+
+  const trigramme = getTrigramme(pieces, a.piece_id)
+
+  useEffect(() => {
+    if (mode !== 'create') return
+    const nextNum = nextNumeroAppareil(allAppareils, a.piece_id)
+    const nextId = trigramme ? appareilId(trigramme, nextNum) : ''
+    if (a.numero !== nextNum || a.id !== nextId) {
+      setA((prev) => ({ ...prev, numero: nextNum, id: nextId }))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, a.piece_id, trigramme])
+
+  // Prises de la pièce (PC + PD) pour le picker "Branché sur"
+  const prisesPiece = useMemo(
+    () =>
+      endpoints
+        .filter(
+          (e) =>
+            e.piece_id === a.piece_id && (e.type === 'PC' || e.type === 'PD'),
+        )
+        .sort((x, y) => x.id.localeCompare(y.id)),
+    [endpoints, a.piece_id],
+  )
+
+  const handleSave = async (thenNew = false) => {
+    setError(null)
+    if (!a.piece_id) return setError('Pièce requise.')
+    if (!a.nom.trim()) return setError('Nom requis.')
+    if (!a.id.trim()) return setError('ID manquant — vérifiez la pièce.')
+    if (mode === 'create' && allAppareils.some((x) => x.id === a.id))
+      return setError(`L'ID ${a.id} existe déjà.`)
+    // XOR strict ligne_id / branche_sur — déjà géré par le picker UI
+    // (raccordement = 'aucun' | 'ligne' | 'prise') mais on revalide.
+    const cleaned: AppareilFixe = {
+      ...a,
+      ligne_id: raccordement === 'ligne' ? a.ligne_id : undefined,
+      branche_sur: raccordement === 'prise' ? a.branche_sur : undefined,
+    }
+    if (cleaned.ligne_id && cleaned.branche_sur)
+      return setError("Un appareil ne peut être à la fois sur une ligne ET sur une prise.")
+    if (
+      cleaned.ligne_id &&
+      lignes.length > 0 &&
+      !lignes.some((l) => l.id === cleaned.ligne_id)
+    )
+      return setError(`La ligne ${cleaned.ligne_id} n'existe pas.`)
+    if (
+      cleaned.branche_sur &&
+      !endpoints.some((e) => e.id === cleaned.branche_sur)
+    )
+      return setError(`L'end-point ${cleaned.branche_sur} n'existe pas.`)
+    try {
+      await onSave(cleaned, description.trim() || undefined, { thenNew })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">
+          {mode === 'create' ? 'Nouvel appareil fixe' : 'Éditer l\'appareil'}
+        </h3>
+        <button
+          onClick={onCancel}
+          className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
+        >
+          Fermer
+        </button>
+      </div>
+
+      <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-3 py-2">
+        <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          ID auto-généré
+        </div>
+        <div className="font-mono text-sm">{a.id || '— renseignez la pièce —'}</div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Pièce">
+          <select
+            value={a.piece_id}
+            onChange={(e) => setA({ ...a, piece_id: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          >
+            <option value="">— Choisir —</option>
+            {pieces.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nom} ({p.trigramme})
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Numéro">
+          <input
+            type="number"
+            min={1}
+            value={a.numero}
+            onChange={(e) => {
+              const num = Number(e.target.value)
+              setA({
+                ...a,
+                numero: num,
+                id: mode === 'create' && trigramme ? appareilId(trigramme, num) : a.id,
+              })
+            }}
+            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          />
+        </Field>
+      </div>
+
+      <Field label="Nom" hint='ex : "Lave-vaisselle", "Plaque induction Neff"'>
+        <input
+          type="text"
+          value={a.nom}
+          onChange={(e) => setA({ ...a, nom: e.target.value })}
+          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+        />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Catégorie">
+          <select
+            value={a.categorie}
+            onChange={(e) =>
+              setA({ ...a, categorie: e.target.value as CategorieAppareil })
+            }
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          >
+            {CATEGORIES_APPAREIL.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Profil d'usage">
+          <select
+            value={a.profil_usage}
+            onChange={(e) =>
+              setA({ ...a, profil_usage: e.target.value as ProfilUsage })
+            }
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          >
+            {PROFILS_USAGE.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Marque">
+          <input
+            type="text"
+            value={a.marque ?? ''}
+            onChange={(e) => setA({ ...a, marque: e.target.value || undefined })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          />
+        </Field>
+        <Field label="Modèle">
+          <input
+            type="text"
+            value={a.modele ?? ''}
+            onChange={(e) => setA({ ...a, modele: e.target.value || undefined })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          />
+        </Field>
+        <Field label="Puissance nominale (W)">
+          <input
+            type="number"
+            min={0}
+            value={a.puissance_nominale_w ?? ''}
+            onChange={(e) =>
+              setA({
+                ...a,
+                puissance_nominale_w: e.target.value
+                  ? Number(e.target.value)
+                  : undefined,
+              })
+            }
+            className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          />
+        </Field>
+        <Field label="Puissance crête (W)">
+          <input
+            type="number"
+            min={0}
+            value={a.puissance_pic_w ?? ''}
+            onChange={(e) =>
+              setA({
+                ...a,
+                puissance_pic_w: e.target.value
+                  ? Number(e.target.value)
+                  : undefined,
+              })
+            }
+            className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+          />
+        </Field>
+      </div>
+
+      <div className="rounded-md border border-slate-200 dark:border-slate-800 p-3 space-y-3">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+          Raccordement électrique
+        </div>
+        <div className="flex gap-3 text-sm">
+          {(['aucun', 'ligne', 'prise'] as const).map((mode) => (
+            <label key={mode} className="flex items-center gap-1.5">
+              <input
+                type="radio"
+                name="raccordement"
+                checked={raccordement === mode}
+                onChange={() => setRaccordement(mode)}
+              />
+              {mode === 'aucun' && 'Non renseigné'}
+              {mode === 'ligne' && 'Direct sur une ligne'}
+              {mode === 'prise' && 'Branché sur une prise'}
+            </label>
+          ))}
+        </div>
+
+        {raccordement === 'ligne' && (
+          <Field label="Ligne">
+            {lignes.length === 0 ? (
+              <input
+                type="text"
+                value={a.ligne_id ?? ''}
+                onChange={(e) =>
+                  setA({ ...a, ligne_id: e.target.value || undefined })
+                }
+                placeholder="Tapez l'ID de la ligne (à créer si nécessaire)"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+              />
+            ) : (
+              <select
+                value={a.ligne_id ?? ''}
+                onChange={(e) =>
+                  setA({ ...a, ligne_id: e.target.value || undefined })
+                }
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              >
+                <option value="">— Choisir —</option>
+                {lignes.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.id} — {l.libelle}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
+        )}
+
+        {raccordement === 'prise' && (
+          <Field
+            label="Prise (PC ou PD de la même pièce)"
+            hint={
+              prisesPiece.length === 0
+                ? "Aucune prise n'est encore enregistrée pour cette pièce."
+                : undefined
+            }
+          >
+            <select
+              value={a.branche_sur ?? ''}
+              onChange={(e) =>
+                setA({ ...a, branche_sur: e.target.value || undefined })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              <option value="">— Choisir —</option>
+              {prisesPiece.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.id} — {e.usage_principal ?? '(usage non renseigné)'}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
+      </div>
+
+      <Field label="Usage principal">
+        <input
+          type="text"
+          value={a.usage_principal ?? ''}
+          onChange={(e) =>
+            setA({ ...a, usage_principal: e.target.value || undefined })
+          }
+          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+        />
+      </Field>
+
+      <Field label="Notes">
+        <textarea
+          value={a.notes ?? ''}
+          onChange={(e) => setA({ ...a, notes: e.target.value || undefined })}
+          rows={2}
+          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+        />
+      </Field>
+
+      <Field label="Description de la modification">
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+        />
+      </Field>
+
+      {error && <div className="text-sm text-red-700 dark:text-red-300">{error}</div>}
+
+      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <button
+          onClick={() => handleSave(false)}
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm"
+        >
+          {mode === 'create' ? 'Créer' : 'Enregistrer'}
+        </button>
+        {mode === 'create' && (
+          <button
+            onClick={() => handleSave(true)}
+            className="rounded-md border border-slate-400 dark:border-slate-600 px-4 py-1.5 text-sm"
+          >
+            Créer et saisir le suivant
+          </button>
+        )}
+        <button
+          onClick={onCancel}
+          className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
+        >
+          Annuler
+        </button>
+        {mode === 'edit' && onDelete && (
+          <button
+            onClick={async () => {
+              if (confirm(`Supprimer l'appareil ${a.nom} (${a.id}) ?`))
+                await onDelete()
+            }}
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+          >
+            Supprimer
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string
+  hint?: string
+  children: React.ReactNode
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+        {label}
+      </span>
+      <div className="mt-1">{children}</div>
+      {hint && (
+        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          {hint}
+        </span>
+      )}
+    </label>
+  )
+}
+
+export function emptyAppareil(
+  pieceId: string,
+  pieces: Piece[],
+  allAppareils: AppareilFixe[],
+): AppareilFixe {
+  const trigramme = getTrigramme(pieces, pieceId)
+  const numero = nextNumeroAppareil(allAppareils, pieceId)
+  return {
+    id: trigramme ? appareilId(trigramme, numero) : '',
+    piece_id: pieceId,
+    numero,
+    nom: '',
+    categorie: 'electromenager',
+    profil_usage: 'cyclique',
+  }
+}

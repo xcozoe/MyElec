@@ -11,6 +11,9 @@ import { EndPointEditor, emptyEndPoint } from './components/EndPointEditor'
 import { LigneList } from './components/LigneList'
 import { LigneDetail } from './components/LigneDetail'
 import { LigneEditor, emptyLigne } from './components/LigneEditor'
+import { EquipementList } from './components/EquipementList'
+import { AppareilFixeEditor, emptyAppareil } from './components/AppareilFixeEditor'
+import { VoletEditor, emptyVolet } from './components/VoletEditor'
 import { SearchBar } from './components/SearchBar'
 import { SidePanel } from './components/SidePanel'
 import { useStore } from './hooks/useStore'
@@ -23,6 +26,7 @@ export type View =
   | { name: 'piece'; pieceId: string }
   | { name: 'lignes' }
   | { name: 'ligne'; ligneId: string }
+  | { name: 'equipements' }
   | { name: 'historique' }
   | { name: 'cartographie' }
 
@@ -38,6 +42,10 @@ type Panel =
   | { kind: 'editEndpoint'; endpointId: string }
   | { kind: 'createLigne' }
   | { kind: 'editLigne'; ligneId: string }
+  | { kind: 'createAppareil'; pieceId?: string }
+  | { kind: 'editAppareil'; appareilId: string }
+  | { kind: 'createVolet'; pieceId?: string }
+  | { kind: 'editVolet'; voletId: string }
 
 const DARK_KEY = 'myelec.dark'
 
@@ -190,6 +198,102 @@ export function App() {
         />
       )
     }
+    if (panel.kind === 'createAppareil') {
+      const pieceId =
+        panel.pieceId ?? state.pieces[0]?.id ?? ''
+      return (
+        <AppareilFixeEditor
+          mode="create"
+          initial={emptyAppareil(pieceId, state.pieces, state.appareils)}
+          pieces={state.pieces}
+          lignes={state.lignes}
+          endpoints={state.endpoints}
+          allAppareils={state.appareils}
+          onSave={async (next, desc, options) => {
+            await state.appareilOps.upsert(next, desc)
+            if (options?.thenNew) {
+              setPanel({ kind: 'createAppareil', pieceId: next.piece_id })
+            } else {
+              closePanel()
+            }
+          }}
+          onCancel={closePanel}
+        />
+      )
+    }
+    if (panel.kind === 'editAppareil') {
+      const ap = state.appareils.find((x) => x.id === panel.appareilId)
+      if (!ap) return <div>Appareil introuvable.</div>
+      return (
+        <AppareilFixeEditor
+          mode="edit"
+          initial={ap}
+          pieces={state.pieces}
+          lignes={state.lignes}
+          endpoints={state.endpoints}
+          allAppareils={state.appareils}
+          onSave={async (next, desc) => {
+            await state.appareilOps.upsert(next, desc)
+            closePanel()
+          }}
+          onDelete={async () => {
+            await state.appareilOps.remove(
+              ap.id,
+              `Suppression de l'appareil ${ap.id} (${ap.nom}).`,
+            )
+            closePanel()
+          }}
+          onCancel={closePanel}
+        />
+      )
+    }
+    if (panel.kind === 'createVolet') {
+      const pieceId =
+        panel.pieceId ?? state.pieces[0]?.id ?? ''
+      return (
+        <VoletEditor
+          mode="create"
+          initial={emptyVolet(pieceId, state.pieces, state.volets)}
+          pieces={state.pieces}
+          lignes={state.lignes}
+          allVolets={state.volets}
+          onSave={async (next, desc, options) => {
+            await state.voletOps.upsert(next, desc)
+            if (options?.thenNew) {
+              setPanel({ kind: 'createVolet', pieceId: next.piece_id })
+            } else {
+              closePanel()
+            }
+          }}
+          onCancel={closePanel}
+        />
+      )
+    }
+    if (panel.kind === 'editVolet') {
+      const vo = state.volets.find((x) => x.id === panel.voletId)
+      if (!vo) return <div>Volet introuvable.</div>
+      return (
+        <VoletEditor
+          mode="edit"
+          initial={vo}
+          pieces={state.pieces}
+          lignes={state.lignes}
+          allVolets={state.volets}
+          onSave={async (next, desc) => {
+            await state.voletOps.upsert(next, desc)
+            closePanel()
+          }}
+          onDelete={async () => {
+            await state.voletOps.remove(
+              vo.id,
+              `Suppression du volet ${vo.id}.`,
+            )
+            closePanel()
+          }}
+          onCancel={closePanel}
+        />
+      )
+    }
     if (panel.kind === 'editPiece') {
       const piece = state.pieces.find((p) => p.id === panel.pieceId)
       if (!piece) return <div>Pièce introuvable.</div>
@@ -257,6 +361,12 @@ export function App() {
               onClick={() => goTo({ name: 'lignes' })}
             >
               Lignes
+            </NavButton>
+            <NavButton
+              active={view.name === 'equipements'}
+              onClick={() => goTo({ name: 'equipements' })}
+            >
+              Équipements
             </NavButton>
             <NavButton
               active={view.name === 'cartographie'}
@@ -351,6 +461,18 @@ export function App() {
             onEditEndpoint={(endpointId) =>
               setPanel({ kind: 'editEndpoint', endpointId })
             }
+            onCreateAppareil={() =>
+              setPanel({ kind: 'createAppareil', pieceId: view.pieceId })
+            }
+            onEditAppareil={(appareilId) =>
+              setPanel({ kind: 'editAppareil', appareilId })
+            }
+            onCreateVolet={() =>
+              setPanel({ kind: 'createVolet', pieceId: view.pieceId })
+            }
+            onEditVolet={(voletId) =>
+              setPanel({ kind: 'editVolet', voletId })
+            }
             onOpenLigne={(ligneId) => goTo({ name: 'ligne', ligneId })}
           />
         ) : view.name === 'lignes' ? (
@@ -381,6 +503,23 @@ export function App() {
             onOpenEndpoint={(endpointId) =>
               setPanel({ kind: 'editEndpoint', endpointId })
             }
+            onOpenAppareil={(appareilId) =>
+              setPanel({ kind: 'editAppareil', appareilId })
+            }
+            onOpenPiece={(pieceId) => goTo({ name: 'piece', pieceId })}
+          />
+        ) : view.name === 'equipements' ? (
+          <EquipementList
+            appareils={state.appareils}
+            volets={state.volets}
+            pieces={state.pieces}
+            lignes={state.lignes}
+            endpoints={state.endpoints}
+            onOpenAppareil={(id) => setPanel({ kind: 'editAppareil', appareilId: id })}
+            onCreateAppareil={() => setPanel({ kind: 'createAppareil' })}
+            onOpenVolet={(id) => setPanel({ kind: 'editVolet', voletId: id })}
+            onCreateVolet={() => setPanel({ kind: 'createVolet' })}
+            onOpenLigne={(ligneId) => goTo({ name: 'ligne', ligneId })}
             onOpenPiece={(pieceId) => goTo({ name: 'piece', pieceId })}
           />
         ) : view.name === 'historique' ? (
