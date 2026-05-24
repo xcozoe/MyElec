@@ -679,7 +679,8 @@
       }
     ],
     "parent_tableau_id": "tableau-principal",
-    "parent_disjoncteur_id": "TP-R1-BORNIER"
+    "parent_disjoncteur_id": "TP-R1-BORNIER",
+    "photo_url": "/sources/coffret-merlin-gerin-4-rangees.png"
   },
   {
     "id": "tableau-secondaire-chaufferie",
