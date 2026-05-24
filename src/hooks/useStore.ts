@@ -89,6 +89,17 @@ export interface Store {
     next: Disjoncteur,
     description?: string,
   ) => Promise<void>
+  /**
+   * Édite une ligne en gérant un éventuel renommage de l'ID.
+   * Si `next.id !== currentId`, met à jour en cascade ligne_id sur
+   * tous les end-points, appareils fixes et volets qui pointaient
+   * sur l'ancien ID.
+   */
+  editLigne: (
+    currentId: string,
+    next: Ligne,
+    description?: string,
+  ) => Promise<void>
 
   // Entités plates (Phase 2)
   pieceOps: FlatCollection<Piece>
@@ -568,6 +579,93 @@ export function useStore(): Store {
     [tableaux, lignes, appendModifications, reload],
   )
 
+  const editLigne = useCallback(
+    async (currentId: string, next: Ligne, description?: string) => {
+      const existing = lignes.find((l) => l.id === currentId)
+      if (!existing) throw new Error(`Ligne ${currentId} introuvable`)
+
+      const isRename = currentId !== next.id
+      if (isRename) {
+        if (lignes.some((l) => l.id === next.id && l.id !== currentId)) {
+          throw new Error(
+            `L'ID ${next.id} est déjà utilisé par une autre ligne.`,
+          )
+        }
+      }
+
+      // Met à jour la ligne (renommage + autres champs)
+      const updatedLignes = lignes.map((l) => (l.id === currentId ? next : l))
+
+      // Cascade vers endpoints / appareils / volets si rename
+      let updatedEndpoints = endpoints
+      let updatedAppareils = appareils
+      let updatedVolets = volets
+      let cascadeEp = 0
+      let cascadeAp = 0
+      let cascadeVo = 0
+      if (isRename) {
+        cascadeEp = endpoints.filter((e) => e.ligne_id === currentId).length
+        cascadeAp = appareils.filter((a) => a.ligne_id === currentId).length
+        cascadeVo = volets.filter((v) => v.ligne_id === currentId).length
+        if (cascadeEp > 0) {
+          updatedEndpoints = endpoints.map((e) =>
+            e.ligne_id === currentId ? { ...e, ligne_id: next.id } : e,
+          )
+        }
+        if (cascadeAp > 0) {
+          updatedAppareils = appareils.map((a) =>
+            a.ligne_id === currentId ? { ...a, ligne_id: next.id } : a,
+          )
+        }
+        if (cascadeVo > 0) {
+          updatedVolets = volets.map((v) =>
+            v.ligne_id === currentId ? { ...v, ligne_id: next.id } : v,
+          )
+        }
+      }
+
+      // Entrées historiques
+      const mods: Modification[] = []
+      if (isRename) {
+        mods.push({
+          id:
+            typeof crypto !== 'undefined' && 'randomUUID' in crypto
+              ? crypto.randomUUID()
+              : `mod-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+          date: new Date().toISOString(),
+          type: 'modification',
+          entite: 'ligne',
+          entite_id: next.id,
+          champ_modifie: 'id',
+          ancienne_valeur: currentId,
+          nouvelle_valeur: next.id,
+          description:
+            description ??
+            `Ligne renommée : ${currentId} → ${next.id}. Cascade ligne_id : ${cascadeEp} end-point(s), ${cascadeAp} appareil(s), ${cascadeVo} volet(s).`,
+        })
+      }
+      mods.push(...diffLigne(existing, next, description))
+
+      // Persistance atomique
+      setLignes(updatedLignes)
+      if (cascadeEp > 0) setEndpoints(updatedEndpoints)
+      if (cascadeAp > 0) setAppareils(updatedAppareils)
+      if (cascadeVo > 0) setVolets(updatedVolets)
+      try {
+        await storage.lignes.save(updatedLignes)
+        if (cascadeEp > 0) await storage.endpoints.save(updatedEndpoints)
+        if (cascadeAp > 0) await storage.appareils.save(updatedAppareils)
+        if (cascadeVo > 0) await storage.volets.save(updatedVolets)
+        await appendModifications(mods)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e))
+        await reload()
+        throw e
+      }
+    },
+    [lignes, endpoints, appareils, volets, appendModifications, reload],
+  )
+
   // ---------- CRUD entités plates (factory) ----------
 
   function useFlatOps<T extends { id: string }>(
@@ -704,6 +802,7 @@ export function useStore(): Store {
       removeDisjoncteur,
       moveDisjoncteur,
       editDisjoncteur,
+      editLigne,
       pieceOps,
       ligneOps,
       endpointOps,
@@ -730,6 +829,7 @@ export function useStore(): Store {
       removeDisjoncteur,
       moveDisjoncteur,
       editDisjoncteur,
+      editLigne,
       pieceOps,
       ligneOps,
       endpointOps,

@@ -553,7 +553,7 @@
         "notes": "9 disjoncteurs Legrand DNX³ monophasés en aval du différentiel Legrand 40 A 30 mA Type AC (rangée 1). Lus de gauche à droite. Phase exacte à identifier.",
         "disjoncteurs": [
           {
-            "id": "TSG-R2-RECHAUFFE-PLAQUE",
+            "id": "TSG-R2-POMPE-RELEVAGE",
             "position": 1,
             "etiquette": "Pompe Relevage",
             "type_protection": "disjoncteur",

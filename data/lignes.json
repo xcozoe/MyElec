@@ -13,5 +13,10 @@
     "id": "L-PL-GAR",
     "libelle": "Alimentation détecteur lumineux garage",
     "disjoncteur_id": "TSG-R2-ECL-GARAGE"
+  },
+  {
+    "id": "L-PR-",
+    "libelle": "Alimentation Pompe Relevage",
+    "disjoncteur_id": "TSG-R2-POMPE-RELEVAGE"
   }
 ]

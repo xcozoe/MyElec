@@ -109,11 +109,17 @@ export function LigneEditor({
         </button>
       </div>
 
-      <Field label="ID" hint='Format libre commençant par "L", ex : L-PLAQUE, L-PC-CUI-A'>
+      <Field
+        label="ID"
+        hint={
+          mode === 'edit'
+            ? 'Renommer met à jour automatiquement ligne_id sur les end-points, appareils fixes et volets qui pointaient dessus.'
+            : 'Format libre commençant par "L", ex : L-PLAQUE, L-PC-CUI-A'
+        }
+      >
         <input
           type="text"
           value={l.id}
-          disabled={mode === 'edit'}
           onChange={(e) => setL({ ...l, id: e.target.value.toUpperCase() })}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
         />

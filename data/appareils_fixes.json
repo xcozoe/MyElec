@@ -168,5 +168,14 @@
     "profil_usage": "continu",
     "marque": "EZVIZ",
     "ligne_id": "L-PL-GAR"
+  },
+  {
+    "id": "AP_GAR_2",
+    "piece_id": "GAR",
+    "numero": 2,
+    "nom": "Pompe Relevage",
+    "categorie": "divers",
+    "profil_usage": "occasionnel",
+    "ligne_id": "L-PR-"
   }
 ]

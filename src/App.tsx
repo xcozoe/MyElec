@@ -174,6 +174,7 @@ export function App() {
     if (panel.kind === 'editLigne') {
       const ligne = state.lignes.find((l) => l.id === panel.ligneId)
       if (!ligne) return <div>Ligne introuvable.</div>
+      const currentId = ligne.id
       return (
         <LigneEditor
           mode="edit"
@@ -181,8 +182,17 @@ export function App() {
           tableaux={state.tableaux}
           allLignes={state.lignes}
           onSave={async (next, desc) => {
-            await state.ligneOps.upsert(next, desc)
+            await state.editLigne(currentId, next, desc)
             closePanel()
+            // Si on est sur la vue détail de la ligne et qu'elle a été renommée,
+            // mettre à jour l'URL/view pour pointer sur le nouvel ID.
+            if (
+              view.name === 'ligne' &&
+              view.ligneId === currentId &&
+              currentId !== next.id
+            ) {
+              goTo({ name: 'ligne', ligneId: next.id })
+            }
           }}
           onDelete={async () => {
             await state.ligneOps.remove(
