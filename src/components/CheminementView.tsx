@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import type { Store } from '../hooks/useStore'
 import type { Disjoncteur, Tableau } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
@@ -30,14 +30,15 @@ export function CheminementView({ store, onOpenTableau }: Props) {
           Cheminement électrique
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Vue d'ensemble : à l'intérieur de chaque tableau, les disjoncteurs
-          de jonction qui alimentent un sous-tableau apparaissent comme
-          modules. Une flèche descend de chaque jonction vers le sous-tableau
-          en-dessous. Tape sur n'importe quel élément pour ouvrir le détail.
+          Vue d'ensemble : dans chaque tableau, la cascade des modules clés
+          (différentiel → bornier → disjoncteurs) est représentée
+          horizontalement avec des flèches entre. Sous chaque module qui
+          alimente un sous-tableau, une flèche verticale descend vers ce
+          sous-tableau. Tape un élément pour ouvrir son détail.
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto flex flex-col items-center gap-0">
+      <div className="max-w-5xl mx-auto flex flex-col items-center gap-0">
         <SourceNode
           label="Linky"
           sub="Compteur communicant Enedis triphasé"
@@ -90,7 +91,7 @@ export function CheminementView({ store, onOpenTableau }: Props) {
   )
 }
 
-// ----- Sources externes (avec photo + specs dépliables) -----
+// ----- Sources externes -----
 
 function SourceNode({
   label,
@@ -185,9 +186,9 @@ function VerticalLink({ height = 24 }: { height?: number }) {
 
 // ----- Arbre récursif -----
 
-interface Junction {
-  sourceDj: Disjoncteur
-  child: Tableau
+interface ChipNode {
+  dj: Disjoncteur
+  childTableau?: Tableau
 }
 
 function TableauTree({
@@ -199,53 +200,60 @@ function TableauTree({
   store: Store
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
-  const junctions: Junction[] = useMemo(() => {
-    const out: Junction[] = []
-    for (const child of store.tableaux) {
-      if (child.parent_tableau_id !== tableau.id) continue
-      const sourceDj = findDisjoncteur(tableau, child.parent_disjoncteur_id)
-      if (sourceDj) out.push({ sourceDj, child })
+  // Construit la liste des chips clés (cascade) avec leur éventuel
+  // sous-tableau attaché.
+  const chipNodes: ChipNode[] = useMemo(() => {
+    const childByDjId = new Map<string, Tableau>()
+    for (const t of store.tableaux) {
+      if (t.parent_tableau_id === tableau.id && t.parent_disjoncteur_id) {
+        childByDjId.set(t.parent_disjoncteur_id, t)
+      }
     }
-    return out
+    return buildCascade(tableau, childByDjId).map((dj) => ({
+      dj,
+      childTableau: childByDjId.get(dj.id),
+    }))
   }, [tableau, store.tableaux])
+
+  const hasAnyChild = chipNodes.some((n) => n.childTableau)
 
   return (
     <div className="flex flex-col items-stretch">
       <TableauBox
         tableau={tableau}
-        junctions={junctions}
+        chipNodes={chipNodes}
         onOpenTableau={onOpenTableau}
       />
 
-      {/* Rangée enfants : alignée avec les jonctions ci-dessus.
-          Chaque colonne commence par une ligne verticale qui démarre
-          NÉGATIVEMENT (margin-top négative) pour s'enfoncer dans la
-          padding-bottom du tableau au-dessus, créant la continuité
-          visuelle qui « traverse » le bord du tableau. */}
-      {junctions.length > 0 && (
-        <div className="flex justify-around items-start gap-3 sm:gap-4">
-          {junctions.map(({ child }) => (
-            <div
-              key={child.id}
-              className="flex flex-col items-center min-w-0 flex-1"
-            >
-              {/* Ligne qui pénètre dans le tableau parent : -mt-4
-                  recule de 16 px dans la zone du chip, et la couleur
-                  identique à la ligne intérieure rend l'ensemble
-                  visuellement continu. */}
-              <div className="-mt-4 h-8 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
-              <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
-                ▼
+      {/* Rangée des sous-tableaux, alignée avec les chips de la cascade
+          ci-dessus. Même nombre de colonnes (flex-1 par colonne, espace
+          fixe pour matérialiser les flèches horizontales du dessus). */}
+      {hasAnyChild && (
+        <div className="flex items-stretch justify-center gap-2">
+          {chipNodes.map((node, i) => (
+            <Fragment key={node.dj.id}>
+              {i > 0 && <div className="w-6 shrink-0" aria-hidden />}
+              <div className="flex-1 min-w-0 flex flex-col items-center">
+                {node.childTableau ? (
+                  <>
+                    <div className="-mt-3 h-6 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
+                    <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                      ▼
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1 text-center">
+                      → {node.childTableau.nom}
+                    </div>
+                    <div className="w-full">
+                      <TableauTree
+                        tableau={node.childTableau}
+                        store={store}
+                        onOpenTableau={onOpenTableau}
+                      />
+                    </div>
+                  </>
+                ) : null}
               </div>
-              <div className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1 text-center">
-                → {child.nom}
-              </div>
-              <TableauTree
-                tableau={child}
-                store={store}
-                onOpenTableau={onOpenTableau}
-              />
-            </div>
+            </Fragment>
           ))}
         </div>
       )}
@@ -253,47 +261,69 @@ function TableauTree({
   )
 }
 
-function findDisjoncteur(
+/**
+ * Construit la liste linéaire des chips clés d'un tableau dans l'ordre
+ * du cheminement électrique (BFS depuis les roots, en suivant
+ * differentiel_parent_id). On garde les différentiels, borniers et
+ * disjoncteurs alimentant un sous-tableau ; on exclut les feuilles
+ * (départs locaux).
+ */
+function buildCascade(
   tableau: Tableau,
-  djId: string | undefined,
-): Disjoncteur | undefined {
-  if (!djId) return undefined
-  for (const r of tableau.rangees) {
-    const d = r.disjoncteurs.find((x) => x.id === djId)
-    if (d) return d
+  childByDjId: Map<string, Tableau>,
+): Disjoncteur[] {
+  const allDjs = tableau.rangees.flatMap((r) => r.disjoncteurs)
+  const allIds = new Set(allDjs.map((d) => d.id))
+
+  const isKey = (d: Disjoncteur) =>
+    d.type_protection === 'differentiel_tete_tableau' ||
+    d.type_protection === 'differentiel_tete_rangee' ||
+    d.type_protection === 'differentiel_dedie' ||
+    d.type_protection === 'disjoncteur_diff_dedie' ||
+    d.type_protection === 'bornier_repartition' ||
+    childByDjId.has(d.id)
+
+  const result: Disjoncteur[] = []
+  const visited = new Set<string>()
+  const queue: Disjoncteur[] = allDjs.filter(
+    (d) => !d.differentiel_parent_id || !allIds.has(d.differentiel_parent_id),
+  )
+  while (queue.length > 0) {
+    const current = queue.shift()!
+    if (visited.has(current.id)) continue
+    visited.add(current.id)
+    if (isKey(current)) result.push(current)
+    for (const d of allDjs) {
+      if (d.differentiel_parent_id === current.id && !visited.has(d.id)) {
+        queue.push(d)
+      }
+    }
   }
-  return undefined
+  return result
 }
 
-// ----- Boîte tableau avec contenu interne -----
+// ----- Boîte tableau avec cascade horizontale -----
 
 function TableauBox({
   tableau,
-  junctions,
+  chipNodes,
   onOpenTableau,
 }: {
   tableau: Tableau
-  junctions: Junction[]
+  chipNodes: ChipNode[]
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
   const [photoZoom, setPhotoZoom] = useState(false)
-
-  // Construit la chaîne hiérarchique des « chips clés » du tableau :
-  // - différentiel(s) principaux (tête de tableau / tête de rangée)
-  // - disjoncteurs « jonction » (qui alimentent un sous-tableau)
-  // - bornier de répartition
-  // L'ordre suit differentiel_parent_id : on part des roots (pas de
-  // parent dans ce tableau) et on descend en profondeur.
-  const keyChips = useMemo(
-    () => buildCascade(tableau, junctions),
-    [tableau, junctions],
-  )
-
   const nbDj = tableau.rangees.reduce(
     (acc, r) => acc + r.disjoncteurs.length,
     0,
   )
+
+  // Cascade horizontale : on ajoute un disjoncteur qui ne va PAS vers un
+  // sous-tableau au début (différentiel) et chaîne ensuite ceux qui ont
+  // un enfant. Si un même tableau a plusieurs chemins, ils restent dans
+  // l'ordre du BFS.
 
   return (
     <div
@@ -337,33 +367,38 @@ function TableauBox({
         </button>
       </div>
 
-      {/* Cascade verticale des chips clés. Chaque chip = un module clé
-          (différentiel, bornier, jonction vers sous-tableau). Une flèche
-          ↓ apparaît entre chaque chip pour matérialiser le sens du
-          courant. */}
-      {keyChips.map((node, i) => {
-        const isLast = i === keyChips.length - 1
-        const junction = junctions.find((j) => j.sourceDj.id === node.dj.id)
-        return (
-          <div key={node.dj.id} className="flex flex-col items-center">
-            <div className="w-full max-w-md">
-              <DisjoncteurChip
-                dj={node.dj}
-                target={junction?.child.nom}
-                onClick={() => onOpenTableau(tableau.id, node.dj.id)}
-              />
-            </div>
-            {!isLast && (
-              <div className="flex flex-col items-center py-1">
-                <div className="h-3 w-0.5 bg-slate-500 dark:bg-slate-400" />
-                <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
-                  ▼
+      {/* Cascade horizontale : chips alignés sur une seule ligne avec
+          des flèches → entre eux. */}
+      {chipNodes.length > 0 && (
+        <div className="flex items-stretch justify-center gap-2">
+          {chipNodes.map((node, i) => (
+            <Fragment key={node.dj.id}>
+              {i > 0 && (
+                <div
+                  className="self-center text-slate-500 dark:text-slate-400 text-sm shrink-0 w-6 text-center"
+                  aria-hidden
+                >
+                  →
                 </div>
+              )}
+              <div className="flex-1 min-w-0 flex flex-col items-stretch">
+                <DisjoncteurChip
+                  dj={node.dj}
+                  target={node.childTableau?.nom}
+                  onClick={() => onOpenTableau(tableau.id, node.dj.id)}
+                />
+                {/* Ligne verticale qui descend vers le sous-tableau,
+                    traverse la padding-bottom de la boîte (mt-2 -mb-6). */}
+                {node.childTableau && (
+                  <div className="flex justify-center mt-2 -mb-6">
+                    <div className="h-9 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )
-      })}
+            </Fragment>
+          ))}
+        </div>
+      )}
 
       {photoZoom && tableau.photo_url && (
         <Lightbox
@@ -377,56 +412,7 @@ function TableauBox({
   )
 }
 
-/**
- * Construit la liste linéaire des « chips clés » d'un tableau, dans
- * l'ordre du cheminement électrique (du différentiel d'entrée vers les
- * feuilles utiles). On inclut :
- *  - tous les différentiels (tête de tableau / tête de rangée / dédié)
- *  - tous les borniers de répartition
- *  - tous les disjoncteurs qui alimentent un sous-tableau (jonctions)
- *
- * On exclut les disjoncteurs « feuilles » (départs locaux) pour garder
- * la vue lisible.
- */
-function buildCascade(
-  tableau: Tableau,
-  junctions: Junction[],
-): { dj: Disjoncteur }[] {
-  const junctionIds = new Set(junctions.map((j) => j.sourceDj.id))
-  const allDjs = tableau.rangees.flatMap((r) => r.disjoncteurs)
-  const allIds = new Set(allDjs.map((d) => d.id))
-
-  const isKey = (d: Disjoncteur) =>
-    junctionIds.has(d.id) ||
-    d.type_protection === 'differentiel_tete_tableau' ||
-    d.type_protection === 'differentiel_tete_rangee' ||
-    d.type_protection === 'differentiel_dedie' ||
-    d.type_protection === 'disjoncteur_diff_dedie' ||
-    d.type_protection === 'bornier_repartition'
-
-  // BFS depuis les roots (pas de differentiel_parent_id ou parent hors
-  // tableau). On garde uniquement les chips clés dans l'ordre rencontré.
-  const result: { dj: Disjoncteur }[] = []
-  const visited = new Set<string>()
-  const queue: Disjoncteur[] = allDjs.filter(
-    (d) => !d.differentiel_parent_id || !allIds.has(d.differentiel_parent_id),
-  )
-  while (queue.length > 0) {
-    const current = queue.shift()!
-    if (visited.has(current.id)) continue
-    visited.add(current.id)
-    if (isKey(current)) result.push({ dj: current })
-    // Ajoute les enfants directs
-    for (const d of allDjs) {
-      if (d.differentiel_parent_id === current.id && !visited.has(d.id)) {
-        queue.push(d)
-      }
-    }
-  }
-  return result
-}
-
-// ----- Chip disjoncteur (avec photo si présente) -----
+// ----- Chip disjoncteur -----
 
 function DisjoncteurChip({
   dj,
@@ -449,61 +435,63 @@ function DisjoncteurChip({
   return (
     <>
       <div
-        className={`w-full rounded-md ring-1 ring-inset ${style.ring} ${style.bg} ${style.text} px-2 py-1.5 text-left text-[11px] flex items-start gap-2`}
+        className={`w-full h-full rounded-md ring-1 ring-inset ${style.ring} ${style.bg} ${style.text} px-2 py-1.5 text-left text-[11px] flex flex-col gap-1`}
         title={`${dj.id} — ${dj.etiquette}`}
       >
-        {dj.photo_url && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setZoom(true)
-            }}
-            className="shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white p-0.5 hover:shadow"
-            aria-label="Agrandir la photo"
-            title="Agrandir"
-          >
-            <img
-              src={dj.photo_url}
-              alt={dj.id}
-              className="h-9 w-9 object-contain"
-              onError={(e) => {
-                ;(e.currentTarget.parentElement as HTMLElement).style.display =
-                  'none'
+        <div className="flex items-start gap-2">
+          {dj.photo_url && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setZoom(true)
               }}
-            />
-          </button>
-        )}
-        <button
-          onClick={onClick}
-          className="flex-1 text-left hover:opacity-80 min-w-0"
-        >
-          <div className="flex items-center gap-1.5">
-            <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-            <span className="font-mono text-[10px] truncate">{dj.id}</span>
-            {isBornier && (
-              <span className="text-[8px] uppercase rounded bg-slate-200 dark:bg-slate-700 px-1 py-0.5">
-                Bornier
-              </span>
-            )}
-            {isDiff && (
-              <span className="text-[8px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
-                Diff
-              </span>
-            )}
-            <span className="text-[9px] font-mono opacity-60 ml-auto shrink-0">
-              {dj.calibre}
-            </span>
-          </div>
-          <div className="mt-0.5 font-medium leading-tight line-clamp-1">
-            {dj.etiquette}
-          </div>
-          {target && (
-            <div className="text-[9px] uppercase tracking-wide opacity-70 mt-0.5">
-              → {target}
-            </div>
+              className="shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white p-0.5 hover:shadow"
+              aria-label="Agrandir la photo"
+              title="Agrandir"
+            >
+              <img
+                src={dj.photo_url}
+                alt={dj.id}
+                className="h-9 w-9 object-contain"
+                onError={(e) => {
+                  ;(e.currentTarget.parentElement as HTMLElement).style.display =
+                    'none'
+                }}
+              />
+            </button>
           )}
-        </button>
+          <button
+            onClick={onClick}
+            className="flex-1 text-left hover:opacity-80 min-w-0"
+          >
+            <div className="flex items-center flex-wrap gap-1">
+              <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+              <span className="font-mono text-[10px] truncate">{dj.id}</span>
+              {isBornier && (
+                <span className="text-[8px] uppercase rounded bg-slate-200 dark:bg-slate-700 px-1 py-0.5">
+                  Bornier
+                </span>
+              )}
+              {isDiff && (
+                <span className="text-[8px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
+                  Diff
+                </span>
+              )}
+            </div>
+            <div className="mt-0.5 font-medium leading-tight line-clamp-2">
+              {dj.etiquette}
+            </div>
+            <div className="text-[9px] font-mono opacity-60 mt-0.5">
+              {dj.calibre}
+            </div>
+            {target && (
+              <div className="text-[9px] uppercase tracking-wide opacity-70 mt-0.5">
+                → {target}
+              </div>
+            )}
+          </button>
+        </div>
       </div>
       {zoom && dj.photo_url && (
         <Lightbox
