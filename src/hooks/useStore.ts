@@ -74,6 +74,21 @@ export interface Store {
     targetIndex: number,
     description?: string,
   ) => Promise<void>
+  /**
+   * Édite un disjoncteur en gérant un éventuel renommage de l'ID.
+   * Si `next.id !== currentId`, met à jour en cascade :
+   *  - differentiel_parent_id des autres disjoncteurs
+   *  - differentiel_id des rangées
+   *  - parent_disjoncteur_id des tableaux enfants
+   *  - disjoncteur_id des lignes
+   */
+  editDisjoncteur: (
+    tableauId: string,
+    rangeeId: string,
+    currentId: string,
+    next: Disjoncteur,
+    description?: string,
+  ) => Promise<void>
 
   // Entités plates (Phase 2)
   pieceOps: FlatCollection<Piece>
@@ -424,6 +439,135 @@ export function useStore(): Store {
     [tableaux, persistTableaux],
   )
 
+  const editDisjoncteur = useCallback(
+    async (
+      tableauId: string,
+      rangeeId: string,
+      currentId: string,
+      next: Disjoncteur,
+      description?: string,
+    ) => {
+      const tableau = findTableau(tableaux, tableauId)
+      if (!tableau) throw new Error(`Tableau ${tableauId} introuvable`)
+      const rangee = findRangee(tableau, rangeeId)
+      if (!rangee)
+        throw new Error(`Rangée ${rangeeId} introuvable dans ${tableauId}`)
+      const existing = findDisjoncteur(rangee, currentId)
+      if (!existing)
+        throw new Error(`Disjoncteur ${currentId} introuvable dans ${rangeeId}`)
+
+      const isRename = currentId !== next.id
+      if (isRename) {
+        // Vérifier unicité du nouvel ID dans TOUS les tableaux
+        for (const t of tableaux) {
+          for (const r of t.rangees) {
+            for (const d of r.disjoncteurs) {
+              if (d.id === next.id && d.id !== currentId) {
+                throw new Error(
+                  `L'ID ${next.id} est déjà utilisé par un autre disjoncteur.`,
+                )
+              }
+            }
+          }
+        }
+      }
+
+      // Met à jour les tableaux : renomme le disjoncteur et propage les
+      // références (differentiel_parent_id, differentiel_id, parent_disjoncteur_id).
+      const updatedTableaux: Tableau[] = tableaux.map((t) => {
+        const newRangees = t.rangees.map((r) => {
+          const newDisjoncteurs = r.disjoncteurs.map((d) => {
+            if (t.id === tableauId && r.id === rangeeId && d.id === currentId) {
+              return next
+            }
+            if (isRename && d.differentiel_parent_id === currentId) {
+              return { ...d, differentiel_parent_id: next.id }
+            }
+            return d
+          })
+          return {
+            ...r,
+            differentiel_id:
+              isRename && r.differentiel_id === currentId
+                ? next.id
+                : r.differentiel_id,
+            disjoncteurs: newDisjoncteurs,
+          }
+        })
+        return {
+          ...t,
+          parent_disjoncteur_id:
+            isRename && t.parent_disjoncteur_id === currentId
+              ? next.id
+              : t.parent_disjoncteur_id,
+          rangees: newRangees,
+        }
+      })
+
+      // Met à jour les lignes (disjoncteur_id).
+      let updatedLignes = lignes
+      let lignesAffectedCount = 0
+      if (isRename) {
+        lignesAffectedCount = lignes.filter(
+          (l) => l.disjoncteur_id === currentId,
+        ).length
+        if (lignesAffectedCount > 0) {
+          updatedLignes = lignes.map((l) =>
+            l.disjoncteur_id === currentId
+              ? { ...l, disjoncteur_id: next.id }
+              : l,
+          )
+        }
+      }
+
+      // Modifications historiques :
+      // - Une entrée "rename" si applicable
+      // - Les entrées diff classiques pour les autres champs
+      const mods: Modification[] = []
+      if (isRename) {
+        mods.push({
+          id:
+            typeof crypto !== 'undefined' && 'randomUUID' in crypto
+              ? crypto.randomUUID()
+              : `mod-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+          date: new Date().toISOString(),
+          type: 'modification',
+          entite: 'disjoncteur',
+          entite_id: next.id,
+          champ_modifie: 'id',
+          ancienne_valeur: currentId,
+          nouvelle_valeur: next.id,
+          description:
+            description ??
+            `Disjoncteur renommé : ${currentId} → ${next.id}. Cascade : references mises à jour dans les autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id) et lignes (disjoncteur_id, ${lignesAffectedCount} affectée(s)).`,
+        })
+      }
+      // Diff sur les autres champs (id retiré du diff par makeDiff naturellement
+      // si les autres champs ont changé). On compare existing (ancien) avec next
+      // (nouveau) — qui ont des id différents si rename, mais diffDisjoncteur
+      // ne suit pas 'id' donc OK.
+      mods.push(...diffDisjoncteur(existing, next, description))
+
+      // Persiste tout
+      setTableaux(updatedTableaux)
+      if (isRename && lignesAffectedCount > 0) {
+        setLignes(updatedLignes)
+      }
+      try {
+        await storage.tableaux.save(updatedTableaux)
+        if (isRename && lignesAffectedCount > 0) {
+          await storage.lignes.save(updatedLignes)
+        }
+        await appendModifications(mods)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e))
+        await reload()
+        throw e
+      }
+    },
+    [tableaux, lignes, appendModifications, reload],
+  )
+
   // ---------- CRUD entités plates (factory) ----------
 
   function useFlatOps<T extends { id: string }>(
@@ -559,6 +703,7 @@ export function useStore(): Store {
       upsertDisjoncteur,
       removeDisjoncteur,
       moveDisjoncteur,
+      editDisjoncteur,
       pieceOps,
       ligneOps,
       endpointOps,
@@ -584,6 +729,7 @@ export function useStore(): Store {
       upsertDisjoncteur,
       removeDisjoncteur,
       moveDisjoncteur,
+      editDisjoncteur,
       pieceOps,
       ligneOps,
       endpointOps,

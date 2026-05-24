@@ -516,7 +516,7 @@
         "id": "tsg-r1",
         "numero": 1,
         "libelle": "R1 — Différentiel Legrand + arrivée TRI Hager NFT840",
-        "phase": "inconnue",
+        "phase": "TRI",
         "differentiel_id": "TSG-R1-DIFF-LEGRAND",
         "notes": "Rangée arrivée/protection. Cheminement électrique : Hager NFT 840 C40 tétrapolaire (amont, TRI depuis TP-R1-PRISE-TRI) → Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (différentiel tête de tableau, alimente la rangée 2).",
         "disjoncteurs": [
@@ -555,7 +555,7 @@
           {
             "id": "TSG-R2-RECHAUFFE-PLAQUE",
             "position": 1,
-            "etiquette": "Réchauffe plaque",
+            "etiquette": "Pompe Relevage",
             "type_protection": "disjoncteur",
             "calibre": "C20",
             "poles": "mono",

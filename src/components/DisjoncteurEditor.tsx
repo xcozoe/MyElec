@@ -119,11 +119,17 @@ export function DisjoncteurEditor({
         </button>
       </div>
 
-      <Field label="ID" hint="Convention : [code-tableau]-[code-rangée]-[code-départ]">
+      <Field
+        label="ID"
+        hint={
+          mode === 'edit'
+            ? 'Renommer met à jour automatiquement les références : autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id), lignes (disjoncteur_id).'
+            : 'Convention : [code-tableau]-[code-rangée]-[code-départ]'
+        }
+      >
         <input
           type="text"
           value={d.id}
-          disabled={mode === 'edit'}
           onChange={(e) => setD({ ...d, id: e.target.value })}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
         />

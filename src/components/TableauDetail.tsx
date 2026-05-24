@@ -324,7 +324,13 @@ function renderPanel(
         pieces={state.pieces}
         onOpenLigne={onOpenLigne}
         onSave={async (next, desc) => {
-          await state.upsertDisjoncteur(tableau.id, rangee.id, next, desc)
+          await state.editDisjoncteur(
+            tableau.id,
+            rangee.id,
+            disjoncteur.id,
+            next,
+            desc,
+          )
           close()
         }}
         onDelete={async () => {

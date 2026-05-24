@@ -379,5 +379,49 @@
     "ancienne_valeur": "Legrand DNX³ C20.",
     "nouvelle_valeur": "Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté.",
     "description": "Disjoncteur TSG-R2-RECHAUFFE-PLAQUE — notes : Legrand DNX³ C20. → Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté.."
+  },
+  {
+    "id": "921ab670-0fd1-4114-9419-8006d43a4fe0",
+    "date": "2026-05-24T15:23:01.824Z",
+    "type": "modification",
+    "entite": "rangee",
+    "entite_id": "tsg-r1",
+    "champ_modifie": "phase",
+    "ancienne_valeur": "inconnue",
+    "nouvelle_valeur": "TRI",
+    "description": "Rangée tsg-r1 — phase : inconnue → TRI."
+  },
+  {
+    "id": "8cfb945e-9b79-49e7-9f2f-21ac70c0dc08",
+    "date": "2026-05-24T15:24:24.590Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TSG-R2-RECHAUFFE-PLAQUE",
+    "champ_modifie": "etiquette",
+    "ancienne_valeur": "Réchauffe plaque",
+    "nouvelle_valeur": "Pompe Relevage",
+    "description": "Disjoncteur TSG-R2-RECHAUFFE-PLAQUE — etiquette : Réchauffe plaque → Pompe Relevage."
+  },
+  {
+    "id": "3a82447d-0ccc-4fed-a5df-74248e44eb16",
+    "date": "2026-05-24T15:29:49.526Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TP-R4-VR-RDJ-TEST",
+    "champ_modifie": "id",
+    "ancienne_valeur": "TP-R4-VR-RDJ",
+    "nouvelle_valeur": "TP-R4-VR-RDJ-TEST",
+    "description": "Disjoncteur renommé : TP-R4-VR-RDJ → TP-R4-VR-RDJ-TEST. Cascade : references mises à jour dans les autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id) et lignes (disjoncteur_id, 1 affectée(s))."
+  },
+  {
+    "id": "17129692-7580-4524-b8f7-dfce223a9d8d",
+    "date": "2026-05-24T15:30:08.194Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TP-R4-VR-RDJ",
+    "champ_modifie": "id",
+    "ancienne_valeur": "TP-R4-VR-RDJ-TEST",
+    "nouvelle_valeur": "TP-R4-VR-RDJ",
+    "description": "Disjoncteur renommé : TP-R4-VR-RDJ-TEST → TP-R4-VR-RDJ. Cascade : references mises à jour dans les autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id) et lignes (disjoncteur_id, 1 affectée(s))."
   }
 ]
