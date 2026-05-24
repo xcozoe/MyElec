@@ -126,6 +126,7 @@ export const diffDisjoncteur = makeDiff<Disjoncteur>('disjoncteur', [
   'differentiel_parent_id',
   'statut',
   'appareil_pilote',
+  'photo_url',
   'notes',
   'position',
 ])

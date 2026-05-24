@@ -32,6 +32,7 @@ export interface Disjoncteur {
   differentiel_parent_id?: string
   statut: StatutDisjoncteur
   appareil_pilote?: string
+  photo_url?: string
   notes?: string
 }
 

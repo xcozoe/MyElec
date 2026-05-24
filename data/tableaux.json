@@ -24,12 +24,13 @@
             "poles": "tetra_diff",
             "phase_affectation": "TRI",
             "statut": "actif",
-            "notes": "Legrand 086 94 — interrupteur différentiel tétrapolaire 4 pôles (3P+N) 40 A 30 mA Type AC, 400 V~, Im=500 A, IΔm=1000 A, IΔn=0,03 A. Bouton TEST (marqué « Fréquent / Frequently »), manette rouge 1-ON. Schéma N-1-3-5 / N-2-4-6. Protège différentiellement les 9 départs DNX³ de la rangée 2. Électriquement en aval du Hager NFT 840."
+            "notes": "Legrand 086 94 — interrupteur différentiel tétrapolaire 4 pôles (3P+N) 40 A 30 mA Type AC, 400 V~, Im=500 A, IΔm=1000 A, IΔn=0,03 A. Bouton TEST (marqué « Fréquent / Frequently »), manette rouge 1-ON. Schéma N-1-3-5 / N-2-4-6. Protège différentiellement les 9 départs DNX³ de la rangée 2. Électriquement en aval du Hager NFT 840.",
+            "photo_url": "/sources/legrand-086-94.png"
           },
           {
             "id": "TP-R1-DISJ-HAGER",
             "position": 2,
-            "etiquette": "Arrivée TRI (Hager NFT 840 C40)",
+            "etiquette": "Disjoncteur TRI (Hager NFT 840 C40)",
             "type_protection": "disjoncteur",
             "calibre": "C40",
             "poles": "tetra",
