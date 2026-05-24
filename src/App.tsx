@@ -384,14 +384,49 @@ export function App() {
 
           <div className="flex-1 min-w-[12rem]">
             <SearchBar
-              tableaux={state.tableaux}
-              onSelect={(hit) =>
-                goTo({
-                  name: 'tableau',
-                  tableauId: hit.tableauId,
-                  focusDisjoncteurId: hit.disjoncteurId,
-                })
-              }
+              data={{
+                tableaux: state.tableaux,
+                pieces: state.pieces,
+                lignes: state.lignes,
+                endpoints: state.endpoints,
+                appareils: state.appareils,
+                volets: state.volets,
+              }}
+              onSelect={(hit) => {
+                switch (hit.type) {
+                  case 'tableau':
+                  case 'rangee':
+                    if (hit.tableauId)
+                      goTo({ name: 'tableau', tableauId: hit.tableauId })
+                    return
+                  case 'disjoncteur':
+                    if (hit.tableauId)
+                      goTo({
+                        name: 'tableau',
+                        tableauId: hit.tableauId,
+                        focusDisjoncteurId: hit.disjoncteurId,
+                      })
+                    return
+                  case 'piece':
+                    if (hit.pieceId) goTo({ name: 'piece', pieceId: hit.pieceId })
+                    return
+                  case 'ligne':
+                    if (hit.ligneId) goTo({ name: 'ligne', ligneId: hit.ligneId })
+                    return
+                  case 'endpoint':
+                    if (hit.endpointId)
+                      setPanel({ kind: 'editEndpoint', endpointId: hit.endpointId })
+                    return
+                  case 'appareil':
+                    if (hit.appareilId)
+                      setPanel({ kind: 'editAppareil', appareilId: hit.appareilId })
+                    return
+                  case 'volet':
+                    if (hit.voletId)
+                      setPanel({ kind: 'editVolet', voletId: hit.voletId })
+                    return
+                }
+              }}
             />
           </div>
 

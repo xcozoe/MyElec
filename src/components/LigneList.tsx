@@ -1,12 +1,14 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type {
   AppareilFixe,
   Disjoncteur,
   EndPoint,
   Ligne,
+  Phase,
   Piece,
   Tableau,
 } from '../types/electrical'
+import { PHASES } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
 import { buildDisjoncteurOptions } from './LigneEditor'
 
@@ -43,6 +45,8 @@ export function LigneList({
   onOpen,
   onCreate,
 }: Props) {
+  const [filterPhase, setFilterPhase] = useState<'all' | Phase>('all')
+
   const djById = useMemo(() => {
     const map = new Map<string, { dj: Disjoncteur; tableauNom: string }>()
     for (const t of tableaux) {
@@ -55,11 +59,19 @@ export function LigneList({
     return map
   }, [tableaux])
 
+  const filteredLignes = useMemo(() => {
+    if (filterPhase === 'all') return lignes
+    return lignes.filter((l) => {
+      const dj = djById.get(l.disjoncteur_id)?.dj
+      return dj?.phase_affectation === filterPhase
+    })
+  }, [lignes, djById, filterPhase])
+
   const byTableau = useMemo(() => {
     const groups = new Map<string, Ligne[]>()
     for (const t of tableaux) groups.set(t.nom, [])
     const unknown: Ligne[] = []
-    for (const l of lignes) {
+    for (const l of filteredLignes) {
       const info = djById.get(l.disjoncteur_id)
       if (info) {
         const arr = groups.get(info.tableauNom) ?? []
@@ -70,7 +82,7 @@ export function LigneList({
       }
     }
     return { groups, unknown }
-  }, [lignes, tableaux, djById])
+  }, [filteredLignes, tableaux, djById])
 
   const totalDjOptions = useMemo(
     () => buildDisjoncteurOptions(tableaux).length,
@@ -92,12 +104,26 @@ export function LigneList({
             {totalDjOptions > 1 ? 's' : ''} comme source.
           </p>
         </div>
-        <button
-          onClick={onCreate}
-          className="text-sm rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1.5"
-        >
-          + Nouvelle ligne
-        </button>
+        <div className="flex items-center gap-2 ml-auto">
+          <select
+            value={filterPhase}
+            onChange={(e) => setFilterPhase(e.target.value as 'all' | Phase)}
+            className="text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1"
+          >
+            <option value="all">Toutes phases</option>
+            {PHASES.map((p) => (
+              <option key={p} value={p}>
+                Phase {p}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={onCreate}
+            className="text-sm rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1.5"
+          >
+            + Nouvelle ligne
+          </button>
+        </div>
       </div>
 
       {lignes.length === 0 ? (

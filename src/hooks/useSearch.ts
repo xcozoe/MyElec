@@ -1,14 +1,37 @@
 import { useMemo, useState } from 'react'
-import type { Tableau } from '../types/electrical'
+import type {
+  AppareilFixe,
+  EndPoint,
+  Ligne,
+  Piece,
+  Tableau,
+  Volet,
+} from '../types/electrical'
+
+export type SearchHitType =
+  | 'tableau'
+  | 'rangee'
+  | 'disjoncteur'
+  | 'piece'
+  | 'ligne'
+  | 'endpoint'
+  | 'appareil'
+  | 'volet'
 
 export interface SearchHit {
-  type: 'tableau' | 'rangee' | 'disjoncteur'
-  tableauId: string
-  rangeeId?: string
-  disjoncteurId?: string
+  type: SearchHitType
   label: string
   sublabel: string
   matchedField: string
+  // Identifiants pour la navigation (selon le type)
+  tableauId?: string
+  rangeeId?: string
+  disjoncteurId?: string
+  pieceId?: string
+  ligneId?: string
+  endpointId?: string
+  appareilId?: string
+  voletId?: string
 }
 
 function matches(haystack: string | undefined, needle: string): boolean {
@@ -16,14 +39,25 @@ function matches(haystack: string | undefined, needle: string): boolean {
   return haystack.toLowerCase().includes(needle)
 }
 
-export function useSearch(tableaux: Tableau[]) {
+export interface SearchData {
+  tableaux: Tableau[]
+  pieces: Piece[]
+  lignes: Ligne[]
+  endpoints: EndPoint[]
+  appareils: AppareilFixe[]
+  volets: Volet[]
+}
+
+export function useSearch(data: SearchData) {
   const [query, setQuery] = useState('')
 
   const results: SearchHit[] = useMemo(() => {
     const q = query.trim().toLowerCase()
     if (q.length < 2) return []
     const hits: SearchHit[] = []
-    for (const t of tableaux) {
+
+    // Tableaux + rangées + disjoncteurs
+    for (const t of data.tableaux) {
       if (
         matches(t.id, q) ||
         matches(t.nom, q) ||
@@ -39,11 +73,7 @@ export function useSearch(tableaux: Tableau[]) {
         })
       }
       for (const r of t.rangees) {
-        if (
-          matches(r.id, q) ||
-          matches(r.libelle, q) ||
-          matches(r.notes, q)
-        ) {
+        if (matches(r.id, q) || matches(r.libelle, q) || matches(r.notes, q)) {
           hits.push({
             type: 'rangee',
             tableauId: t.id,
@@ -73,8 +103,103 @@ export function useSearch(tableaux: Tableau[]) {
         }
       }
     }
-    return hits.slice(0, 40)
-  }, [tableaux, query])
+
+    // Pièces
+    for (const p of data.pieces) {
+      if (
+        matches(p.id, q) ||
+        matches(p.trigramme, q) ||
+        matches(p.nom, q) ||
+        matches(p.notes, q)
+      ) {
+        hits.push({
+          type: 'piece',
+          pieceId: p.id,
+          label: p.nom,
+          sublabel: `Pièce · ${p.trigramme} · ${p.niveau}`,
+          matchedField: matches(p.trigramme, q) ? 'trigramme' : 'pièce',
+        })
+      }
+    }
+
+    // Lignes
+    for (const l of data.lignes) {
+      if (
+        matches(l.id, q) ||
+        matches(l.libelle, q) ||
+        matches(l.parcours, q) ||
+        matches(l.notes, q)
+      ) {
+        hits.push({
+          type: 'ligne',
+          ligneId: l.id,
+          label: `${l.id} — ${l.libelle}`,
+          sublabel: `Ligne · source ${l.disjoncteur_id}`,
+          matchedField: matches(l.id, q) ? 'id' : 'ligne',
+        })
+      }
+    }
+
+    // End-points
+    const pieceById = new Map(data.pieces.map((p) => [p.id, p]))
+    for (const e of data.endpoints) {
+      if (
+        matches(e.id, q) ||
+        matches(e.usage_principal, q) ||
+        matches(e.notes, q) ||
+        matches(e.position_detail, q)
+      ) {
+        const piece = pieceById.get(e.piece_id)
+        hits.push({
+          type: 'endpoint',
+          endpointId: e.id,
+          pieceId: e.piece_id,
+          label: `${e.id}${e.usage_principal ? ' — ' + e.usage_principal : ''}`,
+          sublabel: `End-point · ${piece?.nom ?? e.piece_id}`,
+          matchedField: matches(e.id, q) ? 'id' : 'end-point',
+        })
+      }
+    }
+
+    // Appareils fixes
+    for (const a of data.appareils) {
+      if (
+        matches(a.id, q) ||
+        matches(a.nom, q) ||
+        matches(a.marque, q) ||
+        matches(a.modele, q) ||
+        matches(a.usage_principal, q) ||
+        matches(a.notes, q)
+      ) {
+        const piece = pieceById.get(a.piece_id)
+        hits.push({
+          type: 'appareil',
+          appareilId: a.id,
+          pieceId: a.piece_id,
+          label: a.nom,
+          sublabel: `Appareil · ${piece?.nom ?? a.piece_id} · ${a.id}`,
+          matchedField: matches(a.id, q) ? 'id' : 'appareil',
+        })
+      }
+    }
+
+    // Volets
+    for (const v of data.volets) {
+      if (matches(v.id, q) || matches(v.notes, q)) {
+        const piece = pieceById.get(v.piece_id)
+        hits.push({
+          type: 'volet',
+          voletId: v.id,
+          pieceId: v.piece_id,
+          label: v.id,
+          sublabel: `Volet · ${piece?.nom ?? v.piece_id} · ${v.type.replace('_', ' ')}`,
+          matchedField: matches(v.id, q) ? 'id' : 'volet',
+        })
+      }
+    }
+
+    return hits.slice(0, 50)
+  }, [data, query])
 
   return { query, setQuery, results }
 }
