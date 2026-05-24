@@ -37,7 +37,7 @@ export function CheminementView({ store, onOpenTableau }: Props) {
         </p>
       </div>
 
-      <div className="flex flex-col items-center">
+      <div className="max-w-4xl mx-auto flex flex-col items-center gap-0">
         <SourceNode
           label="Linky"
           sub="Compteur communicant Enedis triphasé"
@@ -78,11 +78,13 @@ export function CheminementView({ store, onOpenTableau }: Props) {
           ]}
         />
         <VerticalLink />
-        <TableauTree
-          tableau={root}
-          store={store}
-          onOpenTableau={onOpenTableau}
-        />
+        <div className="w-full">
+          <TableauTree
+            tableau={root}
+            store={store}
+            onOpenTableau={onOpenTableau}
+          />
+        </div>
       </div>
     </div>
   )
@@ -295,7 +297,7 @@ function TableauBox({
 
   return (
     <div
-      className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} px-4 pt-3 pb-0 max-w-md`}
+      className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} px-4 pt-3 pb-0 w-full`}
     >
       <div className="flex items-start gap-3 pb-3">
         {tableau.photo_url && (
