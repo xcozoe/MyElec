@@ -47,18 +47,26 @@ export function CheminementView({ store, onOpenTableau }: Props) {
       <div className="space-y-3">
         <SourceNode
           label="Linky"
-          sub="Compteur communicant Enedis"
+          sub="Compteur communicant Enedis triphasé"
           image="/sources/linky.png"
-          imageNote="Photo illustrative (Linky Sagemcom monophasé S12C5). Le compteur réel installé est un modèle triphasé."
           specs={[
             ['Marque', 'Sagemcom'],
-            ['Référence', 'LNE-29080'],
-            ['Modèle', 'S34C3 (triphasé)'],
-            ['Tension nominale', '3 × 230 / 400 V ~ 50 Hz'],
-            ['Courant nominal (In)', '0,5 — 10 (60) A par phase'],
-            ['Type', 'Compteur communicant Enedis (CPL)'],
+            ['Modèle', 'S34C5 (triphasé)'],
+            ['Référence', 'LNE-29125'],
+            ['Tension nominale (Un)', '3 × 230 / 400 V ~'],
+            ['Courant nominal (In)', '10 (60) A par phase'],
+            ['Courant maximal (Imax)', '60 A'],
+            ['Fréquence', '50 Hz'],
+            ['Classe de précision', 'B'],
+            ['Normes', 'EN 50470-1 / EN 50470-3'],
+            ['Indice de protection', 'IP 51'],
+            ['Température', '-25 °C à +55 °C'],
+            ["Classe d'isolement", 'II'],
+            ['Catégorie de surtension', 'III'],
+            ['Communication', 'CPL (Courant Porteur en Ligne)'],
+            ['Dimensions', '150 × 210 mm (profondeur ~70 mm)'],
+            ['Capacité bornes', '10 à 35 mm² cuivre (couple 2,5 à 3 N·m)'],
             ['Abonnement', '18 kVA triphasé (Total Énergies)'],
-            ['Indice de protection', 'IP 51 (typique)'],
             ['Emplacement', 'Coffret extérieur Enedis, ~150 m du tableau principal'],
           ]}
         />
