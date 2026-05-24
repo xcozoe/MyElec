@@ -183,6 +183,7 @@ export const diffEndPoint = makeDiff<EndPoint>('endpoint', [
   'puissance_w',
   'nb_sources',
   'lumens_unitaires',
+  'alimentation',
   'notes',
 ])
 

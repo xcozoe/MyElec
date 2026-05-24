@@ -249,6 +249,10 @@ function EndpointRow({
   onClick?: () => void
   onOpenLigne?: (ligneId: string) => void
 }) {
+  const sansFil =
+    (e.type === 'IN' || e.type === 'BT') &&
+    e.alimentation &&
+    e.alimentation !== 'filaire'
   return (
     <li
       onClick={onClick}
@@ -274,6 +278,14 @@ function EndpointRow({
           {e.position_detail && <> · {e.position_detail}</>}
         </div>
       </div>
+      {sansFil && (
+        <span
+          className="text-[10px] uppercase rounded bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 px-2 py-0.5"
+          title={e.alimentation === 'pile' ? 'Sans-fil — pile' : 'Sans-fil — autonome'}
+        >
+          {e.alimentation}
+        </span>
+      )}
       {e.ligne_id && onOpenLigne && (
         <button
           onClick={(ev) => {

@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  ALIMENTATIONS_COMMANDE,
   ENDPOINT_TYPES,
   MURS,
   TYPES_COMMANDE,
   TYPES_LUMINAIRE,
   TYPES_PRISE,
+  type AlimentationCommande,
   type EndPoint,
   type EndPointType,
   type Ligne,
@@ -87,6 +89,11 @@ export function EndPointEditor({
   const showPriseFields = e.type === 'PC' || e.type === 'PD'
   const showLuminaireFields = e.type === 'PL'
   const showCommandeOnly = e.type === 'IN' || e.type === 'BT'
+
+  // Alimentation : par défaut 'filaire' pour IN/BT, ignoré pour les autres types.
+  const alimentation: AlimentationCommande = e.alimentation ?? 'filaire'
+  const isSansFil = showCommandeOnly && alimentation !== 'filaire'
+  const showLigneField = !isSansFil
 
   const handleSave = async (thenNew = false) => {
     setError(null)
@@ -216,30 +223,32 @@ export function EndPointEditor({
         />
       </Field>
 
-      <Field label="Ligne d'alimentation">
-        {lignes.length === 0 ? (
-          <input
-            type="text"
-            value={e.ligne_id ?? ''}
-            onChange={(ev) => setE({ ...e, ligne_id: ev.target.value || undefined })}
-            placeholder="Aucune ligne en base — laissez vide ou tapez l'ID prévu"
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
-          />
-        ) : (
-          <select
-            value={e.ligne_id ?? ''}
-            onChange={(ev) => setE({ ...e, ligne_id: ev.target.value || undefined })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            <option value="">— Aucune / à définir —</option>
-            {lignes.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.id} — {l.libelle}
-              </option>
-            ))}
-          </select>
-        )}
-      </Field>
+      {showLigneField && (
+        <Field label="Ligne d'alimentation">
+          {lignes.length === 0 ? (
+            <input
+              type="text"
+              value={e.ligne_id ?? ''}
+              onChange={(ev) => setE({ ...e, ligne_id: ev.target.value || undefined })}
+              placeholder="Aucune ligne en base — laissez vide ou tapez l'ID prévu"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+            />
+          ) : (
+            <select
+              value={e.ligne_id ?? ''}
+              onChange={(ev) => setE({ ...e, ligne_id: ev.target.value || undefined })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              <option value="">— Aucune / à définir —</option>
+              {lignes.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.id} — {l.libelle}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
+      )}
 
       {/* ---------- Champs spécifiques au type ---------- */}
 
@@ -401,25 +410,54 @@ export function EndPointEditor({
       )}
 
       {showCommandeOnly && (
-        <Field label="Type de commande">
-          <select
-            value={e.commande ?? ''}
-            onChange={(ev) =>
-              setE({
-                ...e,
-                commande: (ev.target.value || undefined) as TypeCommande | undefined,
-              })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+        <div className="rounded-md border border-slate-200 dark:border-slate-800 p-3 space-y-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            Caractéristiques commande
+          </div>
+          <Field label="Type de commande">
+            <select
+              value={e.commande ?? ''}
+              onChange={(ev) =>
+                setE({
+                  ...e,
+                  commande: (ev.target.value || undefined) as TypeCommande | undefined,
+                })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              <option value="">—</option>
+              {TYPES_COMMANDE.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="Alimentation"
+            hint='ex : Philips Hue Tap / Dimmer → "Sans-fil — pile"'
           >
-            <option value="">—</option>
-            {TYPES_COMMANDE.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </Field>
+            <select
+              value={alimentation}
+              onChange={(ev) => {
+                const next = ev.target.value as AlimentationCommande
+                setE({
+                  ...e,
+                  alimentation: next,
+                  // Si on passe en sans-fil, on retire la référence à la ligne.
+                  ligne_id: next === 'filaire' ? e.ligne_id : undefined,
+                })
+              }}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              {ALIMENTATIONS_COMMANDE.map((a) => (
+                <option key={a.value} value={a.value}>
+                  {a.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
       )}
 
       <Field label="Notes">

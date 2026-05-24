@@ -181,6 +181,8 @@ export type TypeCommande =
   | 'domotique'
   | 'toujours_allume'
 
+export type AlimentationCommande = 'filaire' | 'pile' | 'autonome'
+
 export interface EndPoint {
   id: string
   type: EndPointType
@@ -199,6 +201,10 @@ export interface EndPoint {
   puissance_w?: number
   nb_sources?: number
   lumens_unitaires?: number
+
+  // IN / BT uniquement : 'filaire' (par défaut, ligne_id requis),
+  // 'pile' (interrupteur sans-fil Hue, Bticino…), 'autonome' (EnOcean).
+  alimentation?: AlimentationCommande
 
   notes?: string
 }
@@ -332,6 +338,12 @@ export const TYPES_LUMINAIRE: { value: TypeLuminaire; label: string }[] = [
   { value: 'exterieur_facade', label: 'Extérieur façade' },
   { value: 'exterieur_jardin', label: 'Extérieur jardin' },
   { value: 'projecteur', label: 'Projecteur' },
+]
+
+export const ALIMENTATIONS_COMMANDE: { value: AlimentationCommande; label: string }[] = [
+  { value: 'filaire', label: 'Filaire (ligne électrique)' },
+  { value: 'pile', label: 'Sans-fil — pile' },
+  { value: 'autonome', label: 'Sans-fil — autonome (EnOcean…)' },
 ]
 
 export const TYPES_COMMANDE: { value: TypeCommande; label: string }[] = [
