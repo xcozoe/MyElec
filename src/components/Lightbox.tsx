@@ -1,8 +1,14 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 /**
  * Affiche une image en plein écran avec un overlay sombre. Ferme au
  * clic en dehors de l'image, sur la croix, ou via Echap.
+ *
+ * Rendu via React portal sur `document.body` pour éviter les bugs de
+ * sémantique HTML quand la Lightbox est imbriquée dans un <label>
+ * (notamment sur iOS Safari, où le tap sur l'overlay est intercepté
+ * par le label et le bouton Fermer ne se déclenche pas).
  */
 export function Lightbox({
   src,
@@ -27,10 +33,14 @@ export function Lightbox({
     }
   }, [onClose])
 
-  return (
+  const content = (
     <div
       onClick={onClose}
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm p-4 sm:p-8 flex items-center justify-center"
+      style={{
+        paddingTop: 'max(1rem, calc(env(safe-area-inset-top) + 0.5rem))',
+        paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))',
+      }}
       role="dialog"
       aria-modal="true"
       aria-label={alt}
@@ -40,7 +50,8 @@ export function Lightbox({
           e.stopPropagation()
           onClose()
         }}
-        className="absolute top-4 right-4 rounded-full bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 text-sm"
+        className="absolute right-3 sm:right-4 rounded-full bg-white/15 hover:bg-white/25 text-white px-4 py-2 text-sm font-medium"
+        style={{ top: 'max(0.75rem, calc(env(safe-area-inset-top) + 0.25rem))' }}
         aria-label="Fermer"
       >
         Fermer ✕
@@ -62,4 +73,7 @@ export function Lightbox({
       </div>
     </div>
   )
+
+  if (typeof document === 'undefined') return content
+  return createPortal(content, document.body)
 }

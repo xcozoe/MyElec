@@ -5,18 +5,18 @@
     "emplacement": "Garage — arrivée principale de l'électricité",
     "alimentation": "triphase",
     "arrivee_phases": "TRI",
-    "notes": "Tableau principal — point d'entrée de l'électricité Enedis depuis le coffret extérieur (~150 m de câble). Disjoncteur de branchement Itron 4 pôles 500 mA sélectif réglé à 30 A par phase en amont (hors tableau). Différentiel Legrand 086 94 (40 A 30 mA Type AC tétrapolaire) en tête : différentiel principal qui protège l'ensemble de la maison. Aval : (1) Hager NFT 840 C40 tétra → Tableau Secondaire Chaufferie, (2) jonction triphasée directe (pas de disjoncteur de tête) → Tableau Secondaire Garage, (3) 9 départs DNX³ monophasés locaux (sous-sol / garage).",
+    "notes": "Tableau principal — point d'entrée de l'électricité Enedis depuis le coffret extérieur (~150 m de câble). Disjoncteur de branchement Itron 4 pôles 500 mA sélectif réglé à 30 A par phase en amont (hors tableau).",
     "rangees": [
       {
         "id": "tsg-r1",
         "numero": 1,
         "libelle": "Arrivée principale + Différentiel maison + repartition TRI",
         "phase": "TRI",
-        "differentiel_id": "TP-R1-DIFF-LEGRAND",
-        "notes": "Rangée arrivée/protection.\nCheminement électrique : Legrand 086 94 tétrapolaire 40 A 30 mA Type AC (tête de tableau)\n=> Hager NFT 840 C40 tétrapolaire -> tableau secondaire chaufferie\n=> bornier de répartition tri\nLe bornier transmet directement :\n=> vers tableau secondaire garage\n=> vers la rangée 2 du coffret",
+        "differentiel_id": "TP-R1-DIFF",
+        "notes": "Différentiel Legrand 086 94 (40 A 30 mA Type AC tétrapolaire) en tête : différentiel principal qui protège l'ensemble de la maison. Aval : (1) Hager NFT 840 C40 tétra → Tableau Secondaire Chaufferie, (2) jonction triphasée directe (pas de disjoncteur de tête) → Tableau Secondaire Garage, (3) 9 départs DNX³ monophasés locaux (sous-sol / garage).",
         "disjoncteurs": [
           {
-            "id": "TP-R1-DIFF-LEGRAND",
+            "id": "TP-R1-DIFF",
             "position": 1,
             "etiquette": "Différentiel tête de tableau",
             "type_protection": "differentiel_tete_tableau",
@@ -28,7 +28,7 @@
             "photo_url": "/sources/legrand-086-94.png"
           },
           {
-            "id": "TP-R1-DISJ-HAGER",
+            "id": "TP-R1-DISJ",
             "position": 2,
             "etiquette": "Disjoncteur TRI",
             "type_protection": "disjoncteur",
@@ -48,7 +48,7 @@
             "calibre": "40 A",
             "poles": "tetra",
             "phase_affectation": "TRI",
-            "differentiel_parent_id": "TP-R1-DIFF-LEGRAND",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
             "notes": "Bornier Legrand 048 86 — bornier de répartition tétrapolaire (3P+N) à 2 niveaux, 125 A — 500 V~ — Ui 500V — Uimp 6 kV — Ipk 20 kA — EN 60947-1 — montage rail DIN 35 mm — fonctionnement -40 °C à +40 °C — degré de pollution 3. Capots de protection transparents. Connexions : Ø5.3 (1.5–10 mm² / 2.5–10 mm²), Ø7.5 (6–16 mm² / 10–25 mm²), Ø9 (10–16 mm² / 10–35 mm² / 25 mm²). Couple de serrage 2 N·m. Passif, sans protection : en aval du différentiel Legrand 086 94 qui assure la protection différentielle. Ramifie l'alimentation TRI vers : (1) jonction TRI directe → Tableau Secondaire Garage, (2) départs mono → 9 disjoncteurs DNX³ de la rangée 2.",
             "photo_url": "/sources/legrand-048-86.png"
@@ -60,30 +60,31 @@
         "numero": 2,
         "libelle": "9 départs Legrand DNX³ mono",
         "phase": "inconnue",
-        "differentiel_id": "TP-R1-DIFF-LEGRAND",
+        "differentiel_id": "TP-R1-DIFF",
         "notes": "9 disjoncteurs Legrand DNX³ monophasés en aval du différentiel Legrand 40 A 30 mA Type AC (rangée 1). Lus de gauche à droite. Phase exacte à identifier.",
         "disjoncteurs": [
           {
-            "id": "TP-R2-POMPE-RELEVAGE",
+            "id": "TP-R2-PR-GAR",
             "position": 1,
-            "etiquette": "Pompe Relevage",
+            "etiquette": "PR Garage",
             "type_protection": "disjoncteur",
             "calibre": "C20",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
-            "notes": "Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté."
+            "notes": "Legrand DNX³ C20.\nAlimente la pompe de relevage dans le garage et la prise à côté.",
+            "appareil_pilote": "Pompe Relevage"
           },
           {
-            "id": "TP-R2-PC-SEJOUR-B",
+            "id": "TP-R2-PC-SEJB",
             "position": 2,
             "etiquette": "PC Séjour B",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
             "notes": "Legrand DNX³ C16. Deuxième circuit « PC salle séjour » sur cette rangée — différencié en « B » par convention de nommage."
           },
@@ -95,81 +96,80 @@
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
             "notes": "Legrand DNX³ C16. [?] Étiquette à identifier physiquement."
           },
           {
-            "id": "TP-R2-PC-SEJOUR-A",
+            "id": "TP-R2-PC-SEJA",
             "position": 4,
             "etiquette": "PC Séjour A",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
             "notes": "Legrand DNX³ C16. [?] À recouper avec « PC Séjour » présents en TP-R2 (TP-R2-PC-SEJ) et TP-R4 (TP-R4-PC-SEJ) — risque de doublon de nommage."
           },
           {
-            "id": "TP-R2-ECL-SEJOUR",
+            "id": "TP-R2-ECL-SEJ",
             "position": 5,
-            "etiquette": "Lumière séjour",
+            "etiquette": "ECL Séjour",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
             "notes": "Legrand DNX³ C10. [?] À recouper avec TP-R2-ECL-SEJ (du tableau principal) — possible doublon ou circuits distincts."
           },
           {
-            "id": "TP-R2-ECL-CUISINE-GARAGE",
+            "id": "TP-R2-ECL-GAR-ZST",
             "position": 6,
-            "etiquette": "Lumière garage et zone stockage",
+            "etiquette": "ECL Garage / Stock",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
-            "notes": "Legrand DNX³ C10.\nGlobalement assure éclairage sous-sol "
+            "notes": "Legrand DNX³ C10.\nGlobalement assure éclairage sous-sol : garage et zone stockage"
           },
           {
-            "id": "TP-R2-PC-GARAGE",
+            "id": "TP-R2-PC-GAR",
             "position": 7,
             "etiquette": "PC Garage",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
             "notes": "Legrand DNX³ C16."
           },
           {
-            "id": "TP-R2-DETECT-LUM",
+            "id": "TP-R2-DP-ZGA",
             "position": 8,
-            "etiquette": "Détecteur Lumineux présence et écran interphone intérieur ",
+            "etiquette": "DP Zone Garage",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
+            "differentiel_parent_id": "TP-R1-DIFF",
             "statut": "actif",
-            "notes": "Legrand DNX³ C10.\nÉclairage garage extérieur.\nÉcran interphone intérieur."
+            "notes": "Détecteur présence zone garage\nÉcran interphone intérieur."
           },
           {
-            "id": "TP-R2-VR",
+            "id": "TP-R2-VR-GAR",
             "position": 9,
-            "etiquette": "Volet roulant garage",
+            "etiquette": "VR Garage",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TP-R1-BORNIER",
-            "statut": "actif",
-            "notes": "Legrand DNX³ C10. [?] Volet roulant — à préciser quel(s) volet(s) (garage ? autre ?)."
+            "differentiel_parent_id": "TP-R1-DIFF",
+            "statut": "actif"
           }
         ]
       }
@@ -689,18 +689,18 @@
     "alimentation": "triphase",
     "arrivee_phases": "TRI",
     "parent_tableau_id": "tableau-principal",
-    "notes": "Tableau Hager 2 rangées en chaufferie. Alimenté en triphasé par le Tableau Principal via TP-R1-DISJ-HAGER (Hager NFT 840 C40 tétrapolaire, en aval du différentiel Legrand 086 94 du Tableau Principal). Différentiel général Hager CDC 440F 40 A 30 mA Type AC tétrapolaire en tête de rangée 1. Récepteur Sauter HC/HP KRT 30 (HN96-S-82) pour asservissement heures creuses. Une prise élec de service est intégrée à droite de la rangée 2.",
+    "notes": "Tableau Hager 2 rangées en chaufferie. Alimenté en triphasé par le Tableau Principal via TP-R1-DISJ-HAGER (Hager NFT 840 C40 tétrapolaire, en aval du différentiel Legrand 086 94 du Tableau Principal).",
     "rangees": [
       {
         "id": "ti-r1",
         "numero": 1,
         "libelle": "Différentiel tableau + récepteur HC/HP + départs",
         "phase": "TRI",
-        "differentiel_id": "TI-R1-DIFF-GEN",
-        "notes": "Rangée du haut. Repère TI (Tableau Intermédiaire) dans la convention de nommage.",
+        "differentiel_id": "TSC-R1-DIFF",
+        "notes": "Différentiel général Hager CDC 440F 40 A 30 mA Type AC tétrapolaire en tête de rangée 1. Récepteur Sauter HC/HP KRT 30 (HN96-S-82) pour asservissement heures creuses.",
         "disjoncteurs": [
           {
-            "id": "TI-R1-DIFF-GEN",
+            "id": "TSC-R1-DIFF",
             "position": 1,
             "etiquette": "Différentiel général",
             "type_protection": "differentiel_tete_tableau",
@@ -711,7 +711,7 @@
             "notes": "Hager CDC 440F 40 A 30 mA Type AC (tétrapolaire) en tête de tableau."
           },
           {
-            "id": "TI-R1-RECEPTEUR-HCHP",
+            "id": "TSC-R1-RECEPTEUR-HCHP",
             "position": 2,
             "etiquette": "Récepteur HC/HP",
             "type_protection": "horloge",
@@ -723,75 +723,76 @@
             "notes": "Sauter KRT 30 HN96-S-82."
           },
           {
-            "id": "TI-LUMIERE-LOCAL",
+            "id": "TSC-R1-ECL-CHA",
             "position": 3,
-            "etiquette": "Lumière du local",
+            "etiquette": "ECL Chaufferie",
             "type_protection": "disjoncteur",
             "calibre": "C10",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "differentiel_parent_id": "TSC-R1-DIFF",
             "statut": "actif",
             "notes": "MFS 710 C10 mono. Phase à identifier."
           },
           {
-            "id": "TI-LIBRE-1",
+            "id": "TSC-R1-LIBRE-1",
             "position": 4,
             "etiquette": "LIBRE",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "differentiel_parent_id": "TSC-R1-DIFF",
             "statut": "libre",
             "notes": "MFN 716 C16 mono. Anciennement étiqueté Pompe Chaleur."
           },
           {
-            "id": "TI-LIBRE-2",
+            "id": "TSC-R1-LIBRE-2",
             "position": 5,
             "etiquette": "LIBRE",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "differentiel_parent_id": "TSC-R1-DIFF",
             "statut": "libre",
             "notes": "MFN 716 C16 mono. Anciennement étiqueté Pompe Chaleur."
           },
           {
-            "id": "TI-LIBRE-3",
+            "id": "TSC-R1-LIBRE-3",
             "position": 6,
             "etiquette": "LIBRE",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
-            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "differentiel_parent_id": "TSC-R1-DIFF",
             "statut": "libre",
             "notes": "MFN 716 C16 mono. Anciennement étiqueté Pompe Chaleur."
           },
           {
-            "id": "TI-CHAUDIERE-PELLETS",
+            "id": "TSC-R1-PC2-CHA",
             "position": 7,
-            "etiquette": "Chaudière à pellets ÖkoFEN PES36",
+            "etiquette": "PC2 Chaufferie",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "tetra",
             "phase_affectation": "TRI",
-            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "differentiel_parent_id": "TSC-R1-DIFF",
             "statut": "actif",
             "notes": "NF 416 C16 tétrapolaire. Chaudière à pellets ÖkoFEN Pellematic PES36 en triphasé."
           },
           {
-            "id": "TI-PRISE-FACADE",
+            "id": "TSC-R1-PC1-CHA",
             "position": 8,
-            "etiquette": "Prise Élec façade tableau",
+            "etiquette": "PC1 Chaufferie",
             "type_protection": "disjoncteur",
             "calibre": "C16",
             "poles": "mono",
             "phase_affectation": "inconnue",
             "statut": "actif",
-            "notes": "MFS 716 C16 mono."
+            "notes": "MFS 716 C16 mono.",
+            "differentiel_parent_id": "TSC-R1-DIFF"
           }
         ]
       },
@@ -803,21 +804,21 @@
         "notes": "Rangée du bas. Comprend le départ Local Piscine (MJT 732) à gauche, plusieurs slots libres masqués par un cache, et une prise élec de service (2P+T) intégrée au tableau à droite (alimentation à confirmer).",
         "disjoncteurs": [
           {
-            "id": "TI-LOCAL-PISCINE",
+            "id": "TSC-R2-LOCAL-PISCINE",
             "position": 1,
             "etiquette": "Local Piscine",
             "type_protection": "disjoncteur_diff_dedie",
             "calibre": "C32 30 mA",
             "poles": "mono_diff",
             "phase_affectation": "L3",
-            "differentiel_parent_id": "TI-R1-DIFF-GEN",
+            "differentiel_parent_id": "TSC-R1-DIFF",
             "statut": "actif",
             "notes": "Hager MJT 732 C32 mono différentiel. Basculé de la phase L1 vers L3 le 22/05/2026 (déplacement du fil borne 2 → borne 4 en aval du Hager CDC 440F) — disjonctions intempestives résolues. ID conservé sous TI-LOCAL-PISCINE (sans prefix R2) pour préserver les références historiques et la cascade vers Tableau Local Piscine."
           }
         ]
       }
     ],
-    "parent_disjoncteur_id": "TP-R1-DISJ-HAGER"
+    "parent_disjoncteur_id": "TP-R1-DISJ"
   },
   {
     "id": "tableau-local-piscine",
@@ -826,7 +827,7 @@
     "alimentation": "monophase",
     "arrivee_phases": "L3",
     "parent_tableau_id": "tableau-secondaire-chaufferie",
-    "parent_disjoncteur_id": "TI-LOCAL-PISCINE",
+    "parent_disjoncteur_id": "TSC-R2-LOCAL-PISCINE",
     "notes": "Petit tableau alimenté en monophasé depuis TI-LOCAL-PISCINE (phase L3 depuis le 22/05/2026).",
     "rangees": [
       {

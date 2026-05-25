@@ -27,6 +27,25 @@ export function CheminementView({ store, onOpenTableau }: Props) {
     <div>
       <div className="max-w-5xl mx-auto flex flex-col items-center gap-0">
         <SourceNode
+          label="TotalEnergies"
+          sub="Fournisseur d'électricité — Abonnement 18 kVA triphasé"
+          image="/sources/Logo_TotalEnergies.svg.png"
+          emoji="🔌"
+          specs={[
+            ['Fournisseur', 'TotalEnergies'],
+            ['Offre', 'Électricité Verte Fixe'],
+            ['Puissance souscrite', '18 kVA triphasé'],
+            ['Tension contractuelle', '3 × 230 / 400 V'],
+            ['Compteur associé', 'Linky Sagemcom S34C5'],
+            ['Type de raccordement', 'Branchement triphasé Enedis'],
+          ]}
+          link={{
+            href: 'https://www.totalenergies.fr/clients',
+            label: 'Ouvrir l’espace client TotalEnergies',
+          }}
+        />
+        <VerticalLink />
+        <SourceNode
           label="Linky"
           sub="Compteur communicant Enedis triphasé"
           image="/sources/linky-facade.png"
@@ -88,6 +107,8 @@ function SourceNode({
   image,
   imageDetails,
   specs,
+  link,
+  emoji = '⚡',
 }: {
   label: string
   sub?: string
@@ -97,6 +118,8 @@ function SourceNode({
    *  l'image vignette elle-même. */
   imageDetails?: string
   specs?: [string, string][]
+  link?: { href: string; label: string }
+  emoji?: string
 }) {
   const [zoom, setZoom] = useState(false)
   const [showSpecs, setShowSpecs] = useState(false)
@@ -125,20 +148,33 @@ function SourceNode({
           </button>
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold">⚡ {label}</div>
+          <div className="text-sm font-semibold">{emoji} {label}</div>
           {sub && (
             <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               {sub}
             </div>
           )}
-          {hasSpecs && (
-            <button
-              onClick={() => setShowSpecs((s) => !s)}
-              className="mt-1 text-[11px] underline decoration-dotted text-slate-600 dark:text-slate-300 hover:opacity-80"
-            >
-              {showSpecs ? 'Masquer les caractéristiques' : 'Voir les caractéristiques'}
-            </button>
-          )}
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+            {hasSpecs && (
+              <button
+                onClick={() => setShowSpecs((s) => !s)}
+                className="text-[11px] underline decoration-dotted text-slate-600 dark:text-slate-300 hover:opacity-80"
+              >
+                {showSpecs ? 'Masquer les caractéristiques' : 'Voir les caractéristiques'}
+              </button>
+            )}
+            {link && (
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] underline decoration-dotted text-slate-600 dark:text-slate-300 hover:opacity-80 inline-flex items-center gap-1"
+              >
+                {link.label}
+                <span aria-hidden>↗</span>
+              </a>
+            )}
+          </div>
         </div>
       </div>
 

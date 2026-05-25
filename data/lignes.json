@@ -7,21 +7,21 @@
   {
     "id": "L-VR-GAR",
     "libelle": "Alimentation volet roulant garage",
-    "disjoncteur_id": "TP-R2-VR"
+    "disjoncteur_id": "TP-R2-VR-GAR"
   },
   {
     "id": "L-PL-GAR",
     "libelle": "Alimentation détecteur lumineux garage",
-    "disjoncteur_id": "TP-R2-DETECT-LUM"
+    "disjoncteur_id": "TP-R2-DP-ZGA"
   },
   {
     "id": "L-PR-GAR",
     "libelle": "Alimentation Pompe Relevage",
-    "disjoncteur_id": "TP-R2-POMPE-RELEVAGE"
+    "disjoncteur_id": "TP-R2-PR-GAR"
   },
   {
     "id": "L-PL-GARAGE",
     "libelle": "Alimentation réseau luminaires ",
-    "disjoncteur_id": "TP-R2-ECL-CUISINE-GARAGE"
+    "disjoncteur_id": "TP-R2-ECL-GAR-ZST"
   }
 ]
