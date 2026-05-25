@@ -208,8 +208,6 @@ function TableauTree({
   store: Store
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
-  // Construit la liste des chips clés (cascade) avec leur éventuel
-  // sous-tableau attaché.
   const { chipNodes, layout } = useMemo(() => {
     const childByDjId = new Map<string, Tableau>()
     for (const t of store.tableaux) {
@@ -231,46 +229,206 @@ function TableauTree({
 
   const hasAnyChild = chipNodes.some((n) => n.childTableau)
 
+  // Cas horizontal : layout en deux étages dans la boîte.
+  //  - Étage du haut (« prélude ») : les chips non-jonction (typiquement
+  //    le différentiel général) sur leur propre ligne, pleine largeur.
+  //  - Une flèche ↓ relie le prélude au premier chip de jonction.
+  //  - Étage du bas (« jonctions ») : un chip par sous-tableau, en
+  //    colonnes 1fr (50/50 pour deux jonctions), séparées par une flèche
+  //    horizontale → centrée.
+  //  - Sous chaque chip de jonction, une flèche verticale ↓ ancrée en
+  //    absolu descend exactement vers le sous-tableau correspondant.
+  // Comme les chips de jonction et leurs sous-tableaux partagent les
+  // mêmes colonnes 1fr, ils sont parfaitement alignés.
+  if (layout === 'horizontal') {
+    const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
+    const nbDj = tableau.rangees.reduce(
+      (acc, r) => acc + r.disjoncteurs.length,
+      0,
+    )
+
+    const firstJunctionIdx = chipNodes.findIndex((n) => !!n.childTableau)
+    const preludeChips =
+      firstJunctionIdx >= 0 ? chipNodes.slice(0, firstJunctionIdx) : []
+    const junctions = chipNodes.filter((n) => !!n.childTableau)
+    const hasPrelude = preludeChips.length > 0
+
+    // Pistes de colonnes : une 1fr par jonction, séparées par `auto`
+    // (la flèche → entre chips). Pour 2 jonctions →
+    //   `minmax(0, 1fr) auto minmax(0, 1fr)` (3 pistes).
+    const colTracks: string[] = []
+    junctions.forEach((_, i) => {
+      if (i > 0) colTracks.push('auto')
+      colTracks.push('minmax(0, 1fr)')
+    })
+    const gridTemplateColumns = colTracks.join(' ')
+
+    const headerRow = 1
+    const preludeRow = 2
+    const junctionRow = hasPrelude ? 3 : 2
+    const subTableauRow = junctionRow + 1
+    // La boîte couvre depuis la ligne 1 jusqu'à la fin du rang jonctionRow.
+    const boxRowSpan = `1 / ${junctionRow + 1}`
+
+    return (
+      <div className="relative grid w-full" style={{ gridTemplateColumns }}>
+        {/* Fond de la boîte : en-tête + prélude + flèche + jonctions */}
+        <div
+          className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} pointer-events-none`}
+          style={{ gridColumn: '1 / -1', gridRow: boxRowSpan }}
+          aria-hidden
+        />
+
+        {/* En-tête du tableau */}
+        <div
+          style={{ gridColumn: '1 / -1', gridRow: `${headerRow}` }}
+          className="relative px-4 pt-3 pb-2"
+        >
+          <button
+            onClick={() => onOpenTableau(tableau.id)}
+            className="text-left hover:opacity-80 min-w-0"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base font-semibold">📦 {tableau.nom}</h2>
+              <span
+                className={`text-[10px] uppercase tracking-wider ${phaseStyle.text}`}
+              >
+                · {tableau.alimentation === 'triphase'
+                  ? 'TRI'
+                  : tableau.arrivee_phases ?? 'mono'}
+              </span>
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {tableau.emplacement} · {nbDj} disjoncteur
+              {nbDj > 1 ? 's' : ''}
+            </div>
+          </button>
+        </div>
+
+        {/* Étage prélude : chips non-jonction (Diff général) — placés
+            dans la colonne 1 uniquement, donc même largeur que le chip
+            de jonction (Bornier) dessous. La flèche ↓ vers la jonction
+            est ancrée en absolu directement sous le chip Diff. */}
+        {hasPrelude && (
+          <div
+            style={{ gridColumn: '1', gridRow: `${preludeRow}` }}
+            className="relative pl-4 pr-2 pb-8 flex flex-col items-stretch gap-1"
+          >
+            <div className="relative flex flex-col items-stretch gap-1">
+              {preludeChips.map((node, i) => (
+                <Fragment key={node.dj.id}>
+                  {i > 0 && (
+                    <div
+                      className="self-center text-slate-500 dark:text-slate-400 text-xs leading-none"
+                      aria-hidden
+                    >
+                      ↓
+                    </div>
+                  )}
+                  <DisjoncteurChip
+                    dj={node.dj}
+                    target={node.childTableau?.nom}
+                    onClick={() => onOpenTableau(tableau.id, node.dj.id)}
+                  />
+                </Fragment>
+              ))}
+              {/* Flèche ↓ : dernier prélude (Diff) → première jonction
+                  (Bornier). Part DU chip Diff (top:100%) et descend
+                  jusqu'à juste au-dessus du chip Bornier. */}
+              <div
+                className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+                style={{ top: '100%' }}
+                aria-hidden
+              >
+                <div className="h-5 w-0.5 bg-slate-500 dark:bg-slate-400" />
+                <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                  ▼
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Étage jonctions : chips + flèches → entre eux + flèches ↓ en
+            absolu pour pointer chaque sous-tableau */}
+        {junctions.map((node, ji) => {
+          const chipCol = 2 * ji + 1
+          const arrowCol = 2 * ji
+          const isFirst = ji === 0
+          const isLast = ji === junctions.length - 1
+          return (
+            <Fragment key={`j-${node.dj.id}`}>
+              {!isFirst && (
+                <div
+                  style={{ gridColumn: `${arrowCol}`, gridRow: `${junctionRow}` }}
+                  className="relative flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm w-6 shrink-0 pb-3"
+                  aria-hidden
+                >
+                  →
+                </div>
+              )}
+              <div
+                style={{ gridColumn: `${chipCol}`, gridRow: `${junctionRow}` }}
+                className={`relative flex flex-col items-stretch pb-3 ${isFirst ? 'pl-4' : 'pl-2'} ${isLast ? 'pr-4' : 'pr-2'}`}
+              >
+                <div className="relative">
+                  <DisjoncteurChip
+                    dj={node.dj}
+                    target={node.childTableau?.nom}
+                    onClick={() => onOpenTableau(tableau.id, node.dj.id)}
+                  />
+                  {/* Flèche verticale ancrée DU bas du chip (top:100%)
+                      pour bien partir du chip lui-même, pas du cadre de
+                      la boîte. La traînée traverse pb-3 + pt-8 pour
+                      atteindre le haut du sous-tableau. */}
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+                    style={{ top: '100%' }}
+                    aria-hidden
+                  >
+                    <div className="h-8 w-0.5 bg-slate-500 dark:bg-slate-400" />
+                    <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                      ▼
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Fragment>
+          )
+        })}
+
+        {/* Sous-tableaux — un par jonction, dans la MÊME colonne 1fr que
+            son chip. Le `pt-8` laisse la place à la flèche absolue. */}
+        {junctions.map((node, ji) => {
+          if (!node.childTableau) return null
+          const col = 2 * ji + 1
+          return (
+            <div
+              key={`child-${node.dj.id}`}
+              style={{ gridColumn: `${col}`, gridRow: `${subTableauRow}` }}
+              className="px-2 pt-8"
+            >
+              <TableauTree
+                tableau={node.childTableau}
+                store={store}
+                onOpenTableau={onOpenTableau}
+              />
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // Cas vertical (0 ou 1 sous-tableau) : layout empilé simple
   return (
     <div className="flex flex-col items-stretch">
       <TableauBox
         tableau={tableau}
         chipNodes={chipNodes}
-        layout={layout}
         onOpenTableau={onOpenTableau}
       />
-
-      {hasAnyChild && layout === 'horizontal' && (
-        // Rangée horizontale des sous-tableaux, alignée colonne pour
-        // colonne avec les chips de la cascade ci-dessus.
-        <div className="flex items-stretch justify-center gap-2">
-          {chipNodes.map((node, i) => (
-            <Fragment key={node.dj.id}>
-              {i > 0 && <div className="w-6 shrink-0" aria-hidden />}
-              <div className="flex-1 min-w-0 flex flex-col items-center">
-                {node.childTableau ? (
-                  <>
-                    <div className="-mt-3 h-6 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
-                    <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1 mb-1">
-                      ▼
-                    </div>
-                    <div className="w-full">
-                      <TableauTree
-                        tableau={node.childTableau}
-                        store={store}
-                        onOpenTableau={onOpenTableau}
-                      />
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            </Fragment>
-          ))}
-        </div>
-      )}
-
-      {hasAnyChild && layout === 'vertical' && (
-        // Sous-tableaux empilés verticalement (layout simple).
+      {hasAnyChild && (
         <div className="flex flex-col items-stretch gap-0">
           {chipNodes
             .filter((n) => n.childTableau)
@@ -341,12 +499,10 @@ function buildCascade(
 function TableauBox({
   tableau,
   chipNodes,
-  layout,
   onOpenTableau,
 }: {
   tableau: Tableau
   chipNodes: ChipNode[]
-  layout: 'horizontal' | 'vertical'
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
@@ -354,11 +510,6 @@ function TableauBox({
     (acc, r) => acc + r.disjoncteurs.length,
     0,
   )
-
-  // Cascade horizontale : on ajoute un disjoncteur qui ne va PAS vers un
-  // sous-tableau au début (différentiel) et chaîne ensuite ceux qui ont
-  // un enfant. Si un même tableau a plusieurs chemins, ils restent dans
-  // l'ordre du BFS.
 
   return (
     <div
@@ -383,33 +534,7 @@ function TableauBox({
         </button>
       </div>
 
-      {/* Cascade : horizontale quand le tableau a 2+ sous-tableaux
-          (parallélisme visible), verticale sinon (compact + lisible). */}
-      {chipNodes.length > 0 && layout === 'horizontal' && (
-        <div className="flex items-stretch justify-center gap-2">
-          {chipNodes.map((node, i) => (
-            <Fragment key={node.dj.id}>
-              {i > 0 && (
-                <div
-                  className="self-center text-slate-500 dark:text-slate-400 text-sm shrink-0 w-6 text-center"
-                  aria-hidden
-                >
-                  →
-                </div>
-              )}
-              <div className="flex-1 min-w-0 flex flex-col items-stretch">
-                <DisjoncteurChip
-                  dj={node.dj}
-                  target={node.childTableau?.nom}
-                  onClick={() => onOpenTableau(tableau.id, node.dj.id)}
-                />
-              </div>
-            </Fragment>
-          ))}
-        </div>
-      )}
-
-      {chipNodes.length > 0 && layout === 'vertical' && (
+      {chipNodes.length > 0 && (
         <div className="flex flex-col items-stretch gap-0">
           {chipNodes.map((node, i) => {
             const isLast = i === chipNodes.length - 1
@@ -438,7 +563,6 @@ function TableauBox({
           })}
         </div>
       )}
-
     </div>
   )
 }
