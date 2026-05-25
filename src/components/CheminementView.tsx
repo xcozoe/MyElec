@@ -243,11 +243,8 @@ function TableauTree({
                 {node.childTableau ? (
                   <>
                     <div className="-mt-3 h-6 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
-                    <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                    <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1 mb-1">
                       ▼
-                    </div>
-                    <div className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1 text-center">
-                      → {node.childTableau.nom}
                     </div>
                     <div className="w-full">
                       <TableauTree
@@ -272,11 +269,8 @@ function TableauTree({
             .map((node) => (
               <div key={node.dj.id} className="flex flex-col items-center">
                 <div className="-mt-3 h-6 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
-                <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1">
+                <div className="text-slate-500 dark:text-slate-400 text-xs leading-none -mt-1 mb-1">
                   ▼
-                </div>
-                <div className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1 text-center">
-                  → {node.childTableau!.nom}
                 </div>
                 <div className="w-full">
                   <TableauTree
