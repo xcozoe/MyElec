@@ -342,7 +342,6 @@ function TableauBox({
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
-  const [photoZoom, setPhotoZoom] = useState(false)
   const nbDj = tableau.rangees.reduce(
     (acc, r) => acc + r.disjoncteurs.length,
     0,
@@ -358,25 +357,6 @@ function TableauBox({
       className={`rounded-lg ring-2 ring-inset ${phaseStyle.ring} ${phaseStyle.bg} px-4 pt-3 pb-6 w-full`}
     >
       <div className="flex items-start gap-3 pb-3">
-        {tableau.photo_url && (
-          <button
-            type="button"
-            onClick={() => setPhotoZoom(true)}
-            className="shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white p-1 hover:shadow"
-            aria-label="Agrandir la photo du coffret"
-            title="Agrandir"
-          >
-            <img
-              src={tableau.photo_url}
-              alt={`Coffret ${tableau.nom}`}
-              className="h-14 w-14 object-contain"
-              onError={(e) => {
-                ;(e.currentTarget.parentElement as HTMLElement).style.display =
-                  'none'
-              }}
-            />
-          </button>
-        )}
         <button
           onClick={() => onOpenTableau(tableau.id)}
           className="flex-1 text-left hover:opacity-80 min-w-0"
@@ -451,14 +431,6 @@ function TableauBox({
         </div>
       )}
 
-      {photoZoom && tableau.photo_url && (
-        <Lightbox
-          src={tableau.photo_url}
-          alt={`Coffret ${tableau.nom}`}
-          caption={`${tableau.nom} — ${tableau.emplacement}`}
-          onClose={() => setPhotoZoom(false)}
-        />
-      )}
     </div>
   )
 }
@@ -474,7 +446,6 @@ function DisjoncteurChip({
   target?: string
   onClick: () => void
 }) {
-  const [zoom, setZoom] = useState(false)
   const style = PHASE_STYLES[dj.phase_affectation]
   const isBornier = dj.type_protection === 'bornier_repartition'
   const isDiff =
@@ -484,74 +455,34 @@ function DisjoncteurChip({
     dj.type_protection === 'disjoncteur_diff_dedie'
 
   return (
-    <>
-      <div
-        className={`w-full h-full rounded-md ring-1 ring-inset ${style.ring} ${style.bg} ${style.text} px-2 py-1.5 text-left text-[11px] flex flex-col gap-1`}
-        title={`${dj.id} — ${dj.etiquette}`}
-      >
-        <div className="flex items-start gap-2">
-          {dj.photo_url && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setZoom(true)
-              }}
-              className="shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white p-0.5 hover:shadow"
-              aria-label="Agrandir la photo"
-              title="Agrandir"
-            >
-              <img
-                src={dj.photo_url}
-                alt={dj.id}
-                className="h-9 w-9 object-contain"
-                onError={(e) => {
-                  ;(e.currentTarget.parentElement as HTMLElement).style.display =
-                    'none'
-                }}
-              />
-            </button>
-          )}
-          <button
-            onClick={onClick}
-            className="flex-1 text-left hover:opacity-80 min-w-0"
-          >
-            <div className="flex items-center flex-wrap gap-1">
-              <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-              <span className="font-mono text-[10px] truncate">{dj.id}</span>
-              {isBornier && (
-                <span className="text-[8px] uppercase rounded bg-slate-200 dark:bg-slate-700 px-1 py-0.5">
-                  Bornier
-                </span>
-              )}
-              {isDiff && (
-                <span className="text-[8px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
-                  Diff
-                </span>
-              )}
-            </div>
-            <div className="mt-0.5 font-medium leading-tight line-clamp-2">
-              {dj.etiquette}
-            </div>
-            <div className="text-[9px] font-mono opacity-60 mt-0.5">
-              {dj.calibre}
-            </div>
-            {target && (
-              <div className="text-[9px] uppercase tracking-wide opacity-70 mt-0.5">
-                → {target}
-              </div>
-            )}
-          </button>
-        </div>
+    <button
+      onClick={onClick}
+      className={`w-full h-full rounded-md ring-1 ring-inset ${style.ring} ${style.bg} ${style.text} px-2 py-1.5 text-left text-[11px] hover:shadow`}
+      title={`${dj.id} — ${dj.etiquette}`}
+    >
+      <div className="flex items-center flex-wrap gap-1">
+        <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+        <span className="font-mono text-[10px] truncate">{dj.id}</span>
+        {isBornier && (
+          <span className="text-[8px] uppercase rounded bg-slate-200 dark:bg-slate-700 px-1 py-0.5">
+            Bornier
+          </span>
+        )}
+        {isDiff && (
+          <span className="text-[8px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
+            Diff
+          </span>
+        )}
       </div>
-      {zoom && dj.photo_url && (
-        <Lightbox
-          src={dj.photo_url}
-          alt={`${dj.id} — ${dj.etiquette}`}
-          caption={`${dj.id} — ${dj.etiquette}`}
-          onClose={() => setZoom(false)}
-        />
+      <div className="mt-0.5 font-medium leading-tight line-clamp-2">
+        {dj.etiquette}
+      </div>
+      <div className="text-[9px] font-mono opacity-60 mt-0.5">{dj.calibre}</div>
+      {target && (
+        <div className="text-[9px] uppercase tracking-wide opacity-70 mt-0.5">
+          → {target}
+        </div>
       )}
-    </>
+    </button>
   )
 }
