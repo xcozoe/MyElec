@@ -64,7 +64,8 @@ export function CheminementView({ store, onOpenTableau }: Props) {
         <SourceNode
           label="Itron 30 A / phase"
           sub="Disjoncteur de branchement 4P 500 mA sélectif"
-          image="/sources/itron.png"
+          image="/sources/itron-facade.png"
+          imageDetails="/sources/itron.png"
           specs={[
             ['Marque', 'Itron'],
             ['Type', 'Disjoncteur différentiel 4 pôles'],
