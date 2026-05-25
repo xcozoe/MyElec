@@ -65,6 +65,10 @@ export function CheminementView({ store, onOpenTableau }: Props) {
             ['Abonnement', '18 kVA triphasé (Total Énergies)'],
             ['Emplacement', 'Coffret extérieur Enedis, ~150 m du tableau principal'],
           ]}
+          link={{
+            href: 'https://mon-compte-client.enedis.fr/',
+            label: 'Ouvrir l’espace client Enedis',
+          }}
         />
         <VerticalLink />
         <SourceNode
@@ -169,9 +173,13 @@ function SourceNode({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[11px] underline decoration-dotted text-slate-600 dark:text-slate-300 hover:opacity-80 inline-flex items-center gap-1"
+                title="Ouvre dans le navigateur web (les fournisseurs ne supportent pas l’ouverture directe dans l’app)"
               >
                 {link.label}
                 <span aria-hidden>↗</span>
+                <span className="text-slate-400 dark:text-slate-500 no-underline" aria-hidden>
+                  (web)
+                </span>
               </a>
             )}
           </div>
