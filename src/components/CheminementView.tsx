@@ -121,7 +121,7 @@ function SourceNode({
         {image && (
           <button
             onClick={() => setZoom(true)}
-            className="shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white p-1 hover:shadow"
+            className="shrink-0 hover:opacity-80"
             aria-label={`Agrandir l'image de ${label}`}
             title={`Agrandir : ${label}`}
           >
