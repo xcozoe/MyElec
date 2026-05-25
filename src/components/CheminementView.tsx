@@ -421,11 +421,6 @@ function TableauBox({
                   target={node.childTableau?.nom}
                   onClick={() => onOpenTableau(tableau.id, node.dj.id)}
                 />
-                {node.childTableau && (
-                  <div className="flex justify-center mt-2 -mb-6">
-                    <div className="h-9 w-0.5 bg-slate-500 dark:bg-slate-400 relative z-10" />
-                  </div>
-                )}
               </div>
             </Fragment>
           ))}
