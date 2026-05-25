@@ -42,7 +42,8 @@ export function CheminementView({ store, onOpenTableau }: Props) {
         <SourceNode
           label="Linky"
           sub="Compteur communicant Enedis triphasé"
-          image="/sources/linky.png"
+          image="/sources/linky-facade.png"
+          imageDetails="/sources/linky.png"
           specs={[
             ['Marque', 'Sagemcom'],
             ['Modèle', 'S34C5 (triphasé)'],
@@ -97,16 +98,22 @@ function SourceNode({
   label,
   sub,
   image,
+  imageDetails,
   specs,
 }: {
   label: string
   sub?: string
   image?: string
+  /** Image affichée en plein écran quand on agrandit la vignette
+   *  (typiquement la fiche technique annotée). Si absent, on agrandit
+   *  l'image vignette elle-même. */
+  imageDetails?: string
   specs?: [string, string][]
 }) {
   const [zoom, setZoom] = useState(false)
   const [showSpecs, setShowSpecs] = useState(false)
   const hasSpecs = specs && specs.length > 0
+  const fullImage = imageDetails ?? image
 
   return (
     <div className="rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-2 w-full max-w-2xl">
@@ -162,9 +169,9 @@ function SourceNode({
         </dl>
       )}
 
-      {zoom && image && (
+      {zoom && fullImage && (
         <Lightbox
-          src={image}
+          src={fullImage}
           alt={label}
           caption={`${label}${sub ? ' — ' + sub : ''}`}
           onClose={() => setZoom(false)}
