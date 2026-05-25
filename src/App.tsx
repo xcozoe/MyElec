@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react'
-import { TableauList } from './components/TableauList'
 import { TableauDetail } from './components/TableauDetail'
-import { HistoriqueView } from './components/HistoriqueView'
-import { CartographieEnCours } from './components/CartographieEnCours'
-import { ExportImport } from './components/ExportImport'
 import { PieceList } from './components/PieceList'
 import { PieceDetail } from './components/PieceDetail'
 import { PieceEditor } from './components/PieceEditor'
@@ -12,11 +8,11 @@ import { CheminementView } from './components/CheminementView'
 import { LigneList } from './components/LigneList'
 import { LigneDetail } from './components/LigneDetail'
 import { LigneEditor, emptyLigne } from './components/LigneEditor'
-import { SettingsPanel } from './components/SettingsPanel'
+import { SettingsView } from './components/SettingsView'
 import { EquipementList } from './components/EquipementList'
 import { AppareilFixeEditor, emptyAppareil } from './components/AppareilFixeEditor'
 import { VoletEditor, emptyVolet } from './components/VoletEditor'
-import { SearchBar } from './components/SearchBar'
+import { SearchOverlay } from './components/SearchOverlay'
 import { SidePanel } from './components/SidePanel'
 import { useStore } from './hooks/useStore'
 import type { EndPointType, Piece } from './types/electrical'
@@ -29,9 +25,7 @@ export type View =
   | { name: 'lignes' }
   | { name: 'ligne'; ligneId: string }
   | { name: 'equipements' }
-  | { name: 'cheminement' }
-  | { name: 'historique' }
-  | { name: 'cartographie' }
+  | { name: 'settings' }
 
 type Panel =
   | { kind: 'none' }
@@ -49,7 +43,6 @@ type Panel =
   | { kind: 'editAppareil'; appareilId: string }
   | { kind: 'createVolet'; pieceId?: string }
   | { kind: 'editVolet'; voletId: string }
-  | { kind: 'settings' }
 
 const DARK_KEY = 'myelec.dark'
 
@@ -67,6 +60,7 @@ export function App() {
   const state = useStore()
   const [view, setView] = useState<View>({ name: 'home' })
   const [panel, setPanel] = useState<Panel>({ kind: 'none' })
+  const [searchOpen, setSearchOpen] = useState(false)
   const [dark, setDark] = useState<boolean>(() => {
     if (typeof localStorage === 'undefined') return false
     const stored = localStorage.getItem(DARK_KEY)
@@ -85,9 +79,6 @@ export function App() {
   const closePanel = () => setPanel({ kind: 'none' })
 
   const renderPanel = () => {
-    if (panel.kind === 'settings') {
-      return <SettingsPanel onClose={closePanel} />
-    }
     if (panel.kind === 'createPiece') {
       return (
         <PieceEditor
@@ -360,12 +351,12 @@ export function App() {
             ⚡ MyElec
           </button>
 
-          <nav className="flex flex-wrap gap-1 text-sm">
+          <nav className="hidden sm:flex flex-wrap gap-1 text-sm">
             <NavButton
               active={view.name === 'home' || view.name === 'tableau'}
               onClick={() => goTo({ name: 'home' })}
             >
-              Tableaux
+              Accueil
             </NavButton>
             <NavButton
               active={view.name === 'pieces' || view.name === 'piece'}
@@ -385,95 +376,35 @@ export function App() {
             >
               Équipements
             </NavButton>
-            <NavButton
-              active={view.name === 'cheminement'}
-              onClick={() => goTo({ name: 'cheminement' })}
-            >
-              Cheminement
-            </NavButton>
-            <NavButton
-              active={view.name === 'cartographie'}
-              onClick={() => goTo({ name: 'cartographie' })}
-            >
-              Cartographie
-            </NavButton>
-            <NavButton
-              active={view.name === 'historique'}
-              onClick={() => goTo({ name: 'historique' })}
-            >
-              Historique
-            </NavButton>
           </nav>
 
-          <div className="flex-1 min-w-[12rem]">
-            <SearchBar
-              data={{
-                tableaux: state.tableaux,
-                pieces: state.pieces,
-                lignes: state.lignes,
-                endpoints: state.endpoints,
-                appareils: state.appareils,
-                volets: state.volets,
-              }}
-              onSelect={(hit) => {
-                switch (hit.type) {
-                  case 'tableau':
-                  case 'rangee':
-                    if (hit.tableauId)
-                      goTo({ name: 'tableau', tableauId: hit.tableauId })
-                    return
-                  case 'disjoncteur':
-                    if (hit.tableauId)
-                      goTo({
-                        name: 'tableau',
-                        tableauId: hit.tableauId,
-                        focusDisjoncteurId: hit.disjoncteurId,
-                      })
-                    return
-                  case 'piece':
-                    if (hit.pieceId) goTo({ name: 'piece', pieceId: hit.pieceId })
-                    return
-                  case 'ligne':
-                    if (hit.ligneId) goTo({ name: 'ligne', ligneId: hit.ligneId })
-                    return
-                  case 'endpoint':
-                    if (hit.endpointId)
-                      setPanel({ kind: 'editEndpoint', endpointId: hit.endpointId })
-                    return
-                  case 'appareil':
-                    if (hit.appareilId)
-                      setPanel({ kind: 'editAppareil', appareilId: hit.appareilId })
-                    return
-                  case 'volet':
-                    if (hit.voletId)
-                      setPanel({ kind: 'editVolet', voletId: hit.voletId })
-                    return
-                }
-              }}
-            />
-          </div>
-
-          <ExportImport state={state} />
+          <div className="flex-1" />
 
           <button
-            onClick={() => setPanel({ kind: 'settings' })}
-            className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
-            aria-label="Ouvrir les paramètres"
+            onClick={() => setSearchOpen(true)}
+            className="rounded-full p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+            aria-label="Ouvrir la recherche"
+            title="Rechercher"
           >
-            Paramètres
+            <SearchIconSvg className="h-5 w-5" />
           </button>
 
           <button
-            onClick={() => setDark((d) => !d)}
-            className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
-            aria-label="Basculer le mode sombre"
+            onClick={() => goTo({ name: 'settings' })}
+            className={`rounded-full p-2 transition-colors ${
+              view.name === 'settings'
+                ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+            aria-label="Ouvrir les paramètres"
+            title="Paramètres"
           >
-            {dark ? 'Clair' : 'Sombre'}
+            <GearIconSvg className="h-5 w-5" />
           </button>
         </div>
       </header>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-[calc(env(safe-area-inset-bottom)+5rem)] sm:pb-6">
         {state.error && (
           <div className="mb-4 rounded-md border border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/40 text-red-800 dark:text-red-200 px-4 py-3 text-sm">
             <strong>Erreur :</strong> {state.error}
@@ -488,9 +419,11 @@ export function App() {
             Chargement…
           </div>
         ) : view.name === 'home' ? (
-          <TableauList
-            tableaux={state.tableaux}
-            onOpen={(id) => goTo({ name: 'tableau', tableauId: id })}
+          <CheminementView
+            store={state}
+            onOpenTableau={(tableauId, focusDisjoncteurId) =>
+              goTo({ name: 'tableau', tableauId, focusDisjoncteurId })
+            }
           />
         ) : view.name === 'tableau' ? (
           <TableauDetail
@@ -588,42 +521,53 @@ export function App() {
             onOpenLigne={(ligneId) => goTo({ name: 'ligne', ligneId })}
             onOpenPiece={(pieceId) => goTo({ name: 'piece', pieceId })}
           />
-        ) : view.name === 'cheminement' ? (
-          <CheminementView
+        ) : (
+          <SettingsView
             store={state}
+            dark={dark}
+            setDark={setDark}
             onOpenTableau={(tableauId, focusDisjoncteurId) =>
               goTo({ name: 'tableau', tableauId, focusDisjoncteurId })
-            }
-          />
-        ) : view.name === 'historique' ? (
-          <HistoriqueView
-            modifications={state.modifications}
-            tableaux={state.tableaux}
-            onOpenEntite={(tableauId, disjoncteurId) =>
-              goTo({
-                name: 'tableau',
-                tableauId,
-                focusDisjoncteurId: disjoncteurId,
-              })
-            }
-          />
-        ) : (
-          <CartographieEnCours
-            state={state}
-            onOpen={(tableauId, disjoncteurId) =>
-              goTo({
-                name: 'tableau',
-                tableauId,
-                focusDisjoncteurId: disjoncteurId,
-              })
             }
           />
         )}
       </main>
 
-      <footer className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] text-xs text-slate-500 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800">
+      <footer className="hidden sm:block max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] text-xs text-slate-500 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800">
         MyElec — base de référence locale (données dans data/*.json)
       </footer>
+
+      <nav
+        aria-label="Navigation principale"
+        className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
+      >
+        <div className="grid grid-cols-4">
+          <BottomTab
+            icon={<HomeIconSvg className="h-6 w-6" />}
+            label="Accueil"
+            active={view.name === 'home' || view.name === 'tableau'}
+            onClick={() => goTo({ name: 'home' })}
+          />
+          <BottomTab
+            icon={<SquaresIconSvg className="h-6 w-6" />}
+            label="Pièces"
+            active={view.name === 'pieces' || view.name === 'piece'}
+            onClick={() => goTo({ name: 'pieces' })}
+          />
+          <BottomTab
+            icon={<BoltIconSvg className="h-6 w-6" />}
+            label="Lignes"
+            active={view.name === 'lignes' || view.name === 'ligne'}
+            onClick={() => goTo({ name: 'lignes' })}
+          />
+          <BottomTab
+            icon={<CubeIconSvg className="h-6 w-6" />}
+            label="Équipements"
+            active={view.name === 'equipements'}
+            onClick={() => goTo({ name: 'equipements' })}
+          />
+        </div>
+      </nav>
 
       <SidePanel
         open={panel.kind !== 'none'}
@@ -631,7 +575,101 @@ export function App() {
       >
         {renderPanel()}
       </SidePanel>
+
+      {searchOpen && (
+        <SearchOverlay
+          data={{
+            tableaux: state.tableaux,
+            pieces: state.pieces,
+            lignes: state.lignes,
+            endpoints: state.endpoints,
+            appareils: state.appareils,
+            volets: state.volets,
+          }}
+          onClose={() => setSearchOpen(false)}
+          onSelect={(hit) => {
+            switch (hit.type) {
+              case 'tableau':
+              case 'rangee':
+                if (hit.tableauId)
+                  goTo({ name: 'tableau', tableauId: hit.tableauId })
+                return
+              case 'disjoncteur':
+                if (hit.tableauId)
+                  goTo({
+                    name: 'tableau',
+                    tableauId: hit.tableauId,
+                    focusDisjoncteurId: hit.disjoncteurId,
+                  })
+                return
+              case 'piece':
+                if (hit.pieceId) goTo({ name: 'piece', pieceId: hit.pieceId })
+                return
+              case 'ligne':
+                if (hit.ligneId) goTo({ name: 'ligne', ligneId: hit.ligneId })
+                return
+              case 'endpoint':
+                if (hit.endpointId)
+                  setPanel({ kind: 'editEndpoint', endpointId: hit.endpointId })
+                return
+              case 'appareil':
+                if (hit.appareilId)
+                  setPanel({ kind: 'editAppareil', appareilId: hit.appareilId })
+                return
+              case 'volet':
+                if (hit.voletId)
+                  setPanel({ kind: 'editVolet', voletId: hit.voletId })
+                return
+            }
+          }}
+        />
+      )}
     </div>
+  )
+}
+
+function SearchIconSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.8}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+      />
+    </svg>
+  )
+}
+
+function GearIconSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.8}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.281Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+      />
+    </svg>
   )
 }
 
@@ -649,11 +687,118 @@ function NavButton({
       onClick={onClick}
       className={
         active
-          ? 'rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1.5'
-          : 'rounded-md px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800'
+          ? 'rounded-full bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white px-3 py-1.5 font-medium transition-colors'
+          : 'rounded-full px-3 py-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-colors'
       }
     >
       {children}
     </button>
+  )
+}
+
+function BottomTab({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      className={`flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+        active
+          ? 'text-slate-900 dark:text-white'
+          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+      }`}
+    >
+      <span className={active ? '' : 'opacity-80'}>{icon}</span>
+      <span className="text-[10px] font-medium leading-none">{label}</span>
+    </button>
+  )
+}
+
+function HomeIconSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.8}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+      />
+    </svg>
+  )
+}
+
+function SquaresIconSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.8}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"
+      />
+    </svg>
+  )
+}
+
+function BoltIconSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.8}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"
+      />
+    </svg>
+  )
+}
+
+function CubeIconSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.8}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+      />
+    </svg>
   )
 }

@@ -25,19 +25,6 @@ export function CheminementView({ store, onOpenTableau }: Props) {
 
   return (
     <div>
-      <div className="mb-4">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-          Cheminement électrique
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Vue d'ensemble : dans chaque tableau, la cascade des modules clés
-          (différentiel → bornier → disjoncteurs) est représentée
-          horizontalement avec des flèches entre. Sous chaque module qui
-          alimente un sous-tableau, une flèche verticale descend vers ce
-          sous-tableau. Tape un élément pour ouvrir son détail.
-        </p>
-      </div>
-
       <div className="max-w-5xl mx-auto flex flex-col items-center gap-0">
         <SourceNode
           label="Linky"
@@ -242,10 +229,9 @@ function TableauTree({
   // mêmes colonnes 1fr, ils sont parfaitement alignés.
   if (layout === 'horizontal') {
     const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
-    const nbDj = tableau.rangees.reduce(
-      (acc, r) => acc + r.disjoncteurs.length,
-      0,
-    )
+    const nbDj = countDisjoncteurs(tableau)
+    const nbRangees = tableau.rangees.length
+    const aIdentifier = countLibresOuInconnus(tableau)
 
     const firstJunctionIdx = chipNodes.findIndex((n) => !!n.childTableau)
     const preludeChips =
@@ -286,10 +272,10 @@ function TableauTree({
         >
           <button
             onClick={() => onOpenTableau(tableau.id)}
-            className="text-left hover:opacity-80 min-w-0"
+            className="text-left hover:opacity-80 min-w-0 w-full"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-base font-semibold">📦 {tableau.nom}</h2>
+              <h2 className="text-base font-semibold">{tableau.nom}</h2>
               <span
                 className={`text-[10px] uppercase tracking-wider ${phaseStyle.text}`}
               >
@@ -299,9 +285,13 @@ function TableauTree({
               </span>
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {tableau.emplacement} · {nbDj} disjoncteur
-              {nbDj > 1 ? 's' : ''}
+              {tableau.emplacement}
             </div>
+            <TableauStats
+              rangees={nbRangees}
+              disjoncteurs={nbDj}
+              aIdentifier={aIdentifier}
+            />
           </button>
         </div>
 
@@ -327,7 +317,6 @@ function TableauTree({
                   )}
                   <DisjoncteurChip
                     dj={node.dj}
-                    target={node.childTableau?.nom}
                     onClick={() => onOpenTableau(tableau.id, node.dj.id)}
                   />
                 </Fragment>
@@ -374,7 +363,6 @@ function TableauTree({
                 <div className="relative">
                   <DisjoncteurChip
                     dj={node.dj}
-                    target={node.childTableau?.nom}
                     onClick={() => onOpenTableau(tableau.id, node.dj.id)}
                   />
                   {/* Flèche verticale ancrée DU bas du chip (top:100%)
@@ -506,10 +494,9 @@ function TableauBox({
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
-  const nbDj = tableau.rangees.reduce(
-    (acc, r) => acc + r.disjoncteurs.length,
-    0,
-  )
+  const nbDj = countDisjoncteurs(tableau)
+  const nbRangees = tableau.rangees.length
+  const aIdentifier = countLibresOuInconnus(tableau)
 
   return (
     <div
@@ -521,7 +508,7 @@ function TableauBox({
           className="flex-1 text-left hover:opacity-80 min-w-0"
         >
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-base font-semibold">📦 {tableau.nom}</h2>
+            <h2 className="text-base font-semibold">{tableau.nom}</h2>
             <span
               className={`text-[10px] uppercase tracking-wider ${phaseStyle.text}`}
             >
@@ -529,8 +516,14 @@ function TableauBox({
             </span>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {tableau.emplacement} · {nbDj} disjoncteur{nbDj > 1 ? 's' : ''}
+            {tableau.emplacement}
           </div>
+          <TableauStats
+            rangees={nbRangees}
+            disjoncteurs={nbDj}
+            aIdentifier={aIdentifier}
+            compact
+          />
         </button>
       </div>
 
@@ -542,7 +535,6 @@ function TableauBox({
               <Fragment key={node.dj.id}>
                 <DisjoncteurChip
                   dj={node.dj}
-                  target={node.childTableau?.nom}
                   onClick={() => onOpenTableau(tableau.id, node.dj.id)}
                 />
                 {!isLast && (
@@ -571,11 +563,9 @@ function TableauBox({
 
 function DisjoncteurChip({
   dj,
-  target,
   onClick,
 }: {
   dj: Disjoncteur
-  target?: string
   onClick: () => void
 }) {
   const style = PHASE_STYLES[dj.phase_affectation]
@@ -610,11 +600,85 @@ function DisjoncteurChip({
         {dj.etiquette}
       </div>
       <div className="text-[9px] font-mono opacity-60 mt-0.5">{dj.calibre}</div>
-      {target && (
-        <div className="text-[9px] uppercase tracking-wide opacity-70 mt-0.5">
-          → {target}
+    </button>
+  )
+}
+
+// ----- Stats compactes pour l'en-tête de chaque boîte tableau -----
+
+function countDisjoncteurs(t: Tableau) {
+  return t.rangees.reduce((acc, r) => acc + r.disjoncteurs.length, 0)
+}
+
+function countLibresOuInconnus(t: Tableau) {
+  let n = 0
+  for (const r of t.rangees) {
+    for (const d of r.disjoncteurs) {
+      if (d.statut === 'libre' || d.phase_affectation === 'inconnue') n++
+    }
+  }
+  return n
+}
+
+function TableauStats({
+  rangees,
+  disjoncteurs,
+  aIdentifier,
+  compact = false,
+}: {
+  rangees: number
+  disjoncteurs: number
+  aIdentifier: number
+  compact?: boolean
+}) {
+  if (compact) {
+    return (
+      <div className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+        <strong className="tabular-nums">{rangees}</strong> rangée
+        {rangees > 1 ? 's' : ''}
+        <span className="text-slate-400 dark:text-slate-500"> · </span>
+        <strong className="tabular-nums">{disjoncteurs}</strong> disjoncteur
+        {disjoncteurs > 1 ? 's' : ''}
+        <span className="text-slate-400 dark:text-slate-500"> · </span>
+        <strong className="tabular-nums">{aIdentifier}</strong> à identifier
+      </div>
+    )
+  }
+  return (
+    <div className="mt-2 grid grid-cols-3 gap-3 text-left">
+      <Stat label="Rangées" value={rangees} />
+      <Stat label="Disjoncteurs" value={disjoncteurs} />
+      <Stat
+        label="À identifier"
+        value={aIdentifier}
+        hint={aIdentifier > 0 ? 'libres / inconnus' : undefined}
+      />
+    </div>
+  )
+}
+
+function Stat({
+  label,
+  value,
+  hint,
+}: {
+  label: string
+  value: number
+  hint?: string
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="text-lg font-semibold tabular-nums leading-none">
+        {value}
+      </div>
+      <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mt-0.5">
+        {label}
+      </div>
+      {hint && (
+        <div className="text-[9px] text-slate-400 dark:text-slate-500">
+          {hint}
         </div>
       )}
-    </button>
+    </div>
   )
 }

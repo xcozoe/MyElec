@@ -30,7 +30,7 @@
           {
             "id": "TP-R1-DISJ-HAGER",
             "position": 2,
-            "etiquette": "Disjoncteur TRI (Hager NFT 840 C40)",
+            "etiquette": "Disjoncteur TRI",
             "type_protection": "disjoncteur",
             "calibre": "C40",
             "poles": "tetra",

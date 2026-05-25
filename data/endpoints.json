@@ -29,5 +29,28 @@
     "ligne_id": "L-PL-GAR",
     "type_luminaire": "exterieur_facade",
     "commande": "detecteur_mouvement"
+  },
+  {
+    "id": "PL_GAR_PL_1",
+    "type": "PL",
+    "piece_id": "GAR",
+    "mur": "PL",
+    "numero": 1,
+    "position_detail": "2 ampoules au plafond",
+    "ligne_id": "L-PL-GARAGE",
+    "type_luminaire": "plafonnier",
+    "commande": "interrupteur",
+    "nb_sources": 2
+  },
+  {
+    "id": "PC_GAR_MD_1",
+    "type": "PC",
+    "piece_id": "GAR",
+    "mur": "MD",
+    "numero": 1,
+    "position_detail": "Associé à la pompe de relevage",
+    "ligne_id": "L-PR-GAR",
+    "type_prise": "2P+T_etanche",
+    "nb_combinees": 1
   }
 ]

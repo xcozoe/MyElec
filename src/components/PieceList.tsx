@@ -141,10 +141,18 @@ export function PieceList({
                     className="text-left rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-base font-semibold">{p.nom}</h3>
-                        <div className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                          {p.trigramme}
+                      <div className="flex items-start gap-3 min-w-0">
+                        <span
+                          className="shrink-0 h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-xl"
+                          aria-hidden
+                        >
+                          {pieceIcon(p.nom)}
+                        </span>
+                        <div className="min-w-0">
+                          <h3 className="text-base font-semibold">{p.nom}</h3>
+                          <div className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                            {p.trigramme}
+                          </div>
                         </div>
                       </div>
                       <span
@@ -200,4 +208,29 @@ function Chip({ children }: { children: React.ReactNode }) {
       {children}
     </span>
   )
+}
+
+function pieceIcon(nom: string): string {
+  const n = nom.toLowerCase()
+  if (n.includes('cuisine')) return '🍳'
+  if (n.includes('buanderie')) return '🧺'
+  if (n.includes('séjour') || n.includes('salon')) return '🛋️'
+  if (n.includes('bibliothèque')) return '📚'
+  if (n.includes('chambre')) return '🛏️'
+  if (n.includes('bain') || n.includes('douche')) return '🛁'
+  if (n.includes('wc') || n.includes('toilette')) return '🚽'
+  if (n.includes('cinéma') || n.includes('cinema')) return '🎬'
+  if (n.includes('dressing')) return '👕'
+  if (n.includes('chaufferie')) return '🔥'
+  if (n.includes('piscine')) return '🏊'
+  if (n.includes('jardin')) return '🌳'
+  if (n.includes('terrasse')) return '⛱️'
+  if (n.includes('garage')) return '🚗'
+  if (n.includes('escalier')) return '🪜'
+  if (n.includes('entrée')) return '🚪'
+  if (n.includes('couloir')) return '🚶'
+  if (n.includes('extérieur')) return '🌤️'
+  if (n.includes('stockage') || n.includes('vide sanitaire')) return '📦'
+  if (n.includes('maison')) return '🏠'
+  return '📍'
 }

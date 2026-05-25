@@ -685,5 +685,35 @@
     "nouvelle_valeur": "TP-R1-BORNIER (bornier_repartition)",
     "description": "Ajout du bornier Legrand de répartition TRI (passif) en R1 position 3, en aval du différentiel Legrand 086 94. Cascade : 9 disjoncteurs DNX³ de R2 ont leur differentiel_parent_id redirigé du Legrand vers le Bornier (la protection différentielle reste cascadée via le Legrand en amont du Bornier). Le Tableau Secondaire Garage prend pour parent_disjoncteur_id le Bornier (jonction TRI directe sans disjoncteur supplémentaire entre les deux).",
     "utilisateur": "Rémi"
+  },
+  {
+    "id": "0077d63c-782a-4525-8a25-9f24a97fedeb",
+    "date": "2026-05-24T17:59:26.574Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TP-R1-DISJ-HAGER",
+    "champ_modifie": "etiquette",
+    "ancienne_valeur": "Arrivée TRI (Hager NFT 840 C40)",
+    "nouvelle_valeur": "Disjoncteur TRI (Hager NFT 840 C40)",
+    "description": "Disjoncteur TP-R1-DISJ-HAGER — etiquette : Arrivée TRI (Hager NFT 840 C40) → Disjoncteur TRI (Hager NFT 840 C40)."
+  },
+  {
+    "id": "c157ca8b-e490-4338-805b-6926de3edb15",
+    "date": "2026-05-25T03:52:51.103Z",
+    "type": "modification",
+    "entite": "disjoncteur",
+    "entite_id": "TP-R1-DISJ-HAGER",
+    "champ_modifie": "etiquette",
+    "ancienne_valeur": "Disjoncteur TRI (Hager NFT 840 C40)",
+    "nouvelle_valeur": "Disjoncteur TRI",
+    "description": "Disjoncteur TP-R1-DISJ-HAGER — etiquette : Disjoncteur TRI (Hager NFT 840 C40) → Disjoncteur TRI."
+  },
+  {
+    "id": "1dfa3c48-5900-491e-90d4-47bca367644d",
+    "date": "2026-05-25T06:34:30.452Z",
+    "type": "creation",
+    "entite": "piece",
+    "entite_id": "VSA",
+    "description": "Pièce créé(e) (VSA)."
   }
 ]
