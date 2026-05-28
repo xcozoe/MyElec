@@ -12,11 +12,15 @@ interface State {
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { error }
+  static getDerivedStateFromError(error: unknown): State {
+    // Une valeur lancée n'est pas forcément une Error (on peut throw une
+    // string, un objet…). On normalise pour garantir `.message`.
+    return {
+      error: error instanceof Error ? error : new Error(String(error)),
+    }
   }
 
-  componentDidCatch(error: Error, info: { componentStack?: string | null }) {
+  componentDidCatch(error: unknown, info: { componentStack?: string | null }) {
     console.error('[MyElec] Erreur dans le rendu :', error, info)
   }
 

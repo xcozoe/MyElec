@@ -11,6 +11,7 @@ import {
   endpointTypeLabel,
   murLabel,
 } from '../types/electrical'
+import { clickableRowProps } from '../utils/form'
 
 interface Props {
   pieceId: string
@@ -255,7 +256,7 @@ function EndpointRow({
     e.alimentation !== 'filaire'
   return (
     <li
-      onClick={onClick}
+      {...(onClick ? clickableRowProps(onClick) : {})}
       className={
         'px-4 py-2 flex items-center gap-3 ' +
         (onClick ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50' : '')
@@ -312,7 +313,7 @@ function VoletRow({
 }) {
   return (
     <li
-      onClick={onClick}
+      {...(onClick ? clickableRowProps(onClick) : {})}
       className={
         'px-4 py-2 flex items-center gap-3 ' +
         (onClick ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50' : '')
@@ -368,7 +369,7 @@ function AppareilRow({
     : undefined
   return (
     <li
-      onClick={onClick}
+      {...(onClick ? clickableRowProps(onClick) : {})}
       className={
         'px-4 py-2 flex items-center gap-3 ' +
         (onClick ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50' : '')

@@ -10,6 +10,7 @@ import type {
 } from '../types/electrical'
 import { PHASES } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
+import { clickableRowProps } from '../utils/form'
 import { buildDisjoncteurOptions } from './LigneEditor'
 
 interface Props {
@@ -22,18 +23,10 @@ interface Props {
   onCreate: () => void
 }
 
-function listePiecesTraversees(
-  ligneId: string,
-  endpoints: EndPoint[],
-  pieces: Piece[],
-): string[] {
-  const ids = new Set<string>()
-  for (const e of endpoints) {
-    if (e.ligne_id === ligneId) ids.add(e.piece_id)
-  }
-  return [...ids]
-    .map((id) => pieces.find((p) => p.id === id)?.nom ?? id)
-    .sort((a, b) => a.localeCompare(b, 'fr'))
+interface LigneStats {
+  nbEp: number
+  nbAp: number
+  piecesNoms: string[]
 }
 
 export function LigneList({
@@ -88,6 +81,47 @@ export function LigneList({
     () => buildDisjoncteurOptions(tableaux).length,
     [tableaux],
   )
+
+  // Stats par ligne pré-calculées en un seul passage (au lieu de filtrer
+  // tous les end-points/appareils + find pièces pour CHAQUE ligne au rendu).
+  const ligneStats = useMemo(() => {
+    const pieceNameById = new Map(pieces.map((p) => [p.id, p.nom]))
+    const acc = new Map<
+      string,
+      { nbEp: number; nbAp: number; pieceIds: Set<string> }
+    >()
+    const slot = (id: string) => {
+      let s = acc.get(id)
+      if (!s) {
+        s = { nbEp: 0, nbAp: 0, pieceIds: new Set() }
+        acc.set(id, s)
+      }
+      return s
+    }
+    for (const e of endpoints) {
+      if (!e.ligne_id) continue
+      const s = slot(e.ligne_id)
+      s.nbEp++
+      s.pieceIds.add(e.piece_id)
+    }
+    for (const a of appareils) {
+      if (!a.ligne_id) continue
+      slot(a.ligne_id).nbAp++
+    }
+    const result = new Map<string, LigneStats>()
+    for (const [id, s] of acc) {
+      result.set(id, {
+        nbEp: s.nbEp,
+        nbAp: s.nbAp,
+        piecesNoms: [...s.pieceIds]
+          .map((pid) => pieceNameById.get(pid) ?? pid)
+          .sort((a, b) => a.localeCompare(b, 'fr')),
+      })
+    }
+    return result
+  }, [endpoints, appareils, pieces])
+
+  const emptyStats: LigneStats = { nbEp: 0, nbAp: 0, piecesNoms: [] }
 
   return (
     <div>
@@ -145,13 +179,12 @@ export function LigneList({
                     const info = djById.get(l.disjoncteur_id)
                     const dj = info?.dj
                     const style = PHASE_STYLES[dj?.phase_affectation ?? 'inconnue']
-                    const nbEp = endpoints.filter((e) => e.ligne_id === l.id).length
-                    const nbAp = appareils.filter((a) => a.ligne_id === l.id).length
-                    const piecesNoms = listePiecesTraversees(l.id, endpoints, pieces)
+                    const { nbEp, nbAp, piecesNoms } =
+                      ligneStats.get(l.id) ?? emptyStats
                     return (
                       <li
                         key={l.id}
-                        onClick={() => onOpen(l.id)}
+                        {...clickableRowProps(() => onOpen(l.id))}
                         className="px-4 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       >
                         <div className="flex flex-wrap items-baseline gap-2">
@@ -202,7 +235,7 @@ export function LigneList({
                 {byTableau.unknown.map((l) => (
                   <li
                     key={l.id}
-                    onClick={() => onOpen(l.id)}
+                    {...clickableRowProps(() => onOpen(l.id))}
                     className="px-4 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   >
                     <span className="font-mono text-sm">{l.id}</span> — {l.libelle}

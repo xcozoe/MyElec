@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { Store } from '../hooks/useStore'
 import { endpointTypeLabel, murLabel } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
+import { clickableRowProps } from '../utils/form'
 
 interface Props {
   ligneId: string
@@ -165,7 +166,7 @@ export function LigneDetail({
               return (
                 <li
                   key={e.id}
-                  onClick={() => onOpenEndpoint?.(e.id)}
+                  {...clickableRowProps(() => onOpenEndpoint?.(e.id))}
                   className="px-4 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3"
                 >
                   <span className="text-xs font-mono w-40 shrink-0 truncate">
@@ -212,7 +213,7 @@ export function LigneDetail({
               {ligneAppareils.map((a) => (
                 <li
                   key={a.id}
-                  onClick={() => onOpenAppareil?.(a.id)}
+                  {...clickableRowProps(() => onOpenAppareil?.(a.id))}
                   className="px-4 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 >
                   <div className="text-sm font-medium">{a.nom}</div>

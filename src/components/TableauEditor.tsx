@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
+import { Field } from './Field'
 import type { Tableau } from '../types/electrical'
 
 export function TableauEditor({
@@ -18,6 +19,7 @@ export function TableauEditor({
   const [t, setT] = useState<Tableau>(initial)
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setT(initial)
@@ -26,6 +28,33 @@ export function TableauEditor({
   }, [initial])
 
   const candidatsParent = allTableaux.filter((x) => x.id !== t.id)
+
+  // Disjoncteurs du tableau parent sélectionné — pour choisir le départ
+  // d'arrivée parmi des IDs réels plutôt qu'en saisie libre.
+  const parentDisjoncteurs = useMemo(() => {
+    if (!t.parent_tableau_id) return []
+    const parent = allTableaux.find((x) => x.id === t.parent_tableau_id)
+    if (!parent) return []
+    return parent.rangees
+      .flatMap((r) => r.disjoncteurs)
+      .map((d) => ({ id: d.id, label: `${d.id} — ${d.etiquette}` }))
+  }, [allTableaux, t.parent_tableau_id])
+
+  const handleSave = async () => {
+    setError(null)
+    // En triphasé, `arrivee_phases` n'a pas de sens (on prend les 3 phases) :
+    // on le neutralise pour éviter des données incohérentes (ex : tri + L2).
+    const cleaned: Tableau =
+      t.alimentation === 'triphase' ? { ...t, arrivee_phases: undefined } : t
+    setSaving(true)
+    try {
+      await onSave(cleaned, description.trim() || undefined)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -53,35 +82,44 @@ export function TableauEditor({
         <Field label="Alimentation">
           <select
             value={t.alimentation}
-            onChange={(e) =>
+            onChange={(e) => {
+              const alimentation = e.target.value as 'triphase' | 'monophase'
               setT({
                 ...t,
-                alimentation: e.target.value as 'triphase' | 'monophase',
+                alimentation,
+                // Tri : pas de phase d'arrivée. Mono : défaut L1 si non défini.
+                arrivee_phases:
+                  alimentation === 'triphase'
+                    ? undefined
+                    : (t.arrivee_phases && t.arrivee_phases !== 'TRI'
+                        ? t.arrivee_phases
+                        : 'L1'),
               })
-            }
+            }}
             className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           >
             <option value="triphase">Triphasé</option>
             <option value="monophase">Monophasé</option>
           </select>
         </Field>
-        <Field label="Phase arrivée (si mono)">
-          <select
-            value={t.arrivee_phases ?? 'TRI'}
-            onChange={(e) =>
-              setT({
-                ...t,
-                arrivee_phases: e.target.value as 'TRI' | 'L1' | 'L2' | 'L3',
-              })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            <option value="TRI">TRI</option>
-            <option value="L1">L1</option>
-            <option value="L2">L2</option>
-            <option value="L3">L3</option>
-          </select>
-        </Field>
+        {t.alimentation === 'monophase' && (
+          <Field label="Phase d'arrivée">
+            <select
+              value={t.arrivee_phases && t.arrivee_phases !== 'TRI' ? t.arrivee_phases : 'L1'}
+              onChange={(e) =>
+                setT({
+                  ...t,
+                  arrivee_phases: e.target.value as 'L1' | 'L2' | 'L3',
+                })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              <option value="L1">L1</option>
+              <option value="L2">L2</option>
+              <option value="L3">L3</option>
+            </select>
+          </Field>
+        )}
       </div>
 
       <Field label="Tableau parent (cascade)">
@@ -104,18 +142,41 @@ export function TableauEditor({
         </select>
       </Field>
 
-      <Field label="Disjoncteur d'arrivée (ID dans le tableau parent)">
-        <input
-          type="text"
+      <Field
+        label="Disjoncteur d'arrivée (dans le tableau parent)"
+        hint={
+          !t.parent_tableau_id
+            ? 'Sélectionnez d\'abord un tableau parent.'
+            : parentDisjoncteurs.length === 0
+              ? 'Le tableau parent n\'a aucun disjoncteur enregistré.'
+              : undefined
+        }
+      >
+        <select
           value={t.parent_disjoncteur_id ?? ''}
+          disabled={!t.parent_tableau_id}
           onChange={(e) =>
             setT({
               ...t,
               parent_disjoncteur_id: e.target.value || undefined,
             })
           }
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
-        />
+          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono disabled:opacity-50"
+        >
+          <option value="">— Aucun —</option>
+          {parentDisjoncteurs.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.label}
+            </option>
+          ))}
+          {/* Conserve la valeur courante si elle n'est plus dans le parent. */}
+          {t.parent_disjoncteur_id &&
+            !parentDisjoncteurs.some((d) => d.id === t.parent_disjoncteur_id) && (
+              <option value={t.parent_disjoncteur_id}>
+                {t.parent_disjoncteur_id} (introuvable)
+              </option>
+            )}
+        </select>
       </Field>
 
       <PhotoField
@@ -147,15 +208,9 @@ export function TableauEditor({
 
       <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
         <button
-          onClick={async () => {
-            setError(null)
-            try {
-              await onSave(t, description.trim() || undefined)
-            } catch (e) {
-              setError(e instanceof Error ? e.message : String(e))
-            }
-          }}
-          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm"
+          disabled={saving}
+          onClick={handleSave}
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm disabled:opacity-50"
         >
           Enregistrer
         </button>
@@ -167,44 +222,27 @@ export function TableauEditor({
         </button>
         {onDelete && (
           <button
+            disabled={saving}
             onClick={async () => {
               const nbRangees = initial.rangees.length
               const message =
                 nbRangees > 0
                   ? `Ce tableau contient ${nbRangees} rangée(s). Supprimer quand même ?`
                   : `Supprimer le tableau ${initial.nom} ?`
-              if (confirm(message)) await onDelete()
+              if (!confirm(message)) return
+              setSaving(true)
+              try {
+                await onDelete()
+              } finally {
+                setSaving(false)
+              }
             }}
-            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Supprimer
           </button>
         )}
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-      {hint && (
-        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      )}
-    </label>
   )
 }

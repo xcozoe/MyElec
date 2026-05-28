@@ -127,13 +127,14 @@ function SourceNode({
 }) {
   const [zoom, setZoom] = useState(false)
   const [showSpecs, setShowSpecs] = useState(false)
+  const [imgError, setImgError] = useState(false)
   const hasSpecs = specs && specs.length > 0
   const fullImage = imageDetails ?? image
 
   return (
     <div className="rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-2 w-full max-w-2xl">
       <div className="flex items-center gap-3">
-        {image && (
+        {image && !imgError && (
           <button
             onClick={() => setZoom(true)}
             className="shrink-0 hover:opacity-80"
@@ -144,10 +145,7 @@ function SourceNode({
               src={image}
               alt={label}
               className="h-14 w-14 object-contain"
-              onError={(e) => {
-                ;(e.currentTarget.parentElement as HTMLElement).style.display =
-                  'none'
-              }}
+              onError={() => setImgError(true)}
             />
           </button>
         )}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Disjoncteur, Phase, Tableau } from '../types/electrical'
 import type { Store } from '../hooks/useStore'
 import { PHASE_STYLES } from '../utils/phaseStyle'
@@ -45,6 +45,15 @@ export function CartographieEnCours({
   const [session, setSession] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
 
+  // Quand une ligne sort de la liste (étiquette renseignée), `rows` rétrécit :
+  // on reclampe l'index pour ne jamais pointer hors borne (sinon
+  // rows[stepIndex] devient undefined → crash).
+  useEffect(() => {
+    setStepIndex((i) => Math.min(i, Math.max(0, rows.length - 1)))
+  }, [rows.length])
+
+  const clampedIndex = rows.length > 0 ? Math.min(stepIndex, rows.length - 1) : 0
+
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
@@ -70,9 +79,10 @@ export function CartographieEnCours({
 
       {session && rows.length > 0 ? (
         <SessionGuide
+          key={rows[clampedIndex].disjoncteur.id}
           rows={rows}
-          stepIndex={Math.min(stepIndex, rows.length - 1)}
-          onPrev={() => setStepIndex((i) => Math.max(0, i - 1))}
+          stepIndex={clampedIndex}
+          onPrev={() => setStepIndex((i) => Math.max(0, Math.min(i, rows.length - 1) - 1))}
           onNext={() => setStepIndex((i) => Math.min(rows.length - 1, i + 1))}
           onSaveRow={async (row, update, description) => {
             await state.upsertDisjoncteur(
@@ -83,7 +93,10 @@ export function CartographieEnCours({
             )
           }}
           onOpen={() =>
-            onOpen(rows[stepIndex].tableau.id, rows[stepIndex].disjoncteur.id)
+            onOpen(
+              rows[clampedIndex].tableau.id,
+              rows[clampedIndex].disjoncteur.id,
+            )
           }
         />
       ) : (
@@ -183,20 +196,15 @@ function SessionGuide({
   ) => Promise<void>
   onOpen: () => void
 }) {
+  // Le composant est remonté (via `key={disjoncteur.id}` côté parent) à
+  // chaque changement d'étape : ces `useState` se réinitialisent donc
+  // naturellement sur la nouvelle ligne, sans effet de bord pendant le rendu.
   const row = rows[stepIndex]
   const [etiquette, setEtiquette] = useState(row.disjoncteur.etiquette)
   const [phase, setPhase] = useState<Phase>(row.disjoncteur.phase_affectation)
   const [statut, setStatut] = useState(row.disjoncteur.statut)
   const [notes, setNotes] = useState(row.disjoncteur.notes ?? '')
   const [busy, setBusy] = useState(false)
-
-  // Reset form when stepping
-  useMemo(() => {
-    setEtiquette(row.disjoncteur.etiquette)
-    setPhase(row.disjoncteur.phase_affectation)
-    setStatut(row.disjoncteur.statut)
-    setNotes(row.disjoncteur.notes ?? '')
-  }, [row.disjoncteur.id])
 
   return (
     <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">

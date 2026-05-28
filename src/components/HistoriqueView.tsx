@@ -1,53 +1,49 @@
 import { useMemo, useState } from 'react'
 import type { EntiteType, Modification, Tableau } from '../types/electrical'
 
-function findContext(
-  tableaux: Tableau[],
-  entite: EntiteType,
-  entiteId: string,
-):
-  | { tableauId: string; rangeeId?: string; disjoncteurId?: string }
-  | undefined {
-  if (entite === 'tableau') {
-    const t = tableaux.find((x) => x.id === entiteId)
-    return t ? { tableauId: t.id } : undefined
-  }
-  if (entite === 'rangee') {
-    for (const t of tableaux) {
-      if (t.rangees.some((r) => r.id === entiteId)) {
-        return { tableauId: t.id, rangeeId: entiteId }
+interface EntiteContext {
+  tableauId: string
+  rangeeId?: string
+  disjoncteurId?: string
+}
+
+/**
+ * Construit en UN seul passage un index `"<entite>:<id>" → contexte` pour
+ * les entités liées à un tableau (tableau / rangée / disjoncteur). Évite de
+ * reparcourir tous les tableaux × rangées × disjoncteurs pour chaque
+ * entrée d'historique, à chaque rendu (auparavant O(mods × arbre), deux
+ * fois : dans le filtre ET dans le rendu).
+ */
+function buildContextIndex(tableaux: Tableau[]): Map<string, EntiteContext> {
+  const index = new Map<string, EntiteContext>()
+  for (const t of tableaux) {
+    index.set(`tableau:${t.id}`, { tableauId: t.id })
+    for (const r of t.rangees) {
+      index.set(`rangee:${r.id}`, { tableauId: t.id, rangeeId: r.id })
+      for (const d of r.disjoncteurs) {
+        index.set(`disjoncteur:${d.id}`, {
+          tableauId: t.id,
+          rangeeId: r.id,
+          disjoncteurId: d.id,
+        })
       }
     }
   }
-  if (entite === 'disjoncteur') {
-    for (const t of tableaux) {
-      for (const r of t.rangees) {
-        if (r.disjoncteurs.some((d) => d.id === entiteId)) {
-          return {
-            tableauId: t.id,
-            rangeeId: r.id,
-            disjoncteurId: entiteId,
-          }
-        }
-      }
-    }
-  }
-  return undefined
+  return index
 }
 
 function formatDate(iso: string): string {
-  try {
-    const d = new Date(iso)
-    return d.toLocaleString('fr-FR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return iso
-  }
+  const d = new Date(iso)
+  // new Date() ne lève pas : il renvoie une date invalide. On teste donc
+  // explicitement plutôt que via try/catch (qui ne se déclencherait jamais).
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleString('fr-FR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function HistoriqueView({
@@ -63,6 +59,8 @@ export function HistoriqueView({
   const [filterTableau, setFilterTableau] = useState<string>('all')
   const [filterPeriod, setFilterPeriod] = useState<'all' | '7d' | '30d' | '1y'>('all')
 
+  const ctxIndex = useMemo(() => buildContextIndex(tableaux), [tableaux])
+
   const filtered = useMemo(() => {
     const now = Date.now()
     const period =
@@ -77,7 +75,7 @@ export function HistoriqueView({
       .filter((m) => {
         if (filterEntite !== 'all' && m.entite !== filterEntite) return false
         if (filterTableau !== 'all') {
-          const ctx = findContext(tableaux, m.entite, m.entite_id)
+          const ctx = ctxIndex.get(`${m.entite}:${m.entite_id}`)
           if (!ctx || ctx.tableauId !== filterTableau) return false
         }
         if (period !== null) {
@@ -87,7 +85,7 @@ export function HistoriqueView({
         return true
       })
       .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
-  }, [modifications, filterEntite, filterTableau, filterPeriod, tableaux])
+  }, [modifications, filterEntite, filterTableau, filterPeriod, ctxIndex])
 
   return (
     <div>
@@ -144,7 +142,7 @@ export function HistoriqueView({
           </li>
         )}
         {filtered.map((m) => {
-          const ctx = findContext(tableaux, m.entite, m.entite_id)
+          const ctx = ctxIndex.get(`${m.entite}:${m.entite_id}`)
           return (
             <li
               key={m.id}

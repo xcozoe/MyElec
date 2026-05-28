@@ -1,5 +1,5 @@
 import express from 'express'
-import { readFile, writeFile, mkdir } from 'node:fs/promises'
+import { readFile, writeFile, mkdir, rename } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -38,8 +38,44 @@ async function readJson(path) {
   return JSON.parse(raw)
 }
 
+// File d'attente d'écriture par fichier : sérialise les opérations
+// read-modify-write et les PUT concurrents pour éviter les pertes de
+// données (deux écritures simultanées qui s'écrasent).
+const writeChains = new Map()
+
+function enqueueWrite(path, task) {
+  const prev = writeChains.get(path) ?? Promise.resolve()
+  const next = prev.then(task, task)
+  // On garde la chaîne vivante même en cas d'erreur, mais on n'accumule
+  // pas les rejets non gérés.
+  writeChains.set(
+    path,
+    next.catch(() => {}),
+  )
+  return next
+}
+
+// Écriture atomique : on écrit dans un fichier temporaire puis on le
+// renomme (rename est atomique sur le même volume). Évite de corrompre le
+// JSON si le process est interrompu en plein milieu de l'écriture.
 async function writeJson(path, data) {
-  await writeFile(path, JSON.stringify(data, null, 2))
+  return enqueueWrite(path, async () => {
+    const tmp = `${path}.tmp-${process.pid}`
+    await writeFile(tmp, JSON.stringify(data, null, 2))
+    await rename(tmp, path)
+  })
+}
+
+// Append sérialisé : lit l'état courant et y ajoute l'entrée, le tout dans
+// la file du fichier pour qu'aucun autre write ne s'intercale.
+async function appendJson(path, entry) {
+  return enqueueWrite(path, async () => {
+    const current = await readJson(path)
+    current.push(entry)
+    const tmp = `${path}.tmp-${process.pid}`
+    await writeFile(tmp, JSON.stringify(current, null, 2))
+    await rename(tmp, path)
+  })
 }
 
 for (const resource of Object.keys(RESOURCES)) {
@@ -66,10 +102,7 @@ for (const resource of Object.keys(RESOURCES)) {
 // POST /api/modifications : append d'une entrée d'historique (utilisé par les
 // services côté client à chaque création/modif/suppression).
 app.post('/api/modifications', async (req, res) => {
-  const file = pathOf('modifications')
-  const current = await readJson(file)
-  current.push(req.body)
-  await writeJson(file, current)
+  await appendJson(pathOf('modifications'), req.body)
   res.json({ ok: true })
 })
 
@@ -83,6 +116,14 @@ if (existsSync(DIST_DIR)) {
     res.sendFile(join(DIST_DIR, 'index.html'))
   })
 }
+
+// Middleware d'erreur : toute exception async (lecture/parse/écriture)
+// remonte ici plutôt que de laisser la requête pendre.
+app.use((err, _req, res, _next) => {
+  console.error('[api] erreur :', err)
+  if (res.headersSent) return
+  res.status(500).json({ error: err instanceof Error ? err.message : String(err) })
+})
 
 app.listen(PORT, () => {
   const mode = existsSync(DIST_DIR) ? 'prod (UI + API)' : 'dev (API only)'

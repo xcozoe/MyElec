@@ -3,7 +3,9 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -11,7 +13,7 @@ import type { Phase } from '../types/electrical'
 
 const STORAGE_KEY = 'myelec.settings.v1'
 
-export type PhaseColorKey = Exclude<Phase, 'inconnue'> | 'inconnue'
+export type PhaseColorKey = Phase
 
 export interface PhaseColors {
   L1: string
@@ -75,15 +77,22 @@ function applyToDocument(colors: PhaseColors) {
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<SettingsState>(() => {
-    const loaded = loadFromStorage()
-    // Applique les couleurs avant le 1er paint pour éviter un flash
-    applyToDocument(loaded.phaseColors)
-    return loaded
-  })
+  // Initialiseur pur (pas d'effet de bord pendant le rendu).
+  const [state, setState] = useState<SettingsState>(loadFromStorage)
 
-  useEffect(() => {
+  // Applique les variables CSS avant le 1er paint (évite un flash de couleur).
+  useLayoutEffect(() => {
     applyToDocument(state.phaseColors)
+  }, [state.phaseColors])
+
+  // Persiste les changements — en sautant le tout premier rendu pour ne pas
+  // réécrire inutilement dans localStorage la valeur qu'on vient d'y lire.
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state))

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Disjoncteur, Ligne, Tableau } from '../types/electrical'
+import { toOptionalNumber } from '../utils/form'
+import { Field } from './Field'
 
 export interface DisjoncteurOption {
   tableauId: string
@@ -54,6 +56,7 @@ export function LigneEditor({
   const [l, setL] = useState<Ligne>(initial)
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setL(initial)
@@ -88,10 +91,13 @@ export function LigneEditor({
       return setError('Disjoncteur source requis.')
     if (mode === 'create' && allLignes.some((x) => x.id === l.id))
       return setError(`L'ID ${l.id} existe déjà.`)
+    setSaving(true)
     try {
       await onSave(l, description.trim() || undefined, { thenNew })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -168,10 +174,7 @@ export function LigneEditor({
             step={0.5}
             value={l.section_mm2 ?? ''}
             onChange={(e) =>
-              setL({
-                ...l,
-                section_mm2: e.target.value ? Number(e.target.value) : undefined,
-              })
+              setL({ ...l, section_mm2: toOptionalNumber(e.target.value) })
             }
             className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           />
@@ -188,12 +191,7 @@ export function LigneEditor({
             step={0.5}
             value={l.longueur_estimee_m ?? ''}
             onChange={(e) =>
-              setL({
-                ...l,
-                longueur_estimee_m: e.target.value
-                  ? Number(e.target.value)
-                  : undefined,
-              })
+              setL({ ...l, longueur_estimee_m: toOptionalNumber(e.target.value) })
             }
             className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           />
@@ -235,15 +233,17 @@ export function LigneEditor({
 
       <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
         <button
+          disabled={saving}
           onClick={() => handleSave(false)}
-          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm"
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm disabled:opacity-50"
         >
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
         {mode === 'create' && (
           <button
+            disabled={saving}
             onClick={() => handleSave(true)}
-            className="rounded-md border border-slate-400 dark:border-slate-600 px-4 py-1.5 text-sm"
+            className="rounded-md border border-slate-400 dark:border-slate-600 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Créer et saisir une autre
           </button>
@@ -256,45 +256,28 @@ export function LigneEditor({
         </button>
         {mode === 'edit' && onDelete && (
           <button
+            disabled={saving}
             onClick={async () => {
               if (
-                confirm(
+                !confirm(
                   `Supprimer la ligne ${l.id} ? Les end-points et appareils qui y sont rattachés deviendront orphelins.`,
                 )
               )
+                return
+              setSaving(true)
+              try {
                 await onDelete()
+              } finally {
+                setSaving(false)
+              }
             }}
-            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Supprimer
           </button>
         )}
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-      {hint && (
-        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      )}
-    </label>
   )
 }
 

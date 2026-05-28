@@ -17,6 +17,8 @@ import {
   nextNumeroVolet,
   voletId,
 } from '../utils/idGenerator'
+import { toOptionalNumber, toPositiveInt } from '../utils/form'
+import { Field } from './Field'
 
 export function VoletEditor({
   mode,
@@ -44,6 +46,7 @@ export function VoletEditor({
   const [v, setV] = useState<Volet>(initial)
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setV(initial)
@@ -68,6 +71,8 @@ export function VoletEditor({
   const handleSave = async (thenNew = false) => {
     setError(null)
     if (!v.piece_id) return setError('Pièce requise.')
+    if (!Number.isInteger(v.numero) || v.numero < 1)
+      return setError('Numéro invalide — doit être un entier ≥ 1.')
     if (!v.id.trim()) return setError('ID manquant — vérifiez la pièce.')
     if (mode === 'create' && allVolets.some((x) => x.id === v.id))
       return setError(`L'ID ${v.id} existe déjà.`)
@@ -75,10 +80,13 @@ export function VoletEditor({
       return setError('Volet motorisé : la ligne d\'alimentation est obligatoire.')
     if (v.ligne_id && lignes.length > 0 && !lignes.some((l) => l.id === v.ligne_id))
       return setError(`La ligne ${v.ligne_id} n'existe pas.`)
+    setSaving(true)
     try {
       await onSave(v, description.trim() || undefined, { thenNew })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -124,7 +132,7 @@ export function VoletEditor({
             min={1}
             value={v.numero}
             onChange={(e) => {
-              const num = Number(e.target.value)
+              const num = toPositiveInt(e.target.value, v.numero)
               setV({
                 ...v,
                 numero: num,
@@ -225,10 +233,7 @@ export function VoletEditor({
             min={0}
             value={v.largeur_cm ?? ''}
             onChange={(e) =>
-              setV({
-                ...v,
-                largeur_cm: e.target.value ? Number(e.target.value) : undefined,
-              })
+              setV({ ...v, largeur_cm: toOptionalNumber(e.target.value) })
             }
             className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           />
@@ -288,15 +293,17 @@ export function VoletEditor({
 
       <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
         <button
+          disabled={saving}
           onClick={() => handleSave(false)}
-          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm"
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm disabled:opacity-50"
         >
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
         {mode === 'create' && (
           <button
+            disabled={saving}
             onClick={() => handleSave(true)}
-            className="rounded-md border border-slate-400 dark:border-slate-600 px-4 py-1.5 text-sm"
+            className="rounded-md border border-slate-400 dark:border-slate-600 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Créer et saisir le suivant
           </button>
@@ -309,40 +316,23 @@ export function VoletEditor({
         </button>
         {mode === 'edit' && onDelete && (
           <button
+            disabled={saving}
             onClick={async () => {
-              if (confirm(`Supprimer le volet ${v.id} ?`)) await onDelete()
+              if (!confirm(`Supprimer le volet ${v.id} ?`)) return
+              setSaving(true)
+              try {
+                await onDelete()
+              } finally {
+                setSaving(false)
+              }
             }}
-            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Supprimer
           </button>
         )}
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-      {hint && (
-        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      )}
-    </label>
   )
 }
 

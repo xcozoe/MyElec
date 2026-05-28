@@ -52,5 +52,10 @@ export function appareilId(trigramme: string, numero: number): string {
 }
 
 export function getTrigramme(pieces: Piece[], pieceId: string): string {
-  return pieces.find((p) => p.id === pieceId)?.trigramme ?? pieceId.toUpperCase()
+  // Si la pièce est introuvable, on renvoie une chaîne vide plutôt que de
+  // fabriquer un trigramme depuis l'ID brut (qui pourrait contenir des
+  // espaces/caractères spéciaux et produire des identifiants corrompus ou
+  // non uniques). Les éditeurs traitent un trigramme vide comme "ID non
+  // déterminable" et bloquent l'enregistrement.
+  return pieces.find((p) => p.id === pieceId)?.trigramme ?? ''
 }

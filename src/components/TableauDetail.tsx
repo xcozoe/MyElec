@@ -79,6 +79,7 @@ export function TableauDetail({
   const tableau = state.tableaux.find((t) => t.id === tableauId)
   const [panel, setPanel] = useState<PanelState>({ kind: 'none' })
   const [photoZoom, setPhotoZoom] = useState(false)
+  const [photoError, setPhotoError] = useState(false)
 
   // Sensors : un clic court ouvre l'éditeur, un drag de 8px (souris) ou un
   // long press de 200 ms (touch iPad) déclenche le drag & drop.
@@ -138,9 +139,14 @@ export function TableauDetail({
     }
   }
 
+  // Ouvre l'éditeur sur le disjoncteur ciblé à l'arrivée sur la vue. On ne
+  // dépend QUE de [tableauId, focusDisjoncteurId] : dépendre de l'objet
+  // `tableau` (recalculé via find() à chaque rendu) rouvrirait le panneau à
+  // chaque édition du store, écrasant la navigation de l'utilisateur.
   useEffect(() => {
-    if (!focusDisjoncteurId || !tableau) return
-    for (const r of tableau.rangees) {
+    const current = state.tableaux.find((t) => t.id === tableauId)
+    if (!focusDisjoncteurId || !current) return
+    for (const r of current.rangees) {
       if (r.disjoncteurs.some((d) => d.id === focusDisjoncteurId)) {
         setPanel({
           kind: 'editDisjoncteur',
@@ -150,7 +156,8 @@ export function TableauDetail({
         break
       }
     }
-  }, [focusDisjoncteurId, tableau])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusDisjoncteurId, tableauId])
 
   const parentTableau = useMemo(
     () =>
@@ -196,7 +203,7 @@ export function TableauDetail({
 
       <header className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 mb-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          {tableau.photo_url && (
+          {tableau.photo_url && !photoError && (
             <button
               onClick={() => setPhotoZoom(true)}
               className="shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white p-1 hover:shadow"
@@ -207,10 +214,7 @@ export function TableauDetail({
                 src={tableau.photo_url}
                 alt={`Coffret ${tableau.nom}`}
                 className="h-20 w-20 object-contain"
-                onError={(e) => {
-                  ;(e.currentTarget.parentElement as HTMLElement).style.display =
-                    'none'
-                }}
+                onError={() => setPhotoError(true)}
               />
             </button>
           )}

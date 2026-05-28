@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
+import { Field } from './Field'
+import { toPositiveInt } from '../utils/form'
 import {
   PHASES,
   POLES,
@@ -141,7 +143,7 @@ export function DisjoncteurEditor({
           type="number"
           min={1}
           value={d.position}
-          onChange={(e) => setD({ ...d, position: Number(e.target.value) })}
+          onChange={(e) => setD({ ...d, position: toPositiveInt(e.target.value, d.position) })}
           className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>
@@ -331,46 +333,28 @@ export function DisjoncteurEditor({
         </button>
         {mode === 'edit' && onDelete && (
           <button
+            disabled={saving}
             onClick={async () => {
               if (
-                confirm(
+                !confirm(
                   `Supprimer définitivement le disjoncteur ${d.id} ? Son historique passé sera conservé.`,
                 )
-              ) {
+              )
+                return
+              setSaving(true)
+              try {
                 await onDelete()
+              } finally {
+                setSaving(false)
               }
             }}
-            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Supprimer
           </button>
         )}
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-      {hint && (
-        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      )}
-    </label>
   )
 }
 

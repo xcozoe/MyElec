@@ -8,6 +8,7 @@ import type {
   Volet,
 } from '../types/electrical'
 import { CATEGORIES_APPAREIL } from '../types/electrical'
+import { clickableRowProps } from '../utils/form'
 
 type Tab = 'appareils' | 'volets'
 
@@ -184,6 +185,14 @@ function AppareilsView({
     return [...groups.entries()].filter(([, list]) => list.length > 0)
   }, [filtered])
 
+  // Index par id pour éviter un find() linéaire par ligne au rendu.
+  const pieceById = useMemo(() => new Map(pieces.map((p) => [p.id, p])), [pieces])
+  const ligneById = useMemo(() => new Map(lignes.map((l) => [l.id, l])), [lignes])
+  const endpointById = useMemo(
+    () => new Map(endpoints.map((e) => [e.id, e])),
+    [endpoints],
+  )
+
   if (filtered.length === 0) {
     return (
       <Empty>Aucun appareil ne correspond aux filtres.</Empty>
@@ -209,17 +218,15 @@ function AppareilsView({
             </header>
             <ul className="divide-y divide-slate-200 dark:divide-slate-800">
               {list.map((a) => {
-                const piece = pieces.find((p) => p.id === a.piece_id)
+                const piece = pieceById.get(a.piece_id)
                 const branchePrise = a.branche_sur
-                  ? endpoints.find((e) => e.id === a.branche_sur)
+                  ? endpointById.get(a.branche_sur)
                   : undefined
-                const ligne = a.ligne_id
-                  ? lignes.find((l) => l.id === a.ligne_id)
-                  : undefined
+                const ligne = a.ligne_id ? ligneById.get(a.ligne_id) : undefined
                 return (
                   <li
                     key={a.id}
-                    onClick={() => onOpen(a.id)}
+                    {...clickableRowProps(() => onOpen(a.id))}
                     className="px-4 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3"
                   >
                     <span className="text-xs font-mono text-slate-500 dark:text-slate-400 w-28 shrink-0 truncate">
@@ -315,12 +322,15 @@ function VoletsView({
     return [...groups.entries()]
   }, [filtered])
 
+  const pieceById = useMemo(() => new Map(pieces.map((p) => [p.id, p])), [pieces])
+  const ligneById = useMemo(() => new Map(lignes.map((l) => [l.id, l])), [lignes])
+
   if (filtered.length === 0) return <Empty>Aucun volet enregistré.</Empty>
 
   return (
     <div className="space-y-4">
       {byPiece.map(([pid, list]) => {
-        const piece = pieces.find((p) => p.id === pid)
+        const piece = pieceById.get(pid)
         return (
           <section
             key={pid}
@@ -341,11 +351,11 @@ function VoletsView({
             </header>
             <ul className="divide-y divide-slate-200 dark:divide-slate-800">
               {list.map((v) => {
-                const ligne = v.ligne_id ? lignes.find((l) => l.id === v.ligne_id) : undefined
+                const ligne = v.ligne_id ? ligneById.get(v.ligne_id) : undefined
                 return (
                   <li
                     key={v.id}
-                    onClick={() => onOpen(v.id)}
+                    {...clickableRowProps(() => onOpen(v.id))}
                     className="px-4 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3"
                   >
                     <span className="text-xs font-mono text-slate-500 dark:text-slate-400 w-24 shrink-0">

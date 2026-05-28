@@ -14,6 +14,8 @@ import {
   getTrigramme,
   nextNumeroAppareil,
 } from '../utils/idGenerator'
+import { toOptionalNumber, toPositiveInt } from '../utils/form'
+import { Field } from './Field'
 
 export function AppareilFixeEditor({
   mode,
@@ -43,6 +45,7 @@ export function AppareilFixeEditor({
   const [a, setA] = useState<AppareilFixe>(initial)
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
   const [raccordement, setRaccordement] = useState<
     'aucun' | 'ligne' | 'prise'
   >(
@@ -86,6 +89,8 @@ export function AppareilFixeEditor({
     setError(null)
     if (!a.piece_id) return setError('Pièce requise.')
     if (!a.nom.trim()) return setError('Nom requis.')
+    if (!Number.isInteger(a.numero) || a.numero < 1)
+      return setError('Numéro invalide — doit être un entier ≥ 1.')
     if (!a.id.trim()) return setError('ID manquant — vérifiez la pièce.')
     if (mode === 'create' && allAppareils.some((x) => x.id === a.id))
       return setError(`L'ID ${a.id} existe déjà.`)
@@ -96,6 +101,13 @@ export function AppareilFixeEditor({
       ligne_id: raccordement === 'ligne' ? a.ligne_id : undefined,
       branche_sur: raccordement === 'prise' ? a.branche_sur : undefined,
     }
+    // Si un mode de raccordement est choisi, sa cible est obligatoire —
+    // sinon l'UI afficherait "Direct sur une ligne" alors que l'appareil
+    // serait enregistré comme non raccordé.
+    if (raccordement === 'ligne' && !cleaned.ligne_id)
+      return setError('Sélectionnez la ligne d\'alimentation (ou choisissez « Non renseigné »).')
+    if (raccordement === 'prise' && !cleaned.branche_sur)
+      return setError('Sélectionnez la prise (ou choisissez « Non renseigné »).')
     if (cleaned.ligne_id && cleaned.branche_sur)
       return setError("Un appareil ne peut être à la fois sur une ligne ET sur une prise.")
     if (
@@ -109,10 +121,13 @@ export function AppareilFixeEditor({
       !endpoints.some((e) => e.id === cleaned.branche_sur)
     )
       return setError(`L'end-point ${cleaned.branche_sur} n'existe pas.`)
+    setSaving(true)
     try {
       await onSave(cleaned, description.trim() || undefined, { thenNew })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -158,7 +173,7 @@ export function AppareilFixeEditor({
             min={1}
             value={a.numero}
             onChange={(e) => {
-              const num = Number(e.target.value)
+              const num = toPositiveInt(e.target.value, a.numero)
               setA({
                 ...a,
                 numero: num,
@@ -232,12 +247,7 @@ export function AppareilFixeEditor({
             min={0}
             value={a.puissance_nominale_w ?? ''}
             onChange={(e) =>
-              setA({
-                ...a,
-                puissance_nominale_w: e.target.value
-                  ? Number(e.target.value)
-                  : undefined,
-              })
+              setA({ ...a, puissance_nominale_w: toOptionalNumber(e.target.value) })
             }
             className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           />
@@ -248,12 +258,7 @@ export function AppareilFixeEditor({
             min={0}
             value={a.puissance_pic_w ?? ''}
             onChange={(e) =>
-              setA({
-                ...a,
-                puissance_pic_w: e.target.value
-                  ? Number(e.target.value)
-                  : undefined,
-              })
+              setA({ ...a, puissance_pic_w: toOptionalNumber(e.target.value) })
             }
             className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           />
@@ -371,15 +376,17 @@ export function AppareilFixeEditor({
 
       <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
         <button
+          disabled={saving}
           onClick={() => handleSave(false)}
-          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm"
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm disabled:opacity-50"
         >
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
         {mode === 'create' && (
           <button
+            disabled={saving}
             onClick={() => handleSave(true)}
-            className="rounded-md border border-slate-400 dark:border-slate-600 px-4 py-1.5 text-sm"
+            className="rounded-md border border-slate-400 dark:border-slate-600 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Créer et saisir le suivant
           </button>
@@ -392,41 +399,23 @@ export function AppareilFixeEditor({
         </button>
         {mode === 'edit' && onDelete && (
           <button
+            disabled={saving}
             onClick={async () => {
-              if (confirm(`Supprimer l'appareil ${a.nom} (${a.id}) ?`))
+              if (!confirm(`Supprimer l'appareil ${a.nom} (${a.id}) ?`)) return
+              setSaving(true)
+              try {
                 await onDelete()
+              } finally {
+                setSaving(false)
+              }
             }}
-            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Supprimer
           </button>
         )}
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-      {hint && (
-        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      )}
-    </label>
   )
 }
 

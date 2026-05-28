@@ -19,6 +19,9 @@ export function PhotoField({
   label?: string
 }) {
   const [zoom, setZoom] = useState(false)
+  // On mémorise l'URL qui a échoué : si `value` change, l'erreur est
+  // automatiquement réévaluée (pas d'effet de bord DOM à nettoyer).
+  const [errorSrc, setErrorSrc] = useState<string | undefined>(undefined)
   return (
     <label className="block">
       <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
@@ -36,10 +39,8 @@ export function PhotoField({
             <img
               src={value}
               alt={alt}
-              className="h-20 w-20 object-contain"
-              onError={(e) => {
-                ;(e.currentTarget as HTMLImageElement).style.opacity = '0.3'
-              }}
+              className={`h-20 w-20 object-contain ${errorSrc === value ? 'opacity-30' : ''}`}
+              onError={() => setErrorSrc(value)}
             />
           </button>
         ) : (

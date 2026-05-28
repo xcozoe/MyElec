@@ -26,10 +26,14 @@ export function Lightbox({
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
+    // Sauvegarde puis restaure la valeur précédente plutôt que de forcer ''
+    // (évite de déverrouiller le scroll d'une couche parente qui l'aurait
+    // elle-même verrouillé).
+    const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
+      document.body.style.overflow = previousOverflow
     }
   }, [onClose])
 

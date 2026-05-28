@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PHASES, type Phase, type Rangee, type Tableau } from '../types/electrical'
+import { toPositiveInt } from '../utils/form'
+import { Field } from './Field'
 
 export function RangeeEditor({
   mode,
@@ -19,6 +21,7 @@ export function RangeeEditor({
   const [r, setR] = useState<Rangee>(initial)
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setR(initial)
@@ -29,14 +32,38 @@ export function RangeeEditor({
   const conflictId =
     mode === 'create' && tableau.rangees.some((x) => x.id === r.id)
 
+  // Différentiels existants du tableau (pour le picker de tête de rangée),
+  // au lieu d'une saisie libre qui peut référencer un ID inexistant.
+  const diffOptions = useMemo(() => {
+    const opts: { id: string; label: string }[] = []
+    for (const rg of tableau.rangees) {
+      for (const dj of rg.disjoncteurs) {
+        if (
+          dj.type_protection === 'differentiel_tete_rangee' ||
+          dj.type_protection === 'differentiel_tete_tableau' ||
+          dj.type_protection === 'differentiel_dedie' ||
+          dj.type_protection === 'disjoncteur_diff_dedie'
+        ) {
+          opts.push({ id: dj.id, label: `${dj.id} — ${dj.etiquette}` })
+        }
+      }
+    }
+    return opts
+  }, [tableau])
+
   const handleSave = async () => {
     setError(null)
     if (!r.id.trim()) return setError('ID requis.')
     if (conflictId) return setError('Cet ID existe déjà.')
+    if (!Number.isInteger(r.numero) || r.numero < 1)
+      return setError('Numéro invalide — doit être un entier ≥ 1.')
+    setSaving(true)
     try {
       await onSave(r, description.trim() || undefined)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -70,7 +97,7 @@ export function RangeeEditor({
             type="number"
             min={1}
             value={r.numero}
-            onChange={(e) => setR({ ...r, numero: Number(e.target.value) })}
+            onChange={(e) => setR({ ...r, numero: toPositiveInt(e.target.value, r.numero) })}
             className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           />
         </Field>
@@ -98,15 +125,29 @@ export function RangeeEditor({
         />
       </Field>
 
-      <Field label="Différentiel de tête (ID)" hint="Identifiant du disjoncteur en tête de rangée">
-        <input
-          type="text"
+      <Field label="Différentiel de tête" hint="Disjoncteur différentiel en tête de rangée (parmi ceux du tableau)">
+        <select
           value={r.differentiel_id ?? ''}
           onChange={(e) =>
             setR({ ...r, differentiel_id: e.target.value || undefined })
           }
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
-        />
+        >
+          <option value="">— Aucun —</option>
+          {diffOptions.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+          {/* Conserve la valeur courante si elle ne correspond à aucun
+              différentiel listé (donnée existante à ne pas perdre). */}
+          {r.differentiel_id &&
+            !diffOptions.some((o) => o.id === r.differentiel_id) && (
+              <option value={r.differentiel_id}>
+                {r.differentiel_id} (introuvable dans le tableau)
+              </option>
+            )}
+        </select>
       </Field>
 
       <Field label="Notes">
@@ -131,8 +172,9 @@ export function RangeeEditor({
 
       <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
         <button
+          disabled={saving}
           onClick={handleSave}
-          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm"
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm disabled:opacity-50"
         >
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
@@ -144,43 +186,26 @@ export function RangeeEditor({
         </button>
         {mode === 'edit' && onDelete && (
           <button
+            disabled={saving}
             onClick={async () => {
               const hasDisjoncteurs = initial.disjoncteurs.length > 0
               const message = hasDisjoncteurs
                 ? `Cette rangée contient ${initial.disjoncteurs.length} disjoncteur(s). Supprimer quand même ?`
                 : `Supprimer la rangée ${initial.id} ?`
-              if (confirm(message)) await onDelete()
+              if (!confirm(message)) return
+              setSaving(true)
+              try {
+                await onDelete()
+              } finally {
+                setSaving(false)
+              }
             }}
-            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Supprimer
           </button>
         )}
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-      {hint && (
-        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      )}
-    </label>
   )
 }

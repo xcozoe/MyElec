@@ -7,6 +7,15 @@ import {
 } from '../context/SettingsContext'
 import { PHASE_STYLES } from '../utils/phaseStyle'
 import type { Store } from '../hooks/useStore'
+import type {
+  AppareilFixe,
+  EndPoint,
+  Ligne,
+  Modification,
+  Piece,
+  Tableau,
+  Volet,
+} from '../types/electrical'
 import { HistoriqueView } from './HistoriqueView'
 import { CartographieEnCours } from './CartographieEnCours'
 
@@ -61,17 +70,21 @@ export function SettingsView({
     try {
       const text = await file.text()
       const parsed = JSON.parse(text)
-      const tableaux = Array.isArray(parsed) ? parsed : parsed.tableaux
-      const modifications = Array.isArray(parsed)
-        ? []
-        : (parsed.modifications ?? [])
-      if (!Array.isArray(tableaux))
+      // Coerce chaque collection en tableau : on ne fait pas confiance au
+      // contenu du fichier (un objet à la place d'un tableau ferait planter
+      // `.length` / l'import). Tout ce qui n'est pas un tableau devient [].
+      const asArray = <T,>(x: unknown): T[] => (Array.isArray(x) ? (x as T[]) : [])
+      const isArr = Array.isArray(parsed)
+      const rawTableaux = isArr ? parsed : parsed?.tableaux
+      if (!Array.isArray(rawTableaux))
         throw new Error('Le fichier ne contient pas de tableaux exploitables.')
-      const pieces = Array.isArray(parsed) ? [] : (parsed.pieces ?? [])
-      const lignes = Array.isArray(parsed) ? [] : (parsed.lignes ?? [])
-      const endpoints = Array.isArray(parsed) ? [] : (parsed.endpoints ?? [])
-      const volets = Array.isArray(parsed) ? [] : (parsed.volets ?? [])
-      const appareils = Array.isArray(parsed) ? [] : (parsed.appareils ?? [])
+      const tableaux = rawTableaux as Tableau[]
+      const modifications = isArr ? [] : asArray<Modification>(parsed?.modifications)
+      const pieces = isArr ? [] : asArray<Piece>(parsed?.pieces)
+      const lignes = isArr ? [] : asArray<Ligne>(parsed?.lignes)
+      const endpoints = isArr ? [] : asArray<EndPoint>(parsed?.endpoints)
+      const volets = isArr ? [] : asArray<Volet>(parsed?.volets)
+      const appareils = isArr ? [] : asArray<AppareilFixe>(parsed?.appareils)
       const counts = [
         `${tableaux.length} tableau(x)`,
         `${pieces.length} pièce(s)`,

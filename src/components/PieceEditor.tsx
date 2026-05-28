@@ -6,6 +6,8 @@ import {
   type Niveau,
   type Piece,
 } from '../types/electrical'
+import { toOptionalNumber } from '../utils/form'
+import { Field } from './Field'
 
 export function PieceEditor({
   mode,
@@ -25,6 +27,7 @@ export function PieceEditor({
   const [p, setP] = useState<Piece>(initial)
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setP(initial)
@@ -38,20 +41,20 @@ export function PieceEditor({
     if (!p.trigramme.trim() || p.trigramme.length > 4)
       return setError('Trigramme requis (1 à 4 caractères).')
     if (!p.nom.trim()) return setError('Nom requis.')
-    if (
-      mode === 'create' &&
-      allPieces.some((x) => x.id === p.id)
-    )
+    if (mode === 'create' && allPieces.some((x) => x.id === p.id))
       return setError('Cet ID existe déjà.')
-    if (
-      mode === 'create' &&
-      allPieces.some((x) => x.trigramme === p.trigramme)
-    )
-      return setError('Ce trigramme est déjà utilisé.')
+    // Unicité du trigramme vérifiée dans les DEUX modes (en édition aussi) :
+    // le trigramme sert à générer les IDs des end-points/appareils/volets,
+    // un doublon provoquerait des collisions d'identifiants.
+    if (allPieces.some((x) => x.trigramme === p.trigramme && x.id !== p.id))
+      return setError('Ce trigramme est déjà utilisé par une autre pièce.')
+    setSaving(true)
     try {
       await onSave(p, description.trim() || undefined)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -79,7 +82,7 @@ export function PieceEditor({
             className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
           />
         </Field>
-        <Field label="Trigramme" hint="3 lettres utilisées dans les IDs (PC_CUI_…)">
+        <Field label="Trigramme" hint="1 à 4 caractères utilisés dans les IDs (PC_CUI_…)">
           <input
             type="text"
             value={p.trigramme}
@@ -139,10 +142,7 @@ export function PieceEditor({
           step={0.5}
           value={p.surface_m2 ?? ''}
           onChange={(e) =>
-            setP({
-              ...p,
-              surface_m2: e.target.value ? Number(e.target.value) : undefined,
-            })
+            setP({ ...p, surface_m2: toOptionalNumber(e.target.value) })
           }
           className="w-32 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
@@ -172,8 +172,9 @@ export function PieceEditor({
 
       <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
         <button
+          disabled={saving}
           onClick={handleSave}
-          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm"
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-1.5 text-sm disabled:opacity-50"
         >
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
@@ -185,45 +186,27 @@ export function PieceEditor({
         </button>
         {mode === 'edit' && onDelete && (
           <button
+            disabled={saving}
             onClick={async () => {
               if (
-                confirm(
+                !confirm(
                   `Supprimer la pièce ${initial.nom} (${initial.trigramme}) ?\n\nLa vérification d'intégrité (end-points, volets, appareils) sera proposée.`,
                 )
-              ) {
+              )
+                return
+              setSaving(true)
+              try {
                 await onDelete()
+              } finally {
+                setSaving(false)
               }
             }}
-            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm"
+            className="ml-auto rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-1.5 text-sm disabled:opacity-50"
           >
             Supprimer
           </button>
         )}
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-      {hint && (
-        <span className="block mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      )}
-    </label>
   )
 }
