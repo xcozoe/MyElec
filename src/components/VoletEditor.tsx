@@ -19,6 +19,8 @@ import {
 } from '../utils/idGenerator'
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 
 export function VoletEditor({
   mode,
@@ -47,6 +49,8 @@ export function VoletEditor({
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(v, initial, onCancel)
 
   useEffect(() => {
     setV(initial)
@@ -97,7 +101,7 @@ export function VoletEditor({
           {mode === 'create' ? 'Nouveau volet / store' : 'Éditer le volet'}
         </h3>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
         >
           Fermer
@@ -309,7 +313,7 @@ export function VoletEditor({
           </button>
         )}
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -318,7 +322,14 @@ export function VoletEditor({
           <button
             disabled={saving}
             onClick={async () => {
-              if (!confirm(`Supprimer le volet ${v.id} ?`)) return
+              if (
+                !(await confirmDialog({
+                  title: `Supprimer le volet ${v.id} ?`,
+                  confirmLabel: 'Supprimer',
+                  danger: true,
+                }))
+              )
+                return
               setSaving(true)
               try {
                 await onDelete()

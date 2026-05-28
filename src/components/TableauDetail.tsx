@@ -21,6 +21,7 @@ import { RangeeEditor } from './RangeeEditor'
 import { RangeeView } from './RangeeView'
 import { SidePanel } from './SidePanel'
 import { TableauEditor } from './TableauEditor'
+import { useConfirm } from './Dialogs'
 
 type PanelState =
   | { kind: 'none' }
@@ -77,6 +78,7 @@ export function TableauDetail({
   onOpenLigne?: (ligneId: string) => void
 }) {
   const tableau = state.tableaux.find((t) => t.id === tableauId)
+  const confirmDialog = useConfirm()
   const [panel, setPanel] = useState<PanelState>({ kind: 'none' })
   const [photoZoom, setPhotoZoom] = useState(false)
   const [photoError, setPhotoError] = useState(false)
@@ -284,11 +286,15 @@ export function TableauDetail({
               onEditRangee={() => setPanel({ kind: 'editRangee', rangeeId: r.id })}
               onDeleteRangee={async () => {
                 if (
-                  confirm(
-                    r.disjoncteurs.length > 0
-                      ? `Cette rangée contient ${r.disjoncteurs.length} disjoncteur(s). Supprimer quand même ?`
-                      : `Supprimer la rangée ${r.id} ?`,
-                  )
+                  await confirmDialog({
+                    title: `Supprimer la rangée ${r.id} ?`,
+                    message:
+                      r.disjoncteurs.length > 0
+                        ? `Cette rangée contient ${r.disjoncteurs.length} disjoncteur(s).`
+                        : undefined,
+                    confirmLabel: 'Supprimer',
+                    danger: true,
+                  })
                 ) {
                   await state.removeRangee(
                     tableau.id,

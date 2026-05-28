@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 import { toPositiveInt } from '../utils/form'
 import {
   PHASES,
@@ -56,6 +58,8 @@ export function DisjoncteurEditor({
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(d, initial, onCancel)
 
   useEffect(() => {
     setD(initial)
@@ -115,7 +119,7 @@ export function DisjoncteurEditor({
           </div>
         </div>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           Fermer
@@ -326,7 +330,7 @@ export function DisjoncteurEditor({
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -336,9 +340,12 @@ export function DisjoncteurEditor({
             disabled={saving}
             onClick={async () => {
               if (
-                !confirm(
-                  `Supprimer définitivement le disjoncteur ${d.id} ? Son historique passé sera conservé.`,
-                )
+                !(await confirmDialog({
+                  title: `Supprimer le disjoncteur ${d.id} ?`,
+                  message: 'Son historique passé sera conservé.',
+                  confirmLabel: 'Supprimer',
+                  danger: true,
+                }))
               )
                 return
               setSaving(true)

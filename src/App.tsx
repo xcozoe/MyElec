@@ -14,6 +14,7 @@ import { AppareilFixeEditor, emptyAppareil } from './components/AppareilFixeEdit
 import { VoletEditor, emptyVolet } from './components/VoletEditor'
 import { SearchOverlay } from './components/SearchOverlay'
 import { SidePanel } from './components/SidePanel'
+import { useConfirm } from './components/Dialogs'
 import { useStore } from './hooks/useStore'
 import type { EndPointType, Piece } from './types/electrical'
 
@@ -58,6 +59,7 @@ function emptyPiece(): Piece {
 
 export function App() {
   const state = useStore()
+  const confirmDialog = useConfirm()
   const [view, setView] = useState<View>({ name: 'home' })
   const [panel, setPanel] = useState<Panel>({ kind: 'none' })
   const [searchOpen, setSearchOpen] = useState(false)
@@ -319,9 +321,12 @@ export function App() {
             const nbVo = state.volets.filter((v) => v.piece_id === piece.id).length
             const nbAp = state.appareils.filter((a) => a.piece_id === piece.id).length
             if (nbEp + nbVo + nbAp > 0) {
-              const ok = confirm(
-                `Cette pièce contient ${nbEp} end-point(s), ${nbVo} volet(s) et ${nbAp} appareil(s). Supprimer la pièce ne supprime PAS ces éléments — ils deviendront orphelins. Continuer ?`,
-              )
+              const ok = await confirmDialog({
+                title: 'Supprimer cette pièce ?',
+                message: `Elle contient ${nbEp} end-point(s), ${nbVo} volet(s) et ${nbAp} appareil(s). Supprimer la pièce ne supprime PAS ces éléments — ils deviendront orphelins.`,
+                confirmLabel: 'Supprimer',
+                danger: true,
+              })
               if (!ok) return
             }
             await state.pieceOps.remove(

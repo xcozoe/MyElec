@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { PHASES, type Phase, type Rangee, type Tableau } from '../types/electrical'
 import { toPositiveInt } from '../utils/form'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 
 export function RangeeEditor({
   mode,
@@ -22,6 +24,8 @@ export function RangeeEditor({
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(r, initial, onCancel)
 
   useEffect(() => {
     setR(initial)
@@ -74,7 +78,7 @@ export function RangeeEditor({
           {mode === 'create' ? 'Nouvelle rangée' : 'Éditer la rangée'}
         </h3>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
         >
           Fermer
@@ -179,7 +183,7 @@ export function RangeeEditor({
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -189,10 +193,17 @@ export function RangeeEditor({
             disabled={saving}
             onClick={async () => {
               const hasDisjoncteurs = initial.disjoncteurs.length > 0
-              const message = hasDisjoncteurs
-                ? `Cette rangée contient ${initial.disjoncteurs.length} disjoncteur(s). Supprimer quand même ?`
-                : `Supprimer la rangée ${initial.id} ?`
-              if (!confirm(message)) return
+              if (
+                !(await confirmDialog({
+                  title: `Supprimer la rangée ${initial.id} ?`,
+                  message: hasDisjoncteurs
+                    ? `Cette rangée contient ${initial.disjoncteurs.length} disjoncteur(s).`
+                    : undefined,
+                  confirmLabel: 'Supprimer',
+                  danger: true,
+                }))
+              )
+                return
               setSaving(true)
               try {
                 await onDelete()

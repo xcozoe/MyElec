@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 import type { Tableau } from '../types/electrical'
 
 export function TableauEditor({
@@ -20,6 +22,8 @@ export function TableauEditor({
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(t, initial, onCancel)
 
   useEffect(() => {
     setT(initial)
@@ -215,7 +219,7 @@ export function TableauEditor({
           Enregistrer
         </button>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -225,11 +229,18 @@ export function TableauEditor({
             disabled={saving}
             onClick={async () => {
               const nbRangees = initial.rangees.length
-              const message =
-                nbRangees > 0
-                  ? `Ce tableau contient ${nbRangees} rangée(s). Supprimer quand même ?`
-                  : `Supprimer le tableau ${initial.nom} ?`
-              if (!confirm(message)) return
+              if (
+                !(await confirmDialog({
+                  title: `Supprimer le tableau ${initial.nom} ?`,
+                  message:
+                    nbRangees > 0
+                      ? `Ce tableau contient ${nbRangees} rangée(s).`
+                      : undefined,
+                  confirmLabel: 'Supprimer',
+                  danger: true,
+                }))
+              )
+                return
               setSaving(true)
               try {
                 await onDelete()

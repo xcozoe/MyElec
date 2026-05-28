@@ -18,6 +18,7 @@ import type {
 } from '../types/electrical'
 import { HistoriqueView } from './HistoriqueView'
 import { CartographieEnCours } from './CartographieEnCours'
+import { useConfirm, useNotify } from './Dialogs'
 
 const PHASE_LABELS: Record<PhaseColorKey, string> = {
   L1: 'Phase 1 (L1)',
@@ -39,6 +40,8 @@ export function SettingsView({
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const { phaseColors, setPhaseColor, resetPhaseColors } = useSettings()
+  const confirmDialog = useConfirm()
+  const notify = useNotify()
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   const handleExport = () => {
@@ -94,8 +97,13 @@ export function SettingsView({
         `${appareils.length} appareil(s)`,
         `${modifications.length} entrée(s) d'historique`,
       ].join(', ')
-      if (!confirm(`Remplacer toutes les données par celles du fichier (${counts}) ?`))
-        return
+      const ok = await confirmDialog({
+        title: 'Remplacer toutes les données ?',
+        message: `Le fichier contient : ${counts}. Les données actuelles seront écrasées.`,
+        confirmLabel: 'Remplacer',
+        danger: true,
+      })
+      if (!ok) return
       await store.importAll({
         tableaux,
         pieces,
@@ -105,9 +113,12 @@ export function SettingsView({
         appareils,
         modifications,
       })
-      alert('Import effectué.')
+      notify('Import effectué.')
     } catch (e) {
-      alert(`Erreur d'import : ${e instanceof Error ? e.message : String(e)}`)
+      notify(
+        `Erreur d'import : ${e instanceof Error ? e.message : String(e)}`,
+        'error',
+      )
     } finally {
       if (fileRef.current) fileRef.current.value = ''
     }
@@ -192,8 +203,14 @@ export function SettingsView({
       <Section title="Couleurs des phases">
         <div className="flex items-center justify-end mb-2">
           <button
-            onClick={() => {
-              if (confirm('Restaurer les couleurs par défaut ?')) resetPhaseColors()
+            onClick={async () => {
+              if (
+                await confirmDialog({
+                  title: 'Restaurer les couleurs par défaut ?',
+                  confirmLabel: 'Restaurer',
+                })
+              )
+                resetPhaseColors()
             }}
             className="text-xs rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
           >

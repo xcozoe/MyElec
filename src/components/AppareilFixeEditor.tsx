@@ -16,6 +16,8 @@ import {
 } from '../utils/idGenerator'
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 
 export function AppareilFixeEditor({
   mode,
@@ -51,6 +53,8 @@ export function AppareilFixeEditor({
   >(
     initial.ligne_id ? 'ligne' : initial.branche_sur ? 'prise' : 'aucun',
   )
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(a, initial, onCancel)
 
   useEffect(() => {
     setA(initial)
@@ -138,7 +142,7 @@ export function AppareilFixeEditor({
           {mode === 'create' ? 'Nouvel appareil fixe' : 'Éditer l\'appareil'}
         </h3>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
         >
           Fermer
@@ -392,7 +396,7 @@ export function AppareilFixeEditor({
           </button>
         )}
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -401,7 +405,15 @@ export function AppareilFixeEditor({
           <button
             disabled={saving}
             onClick={async () => {
-              if (!confirm(`Supprimer l'appareil ${a.nom} (${a.id}) ?`)) return
+              if (
+                !(await confirmDialog({
+                  title: `Supprimer l'appareil ${a.nom} ?`,
+                  message: a.id,
+                  confirmLabel: 'Supprimer',
+                  danger: true,
+                }))
+              )
+                return
               setSaving(true)
               try {
                 await onDelete()

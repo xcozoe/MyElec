@@ -9,6 +9,8 @@
     "dev:api": "node server.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview",
     "icons": "rm -rf .icons-tmp && mkdir .icons-tmp && qlmanage -t -s 180 -o .icons-tmp src/assets/icon.svg >/dev/null && mv .icons-tmp/icon.svg.png public/apple-touch-icon.png && cp src/assets/icon.svg public/favicon.svg && rm -rf .icons-tmp && echo 'Icons regenerated in public/'"
   },
@@ -36,6 +38,7 @@
     "tailwindcss": "^4.1.16",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.7"
   }
 }

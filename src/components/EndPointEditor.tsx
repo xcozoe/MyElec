@@ -19,6 +19,8 @@ import {
 import { endpointId, getTrigramme, nextNumeroEndpoint } from '../utils/idGenerator'
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 
 export interface EndPointEditorProps {
   mode: 'create' | 'edit'
@@ -66,6 +68,8 @@ export function EndPointEditor({
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(e, initial, onCancel)
 
   useEffect(() => {
     setE(initial)
@@ -137,7 +141,7 @@ export function EndPointEditor({
           {mode === 'create' ? 'Nouvel end-point' : 'Éditer l\'end-point'}
         </h3>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
         >
           Fermer
@@ -488,7 +492,7 @@ export function EndPointEditor({
           </button>
         )}
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -497,7 +501,14 @@ export function EndPointEditor({
           <button
             disabled={saving}
             onClick={async () => {
-              if (!confirm(`Supprimer l'end-point ${e.id} ?`)) return
+              if (
+                !(await confirmDialog({
+                  title: `Supprimer l'end-point ${e.id} ?`,
+                  confirmLabel: 'Supprimer',
+                  danger: true,
+                }))
+              )
+                return
               setSaving(true)
               try {
                 await onDelete()

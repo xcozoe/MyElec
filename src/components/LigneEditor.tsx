@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Disjoncteur, Ligne, Tableau } from '../types/electrical'
 import { toOptionalNumber } from '../utils/form'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 
 export interface DisjoncteurOption {
   tableauId: string
@@ -57,6 +59,8 @@ export function LigneEditor({
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(l, initial, onCancel)
 
   useEffect(() => {
     setL(initial)
@@ -108,7 +112,7 @@ export function LigneEditor({
           {mode === 'create' ? 'Nouvelle ligne électrique' : 'Éditer la ligne'}
         </h3>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
         >
           Fermer
@@ -249,7 +253,7 @@ export function LigneEditor({
           </button>
         )}
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -259,9 +263,13 @@ export function LigneEditor({
             disabled={saving}
             onClick={async () => {
               if (
-                !confirm(
-                  `Supprimer la ligne ${l.id} ? Les end-points et appareils qui y sont rattachés deviendront orphelins.`,
-                )
+                !(await confirmDialog({
+                  title: `Supprimer la ligne ${l.id} ?`,
+                  message:
+                    'Les end-points et appareils qui y sont rattachés deviendront orphelins.',
+                  confirmLabel: 'Supprimer',
+                  danger: true,
+                }))
               )
                 return
               setSaving(true)

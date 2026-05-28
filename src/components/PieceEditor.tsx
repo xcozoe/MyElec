@@ -8,6 +8,8 @@ import {
 } from '../types/electrical'
 import { toOptionalNumber } from '../utils/form'
 import { Field } from './Field'
+import { useConfirm } from './Dialogs'
+import { useEditorGuard } from './useEditorGuard'
 
 export function PieceEditor({
   mode,
@@ -28,6 +30,8 @@ export function PieceEditor({
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const confirmDialog = useConfirm()
+  const handleClose = useEditorGuard(p, initial, onCancel)
 
   useEffect(() => {
     setP(initial)
@@ -65,7 +69,7 @@ export function PieceEditor({
           {mode === 'create' ? 'Nouvelle pièce' : 'Éditer la pièce'}
         </h3>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
         >
           Fermer
@@ -179,7 +183,7 @@ export function PieceEditor({
           {mode === 'create' ? 'Créer' : 'Enregistrer'}
         </button>
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           className="rounded-md border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-sm"
         >
           Annuler
@@ -189,9 +193,13 @@ export function PieceEditor({
             disabled={saving}
             onClick={async () => {
               if (
-                !confirm(
-                  `Supprimer la pièce ${initial.nom} (${initial.trigramme}) ?\n\nLa vérification d'intégrité (end-points, volets, appareils) sera proposée.`,
-                )
+                !(await confirmDialog({
+                  title: `Supprimer la pièce ${initial.nom} (${initial.trigramme}) ?`,
+                  message:
+                    'La vérification d\'intégrité (end-points, volets, appareils) sera proposée.',
+                  confirmLabel: 'Continuer',
+                  danger: true,
+                }))
               )
                 return
               setSaving(true)
