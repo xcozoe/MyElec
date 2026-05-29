@@ -364,16 +364,16 @@ export function App() {
               Accueil
             </NavButton>
             <NavButton
-              active={view.name === 'pieces' || view.name === 'piece'}
-              onClick={() => goTo({ name: 'pieces' })}
-            >
-              Pièces
-            </NavButton>
-            <NavButton
               active={view.name === 'lignes' || view.name === 'ligne'}
               onClick={() => goTo({ name: 'lignes' })}
             >
               Lignes
+            </NavButton>
+            <NavButton
+              active={view.name === 'pieces' || view.name === 'piece'}
+              onClick={() => goTo({ name: 'pieces' })}
+            >
+              Pièces
             </NavButton>
             <NavButton
               active={view.name === 'equipements'}
@@ -554,16 +554,16 @@ export function App() {
             onClick={() => goTo({ name: 'home' })}
           />
           <BottomTab
-            icon={<SquaresIconSvg className="h-6 w-6" />}
-            label="Pièces"
-            active={view.name === 'pieces' || view.name === 'piece'}
-            onClick={() => goTo({ name: 'pieces' })}
-          />
-          <BottomTab
             icon={<BoltIconSvg className="h-6 w-6" />}
             label="Lignes"
             active={view.name === 'lignes' || view.name === 'ligne'}
             onClick={() => goTo({ name: 'lignes' })}
+          />
+          <BottomTab
+            icon={<SquaresIconSvg className="h-6 w-6" />}
+            label="Pièces"
+            active={view.name === 'pieces' || view.name === 'piece'}
+            onClick={() => goTo({ name: 'pieces' })}
           />
           <BottomTab
             icon={<CubeIconSvg className="h-6 w-6" />}
