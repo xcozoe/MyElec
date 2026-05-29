@@ -16,6 +16,11 @@ import { SearchOverlay } from './components/SearchOverlay'
 import { SidePanel } from './components/SidePanel'
 import { useConfirm } from './components/Dialogs'
 import { useStore } from './hooks/useStore'
+import { useAuth } from './context/AuthContext'
+import { AuthScreen } from './components/AuthScreen'
+import { ProfileSheet } from './components/ProfileSheet'
+import { Avatar } from './components/Avatar'
+import { DEFAULT_BRAND } from './components/ThemeSwatches'
 import type { EndPointType, Piece } from './types/electrical'
 
 export type View =
@@ -30,6 +35,7 @@ export type View =
 
 type Panel =
   | { kind: 'none' }
+  | { kind: 'profile' }
   | { kind: 'createPiece' }
   | { kind: 'editPiece'; pieceId: string }
   | {
@@ -59,7 +65,32 @@ function emptyPiece(): Piece {
   }
 }
 
+/**
+ * Décide quoi rendre selon l'état d'authentification :
+ *  - bootstrapping (vérification token au mount) → loader
+ *  - non connecté → AuthScreen
+ *  - connecté → AppContent (vraie app, qui à son tour appelle useStore et
+ *    déclenche les fetch /api/* protégés par Bearer token)
+ *
+ * Cette séparation est nécessaire pour ne PAS appeler useStore (et donc ne
+ * pas tirer sur les routes protégées) tant qu'on n'est pas connecté.
+ */
 export function App() {
+  const { user, bootstrapping } = useAuth()
+
+  if (bootstrapping) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm">
+        Chargement…
+      </div>
+    )
+  }
+  if (!user) return <AuthScreen />
+  return <AppContent />
+}
+
+function AppContent() {
+  const { user } = useAuth()
   const state = useStore()
   const confirmDialog = useConfirm()
   const [view, setView] = useState<View>({ name: 'home' })
@@ -78,11 +109,23 @@ export function App() {
     localStorage.setItem(DARK_KEY, dark ? '1' : '0')
   }, [dark])
 
+  // Applique la couleur de thème choisie par l'utilisateur à --brand.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    document.documentElement.style.setProperty(
+      '--brand',
+      user?.themeColor || DEFAULT_BRAND,
+    )
+  }, [user?.themeColor])
+
   const goTo = (next: View) => setView(next)
 
   const closePanel = () => setPanel({ kind: 'none' })
 
   const renderPanel = () => {
+    if (panel.kind === 'profile') {
+      return <ProfileSheet onClose={closePanel} />
+    }
     if (panel.kind === 'createPiece') {
       return (
         <PieceEditor
@@ -357,7 +400,7 @@ export function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-20 border-b border-brand-tint bg-brand-tint backdrop-blur pt-[env(safe-area-inset-top)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3">
           <button
             onClick={() => goTo({ name: 'home' })}
@@ -415,6 +458,15 @@ export function App() {
             title="Paramètres"
           >
             <GearIconSvg className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={() => setPanel({ kind: 'profile' })}
+            className="rounded-full p-0.5 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[--brand] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-950"
+            aria-label="Ouvrir mon profil"
+            title={user?.name ?? 'Mon profil'}
+          >
+            <Avatar name={user?.name} avatar={user?.avatar} size={32} />
           </button>
         </div>
       </header>
@@ -568,7 +620,7 @@ export function App() {
 
       <nav
         aria-label="Navigation principale"
-        className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
+        className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-brand-tint bg-brand-tint backdrop-blur pb-[env(safe-area-inset-bottom)]"
       >
         <div className="grid grid-cols-4">
           <BottomTab

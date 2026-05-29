@@ -12,7 +12,20 @@
   --phase-L3: #3b82f6;
   --phase-TRI: #10b981;
   --phase-inconnue: #94a3b8;
+
+  /* Couleur de marque pour les CTA et accents UI. AuthContext la surcharge
+     depuis user.themeColor à la connexion ; valeur par défaut alignée sur
+     MyMemory (violet). */
+  --brand: #6d5ef6;
 }
+
+/* Fond et bordure légèrement teintés de --brand pour les surfaces flottantes
+   du chrome — bandeau du haut, barre de nav mobile. Un lavis discret qui
+   suit la couleur choisie dans le profil sans dominer l'UI. */
+.bg-brand-tint { background-color: color-mix(in srgb, var(--brand) 8%, white); }
+.dark .bg-brand-tint { background-color: color-mix(in srgb, var(--brand) 18%, #020617); }
+.border-brand-tint { border-color: color-mix(in srgb, var(--brand) 20%, #e2e8f0); }
+.dark .border-brand-tint { border-color: color-mix(in srgb, var(--brand) 25%, #1e293b); }
 
 /* Classes utilitaires par phase : variantes ring (couleur uniquement —
    width et inset restent via les utilities Tailwind ring-1 ring-inset),
