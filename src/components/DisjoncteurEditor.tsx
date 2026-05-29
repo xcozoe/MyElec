@@ -38,6 +38,8 @@ export interface DisjoncteurEditorProps {
   appareils?: AppareilFixe[]
   pieces?: Piece[]
   onOpenLigne?: (ligneId: string) => void
+  /** Ouvre l'éditeur de ligne pré-rempli depuis ce disjoncteur. */
+  onCreateLigne?: () => void
 }
 
 export function DisjoncteurEditor({
@@ -53,6 +55,7 @@ export function DisjoncteurEditor({
   appareils,
   pieces,
   onOpenLigne,
+  onCreateLigne,
 }: DisjoncteurEditorProps) {
   const [d, setD] = useState<Disjoncteur>(initial)
   const [description, setDescription] = useState('')
@@ -314,6 +317,7 @@ export function DisjoncteurEditor({
           appareils={appareils}
           pieces={pieces ?? []}
           onOpenLigne={onOpenLigne}
+          onCreateLigne={onCreateLigne}
         />
       )}
 
@@ -372,6 +376,7 @@ function CrossRef({
   appareils,
   pieces,
   onOpenLigne,
+  onCreateLigne,
 }: {
   disjoncteurId: string
   lignes: Ligne[]
@@ -379,6 +384,7 @@ function CrossRef({
   appareils: AppareilFixe[]
   pieces: Piece[]
   onOpenLigne?: (ligneId: string) => void
+  onCreateLigne?: () => void
 }) {
   const lignesDuDj = useMemo(
     () => lignes.filter((l) => l.disjoncteur_id === disjoncteurId),
@@ -399,10 +405,19 @@ function CrossRef({
     appareilsViaPrise.length === 0
   ) {
     return (
-      <div className="rounded-md border border-dashed border-slate-300 dark:border-slate-700 px-3 py-3 text-xs text-slate-500 dark:text-slate-400">
-        Aucune ligne, end-point ni appareil ne référence ce disjoncteur pour
-        le moment. Créez une ligne depuis l'onglet « Lignes » pour démarrer
-        la cartographie aval.
+      <div className="rounded-md border border-dashed border-slate-300 dark:border-slate-700 px-3 py-3 space-y-2">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Aucune ligne, end-point ni appareil ne référence ce disjoncteur pour
+          le moment.
+        </p>
+        {onCreateLigne && (
+          <button
+            onClick={onCreateLigne}
+            className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1.5 text-xs"
+          >
+            + Créer une ligne sur ce départ
+          </button>
+        )}
       </div>
     )
   }
@@ -420,6 +435,14 @@ function CrossRef({
         {appareilsDirect.length + appareilsViaPrise.length > 1 ? 's' : ''})
       </summary>
       <div className="px-3 py-2 space-y-3">
+        {onCreateLigne && (
+          <button
+            onClick={onCreateLigne}
+            className="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs hover:bg-white dark:hover:bg-slate-800"
+          >
+            + Créer une ligne sur ce départ
+          </button>
+        )}
         {lignesDuDj.length > 0 && (
           <CrossSection title="Lignes au départ">
             <ul className="space-y-1">

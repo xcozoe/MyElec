@@ -3,12 +3,13 @@ import {
   appareilId,
   endpointId,
   getTrigramme,
+  ligneIdFromDisjoncteur,
   nextNumeroAppareil,
   nextNumeroEndpoint,
   nextNumeroVolet,
   voletId,
 } from './idGenerator'
-import type { AppareilFixe, EndPoint, Piece, Volet } from '../types/electrical'
+import type { AppareilFixe, EndPoint, Ligne, Piece, Volet } from '../types/electrical'
 
 const ep = (over: Partial<EndPoint>): EndPoint => ({
   id: 'x',
@@ -59,6 +60,19 @@ describe('nextNumeroVolet / nextNumeroAppareil', () => {
     ]
     expect(nextNumeroAppareil(apps, 'CUI')).toBe(5)
     expect(nextNumeroAppareil(apps, 'SDB')).toBe(1)
+  })
+})
+
+describe('ligneIdFromDisjoncteur', () => {
+  const mk = (id: string): Ligne => ({ id, libelle: '', disjoncteur_id: 'x' })
+
+  it('préfixe par L- l\'ID du disjoncteur', () => {
+    expect(ligneIdFromDisjoncteur('TGBT-R1-3', [])).toBe('L-TGBT-R1-3')
+  })
+
+  it('garantit l\'unicité avec un suffixe incrémental', () => {
+    const lignes = [mk('L-TGBT-R1-3'), mk('L-TGBT-R1-3-2')]
+    expect(ligneIdFromDisjoncteur('TGBT-R1-3', lignes)).toBe('L-TGBT-R1-3-3')
   })
 })
 

@@ -11,12 +11,15 @@ import {
 import { Lightbox } from './Lightbox'
 import type {
   Disjoncteur,
+  Ligne,
   Rangee,
   Tableau,
 } from '../types/electrical'
 import type { Store } from '../hooks/useStore'
 import { PHASE_STYLES } from '../utils/phaseStyle'
+import { ligneIdFromDisjoncteur } from '../utils/idGenerator'
 import { DisjoncteurEditor } from './DisjoncteurEditor'
+import { LigneEditor } from './LigneEditor'
 import { RangeeEditor } from './RangeeEditor'
 import { RangeeView } from './RangeeView'
 import { SidePanel } from './SidePanel'
@@ -30,6 +33,12 @@ type PanelState =
   | { kind: 'editRangee'; rangeeId: string }
   | { kind: 'createRangee' }
   | { kind: 'editTableau' }
+  | {
+      kind: 'createLigne'
+      initial: Ligne
+      // Pour revenir à l'éditeur du disjoncteur source après création.
+      fromDisjoncteur: { rangeeId: string; disjoncteurId: string }
+    }
 
 function nextPosition(rangee: Rangee): number {
   if (rangee.disjoncteurs.length === 0) return 1
@@ -322,7 +331,14 @@ export function TableauDetail({
         open={panel.kind !== 'none'}
         onClose={() => setPanel({ kind: 'none' })}
       >
-        {renderPanel(panel, tableau, state, () => setPanel({ kind: 'none' }), onOpenLigne)}
+        {renderPanel(
+          panel,
+          tableau,
+          state,
+          () => setPanel({ kind: 'none' }),
+          onOpenLigne,
+          setPanel,
+        )}
       </SidePanel>
 
       {photoZoom && tableau.photo_url && (
@@ -342,7 +358,8 @@ function renderPanel(
   tableau: Tableau,
   state: Store,
   close: () => void,
-  onOpenLigne?: (ligneId: string) => void,
+  onOpenLigne: ((ligneId: string) => void) | undefined,
+  setPanel: (panel: PanelState) => void,
 ) {
   if (panel.kind === 'editDisjoncteur') {
     const rangee = tableau.rangees.find((r) => r.id === panel.rangeeId)
@@ -362,6 +379,20 @@ function renderPanel(
         appareils={state.appareils}
         pieces={state.pieces}
         onOpenLigne={onOpenLigne}
+        onCreateLigne={() =>
+          setPanel({
+            kind: 'createLigne',
+            initial: {
+              id: ligneIdFromDisjoncteur(disjoncteur.id, state.lignes),
+              libelle: disjoncteur.etiquette,
+              disjoncteur_id: disjoncteur.id,
+            },
+            fromDisjoncteur: {
+              rangeeId: rangee.id,
+              disjoncteurId: disjoncteur.id,
+            },
+          })
+        }
         onSave={async (next, desc) => {
           await state.editDisjoncteur(
             tableau.id,
@@ -440,6 +471,30 @@ function renderPanel(
           close()
         }}
         onCancel={close}
+      />
+    )
+  }
+
+  if (panel.kind === 'createLigne') {
+    const backToDisjoncteur = () =>
+      setPanel({
+        kind: 'editDisjoncteur',
+        rangeeId: panel.fromDisjoncteur.rangeeId,
+        disjoncteurId: panel.fromDisjoncteur.disjoncteurId,
+      })
+    return (
+      <LigneEditor
+        mode="create"
+        initial={panel.initial}
+        tableaux={state.tableaux}
+        allLignes={state.lignes}
+        onSave={async (next, desc) => {
+          await state.ligneOps.upsert(next, desc)
+          // Retour à l'éditeur du disjoncteur : la nouvelle ligne y apparaît
+          // aussitôt dans la « Cartographie aval ».
+          backToDisjoncteur()
+        }}
+        onCancel={backToDisjoncteur}
       />
     )
   }
