@@ -36,13 +36,15 @@ type Panel =
       kind: 'createEndpoint'
       pieceId: string
       type: EndPointType
+      // Pré-remplit ligne_id quand on crée depuis la fiche d'une ligne.
+      ligneId?: string
     }
   | { kind: 'editEndpoint'; endpointId: string }
   | { kind: 'createLigne' }
   | { kind: 'editLigne'; ligneId: string }
-  | { kind: 'createAppareil'; pieceId?: string }
+  | { kind: 'createAppareil'; pieceId?: string; ligneId?: string }
   | { kind: 'editAppareil'; appareilId: string }
-  | { kind: 'createVolet'; pieceId?: string }
+  | { kind: 'createVolet'; pieceId?: string; ligneId?: string }
   | { kind: 'editVolet'; voletId: string }
 
 const DARK_KEY = 'myelec.dark'
@@ -96,12 +98,11 @@ export function App() {
       )
     }
     if (panel.kind === 'createEndpoint') {
-      const initial = emptyEndPoint(
-        panel.pieceId,
-        state.pieces,
-        state.endpoints,
-        panel.type,
-      )
+      const ligneId = panel.ligneId
+      const initial = {
+        ...emptyEndPoint(panel.pieceId, state.pieces, state.endpoints, panel.type),
+        ...(ligneId ? { ligne_id: ligneId } : {}),
+      }
       return (
         <EndPointEditor
           mode="create"
@@ -118,6 +119,7 @@ export function App() {
                 kind: 'createEndpoint',
                 pieceId: next.piece_id,
                 type: next.type,
+                ligneId,
               })
             } else {
               closePanel()
@@ -211,10 +213,14 @@ export function App() {
     if (panel.kind === 'createAppareil') {
       const pieceId =
         panel.pieceId ?? state.pieces[0]?.id ?? ''
+      const ligneId = panel.ligneId
       return (
         <AppareilFixeEditor
           mode="create"
-          initial={emptyAppareil(pieceId, state.pieces, state.appareils)}
+          initial={{
+            ...emptyAppareil(pieceId, state.pieces, state.appareils),
+            ...(ligneId ? { ligne_id: ligneId } : {}),
+          }}
           pieces={state.pieces}
           lignes={state.lignes}
           endpoints={state.endpoints}
@@ -222,7 +228,7 @@ export function App() {
           onSave={async (next, desc, options) => {
             await state.appareilOps.upsert(next, desc)
             if (options?.thenNew) {
-              setPanel({ kind: 'createAppareil', pieceId: next.piece_id })
+              setPanel({ kind: 'createAppareil', pieceId: next.piece_id, ligneId })
             } else {
               closePanel()
             }
@@ -260,17 +266,21 @@ export function App() {
     if (panel.kind === 'createVolet') {
       const pieceId =
         panel.pieceId ?? state.pieces[0]?.id ?? ''
+      const ligneId = panel.ligneId
       return (
         <VoletEditor
           mode="create"
-          initial={emptyVolet(pieceId, state.pieces, state.volets)}
+          initial={{
+            ...emptyVolet(pieceId, state.pieces, state.volets),
+            ...(ligneId ? { ligne_id: ligneId } : {}),
+          }}
           pieces={state.pieces}
           lignes={state.lignes}
           allVolets={state.volets}
           onSave={async (next, desc, options) => {
             await state.voletOps.upsert(next, desc)
             if (options?.thenNew) {
-              setPanel({ kind: 'createVolet', pieceId: next.piece_id })
+              setPanel({ kind: 'createVolet', pieceId: next.piece_id, ligneId })
             } else {
               closePanel()
             }
@@ -370,16 +380,16 @@ export function App() {
               Lignes
             </NavButton>
             <NavButton
-              active={view.name === 'pieces' || view.name === 'piece'}
-              onClick={() => goTo({ name: 'pieces' })}
-            >
-              Pièces
-            </NavButton>
-            <NavButton
               active={view.name === 'equipements'}
               onClick={() => goTo({ name: 'equipements' })}
             >
               Équipements
+            </NavButton>
+            <NavButton
+              active={view.name === 'pieces' || view.name === 'piece'}
+              onClick={() => goTo({ name: 'pieces' })}
+            >
+              Pièces
             </NavButton>
           </nav>
 
@@ -511,6 +521,20 @@ export function App() {
               setPanel({ kind: 'editAppareil', appareilId })
             }
             onOpenPiece={(pieceId) => goTo({ name: 'piece', pieceId })}
+            onCreateEndpoint={() =>
+              setPanel({
+                kind: 'createEndpoint',
+                pieceId: state.pieces[0]?.id ?? '',
+                type: 'PC',
+                ligneId: view.ligneId,
+              })
+            }
+            onCreateAppareil={() =>
+              setPanel({ kind: 'createAppareil', ligneId: view.ligneId })
+            }
+            onCreateVolet={() =>
+              setPanel({ kind: 'createVolet', ligneId: view.ligneId })
+            }
           />
         ) : view.name === 'equipements' ? (
           <EquipementList
@@ -560,16 +584,16 @@ export function App() {
             onClick={() => goTo({ name: 'lignes' })}
           />
           <BottomTab
-            icon={<SquaresIconSvg className="h-6 w-6" />}
-            label="Pièces"
-            active={view.name === 'pieces' || view.name === 'piece'}
-            onClick={() => goTo({ name: 'pieces' })}
-          />
-          <BottomTab
             icon={<CubeIconSvg className="h-6 w-6" />}
             label="Équipements"
             active={view.name === 'equipements'}
             onClick={() => goTo({ name: 'equipements' })}
+          />
+          <BottomTab
+            icon={<SquaresIconSvg className="h-6 w-6" />}
+            label="Pièces"
+            active={view.name === 'pieces' || view.name === 'piece'}
+            onClick={() => goTo({ name: 'pieces' })}
           />
         </div>
       </nav>

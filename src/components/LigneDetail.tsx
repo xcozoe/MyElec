@@ -13,6 +13,9 @@ interface Props {
   onOpenEndpoint?: (endpointId: string) => void
   onOpenAppareil?: (appareilId: string) => void
   onOpenPiece?: (pieceId: string) => void
+  onCreateEndpoint?: () => void
+  onCreateAppareil?: () => void
+  onCreateVolet?: () => void
 }
 
 export function LigneDetail({
@@ -24,6 +27,9 @@ export function LigneDetail({
   onOpenEndpoint,
   onOpenAppareil,
   onOpenPiece,
+  onCreateEndpoint,
+  onCreateAppareil,
+  onCreateVolet,
 }: Props) {
   const ligne = store.lignes.find((l) => l.id === ligneId)
   const disjoncteurInfo = useMemo(() => {
@@ -156,7 +162,15 @@ export function LigneDetail({
         )}
       </header>
 
-      <Section title="End-points raccordés" count={ligneEndpoints.length}>
+      <Section
+        title="End-points raccordés"
+        count={ligneEndpoints.length}
+        action={
+          onCreateEndpoint && (
+            <AddButton onClick={onCreateEndpoint}>+ End-point</AddButton>
+          )
+        }
+      >
         {ligneEndpoints.length === 0 ? (
           <Empty>Aucun end-point ne référence cette ligne.</Empty>
         ) : (
@@ -205,7 +219,15 @@ export function LigneDetail({
       </Section>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Section title="Appareils alimentés directement" count={ligneAppareils.length}>
+        <Section
+          title="Appareils alimentés directement"
+          count={ligneAppareils.length}
+          action={
+            onCreateAppareil && (
+              <AddButton onClick={onCreateAppareil}>+ Appareil</AddButton>
+            )
+          }
+        >
           {ligneAppareils.length === 0 ? (
             <Empty>Aucun appareil rattaché directement.</Empty>
           ) : (
@@ -226,7 +248,15 @@ export function LigneDetail({
           )}
         </Section>
 
-        <Section title="Volets motorisés sur cette ligne" count={ligneVolets.length}>
+        <Section
+          title="Volets motorisés sur cette ligne"
+          count={ligneVolets.length}
+          action={
+            onCreateVolet && (
+              <AddButton onClick={onCreateVolet}>+ Volet</AddButton>
+            )
+          }
+        >
           {ligneVolets.length === 0 ? (
             <Empty>Aucun volet motorisé rattaché.</Empty>
           ) : (
@@ -267,15 +297,17 @@ function Stat({
 function Section({
   title,
   count,
+  action,
   children,
 }: {
   title: string
   count: number
+  action?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
     <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-      <header className="px-4 py-2 border-b border-slate-200 dark:border-slate-800">
+      <header className="px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">
           {title}
           {count > 0 && (
@@ -284,9 +316,27 @@ function Section({
             </span>
           )}
         </h3>
+        {action}
       </header>
       {children}
     </section>
+  )
+}
+
+function AddButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="shrink-0 text-xs rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+    >
+      {children}
+    </button>
   )
 }
 
