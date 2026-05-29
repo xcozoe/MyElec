@@ -9,6 +9,7 @@ import { DisjoncteurCard } from './DisjoncteurCard'
 
 export function RangeeView({
   rangee,
+  ligneIdByDisjoncteur,
   selectedDisjoncteurId,
   onSelectDisjoncteur,
   onEditRangee,
@@ -16,6 +17,7 @@ export function RangeeView({
   onAddDisjoncteur,
 }: {
   rangee: Rangee
+  ligneIdByDisjoncteur?: Map<string, string>
   selectedDisjoncteurId?: string
   onSelectDisjoncteur: (disjoncteurId: string) => void
   onEditRangee: () => void
@@ -92,6 +94,7 @@ export function RangeeView({
               disjoncteur={d}
               rangeeId={rangee.id}
               rangeePhase={rangee.phase}
+              ligneId={ligneIdByDisjoncteur?.get(d.id)}
               isDifferentielTete={rangee.differentiel_id === d.id}
               selected={selectedDisjoncteurId === d.id}
               onClick={() => onSelectDisjoncteur(d.id)}

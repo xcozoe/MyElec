@@ -195,6 +195,16 @@ export function TableauDetail({
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
   const sortedRangees = [...tableau.rangees].sort((a, b) => a.numero - b.numero)
 
+  // Map disjoncteur_id → id de la ligne électrique déclarée (la première si
+  // plusieurs), pour l'afficher dans la carte de synthèse du disjoncteur.
+  const ligneIdByDisjoncteur = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const l of state.lignes) {
+      if (!map.has(l.disjoncteur_id)) map.set(l.disjoncteur_id, l.id)
+    }
+    return map
+  }, [state.lignes])
+
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-3">
@@ -280,6 +290,7 @@ export function TableauDetail({
             <RangeeView
               key={r.id}
               rangee={r}
+              ligneIdByDisjoncteur={ligneIdByDisjoncteur}
               selectedDisjoncteurId={
                 panel.kind === 'editDisjoncteur' && panel.rangeeId === r.id
                   ? panel.disjoncteurId

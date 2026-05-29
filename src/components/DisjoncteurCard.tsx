@@ -7,6 +7,7 @@ export function DisjoncteurCard({
   disjoncteur,
   rangeeId,
   rangeePhase,
+  ligneId,
   isDifferentielTete,
   selected,
   onClick,
@@ -15,6 +16,7 @@ export function DisjoncteurCard({
   disjoncteur: Disjoncteur
   rangeeId: string
   rangeePhase: Phase
+  ligneId?: string
   isDifferentielTete: boolean
   selected: boolean
   onClick: () => void
@@ -90,6 +92,11 @@ export function DisjoncteurCard({
         <div className="mt-0.5 text-[10px] font-mono opacity-70">
           {disjoncteur.id}
         </div>
+        {ligneId && (
+          <div className="text-[10px] font-mono opacity-70">
+            {ligneId}
+          </div>
+        )}
         {(aIdentifier || isDifferentielTete) && (
           <div className="mt-1 flex flex-wrap gap-1">
             {isDifferentielTete && (
