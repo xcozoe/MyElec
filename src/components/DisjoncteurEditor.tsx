@@ -111,7 +111,7 @@ export function DisjoncteurEditor({
   const rangee = tableau.rangees.find((r) => r.id === rangeeId)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <PhotoField
@@ -136,173 +136,178 @@ export function DisjoncteurEditor({
         </button>
       </div>
 
-      <Field
-        label="ID"
-        hint={
-          mode === 'edit'
-            ? 'Renommer met à jour automatiquement les références : autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id), lignes (disjoncteur_id).'
-            : 'Convention : [code-tableau]-[code-rangée]-[code-départ]'
-        }
-      >
-        <input
-          type="text"
-          value={d.id}
-          onChange={(e) => setD({ ...d, id: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
-        />
-      </Field>
-
-      <Field label="Position dans la rangée">
-        <input
-          type="number"
-          min={1}
-          value={d.position}
-          onChange={(e) => setD({ ...d, position: toPositiveInt(e.target.value, d.position) })}
-          className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Étiquette">
-        <input
-          type="text"
-          value={d.etiquette}
-          onChange={(e) => setD({ ...d, etiquette: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Type de protection">
-          <select
-            value={d.type_protection}
-            onChange={(e) =>
-              setD({ ...d, type_protection: e.target.value as TypeProtection })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {TYPES_PROTECTION.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+      <Section title="Identification">
+        <Field
+          label="ID"
+          hint={
+            mode === 'edit'
+              ? 'Renommer met à jour automatiquement les références : autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id), lignes (disjoncteur_id).'
+              : 'Convention : [code-tableau]-[code-rangée]-[code-départ]'
+          }
+        >
+          <input
+            type="text"
+            value={d.id}
+            onChange={(e) => setD({ ...d, id: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+          />
         </Field>
 
-        <Field label="Calibre" hint="C2, C10, C16, C20, C32… ou texte libre">
-          <input
-            list="calibres"
-            type="text"
-            value={d.calibre}
-            onChange={(e) => setD({ ...d, calibre: e.target.value })}
+        <div className="flex gap-3 items-start">
+          <div className="shrink-0">
+            <Field label="Position dans la rangée">
+              <input
+                type="number"
+                min={1}
+                value={d.position}
+                onChange={(e) =>
+                  setD({ ...d, position: toPositiveInt(e.target.value, d.position) })
+                }
+                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              />
+            </Field>
+          </div>
+          <div className="flex-1 min-w-0">
+            <Field label="Étiquette">
+              <input
+                type="text"
+                value={d.etiquette}
+                onChange={(e) => setD({ ...d, etiquette: e.target.value })}
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              />
+            </Field>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Définition">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="Type de protection">
+            <select
+              value={d.type_protection}
+              onChange={(e) =>
+                setD({ ...d, type_protection: e.target.value as TypeProtection })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              {TYPES_PROTECTION.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Calibre" hint="C2, C10, C16, C20, C32… ou texte libre">
+            <input
+              list="calibres"
+              type="text"
+              value={d.calibre}
+              onChange={(e) => setD({ ...d, calibre: e.target.value })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            />
+            <datalist id="calibres">
+              {SUGGESTIONS_CALIBRE.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          </Field>
+
+          <Field label="Pôles">
+            <select
+              value={d.poles}
+              onChange={(e) => setD({ ...d, poles: e.target.value as Poles })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              {POLES.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Phase d'affectation">
+            <select
+              value={d.phase_affectation}
+              onChange={(e) =>
+                setD({ ...d, phase_affectation: e.target.value as Phase })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              {PHASES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Statut">
+            <select
+              value={d.statut}
+              onChange={(e) =>
+                setD({ ...d, statut: e.target.value as StatutDisjoncteur })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              {STATUTS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Différentiel de protection" hint="Disponible : différentiels du même tableau">
+            <select
+              value={d.differentiel_parent_id ?? ''}
+              onChange={(e) =>
+                setD({
+                  ...d,
+                  differentiel_parent_id: e.target.value || undefined,
+                })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            >
+              <option value="">— Aucun —</option>
+              {differentielsDisponibles.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        <Field label="Notes">
+          <textarea
+            value={d.notes ?? ''}
+            onChange={(e) => setD({ ...d, notes: e.target.value || undefined })}
+            rows={3}
             className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
           />
-          <datalist id="calibres">
-            {SUGGESTIONS_CALIBRE.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
         </Field>
+      </Section>
 
-        <Field label="Pôles">
-          <select
-            value={d.poles}
-            onChange={(e) => setD({ ...d, poles: e.target.value as Poles })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {POLES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Phase d'affectation">
-          <select
-            value={d.phase_affectation}
-            onChange={(e) =>
-              setD({ ...d, phase_affectation: e.target.value as Phase })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {PHASES.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Statut">
-          <select
-            value={d.statut}
-            onChange={(e) =>
-              setD({ ...d, statut: e.target.value as StatutDisjoncteur })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {STATUTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Différentiel parent" hint="Disponible : différentiels du même tableau">
-          <select
-            value={d.differentiel_parent_id ?? ''}
-            onChange={(e) =>
-              setD({
-                ...d,
-                differentiel_parent_id: e.target.value || undefined,
-              })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            <option value="">— Aucun —</option>
-            {differentielsDisponibles.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
-
-      <Field label="Appareil piloté (contacteurs, télérupteurs, horloges)">
-        <input
-          type="text"
-          value={d.appareil_pilote ?? ''}
-          onChange={(e) =>
-            setD({ ...d, appareil_pilote: e.target.value || undefined })
-          }
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Notes">
-        <textarea
-          value={d.notes ?? ''}
-          onChange={(e) =>
-            setD({ ...d, notes: e.target.value || undefined })
-          }
-          rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      {mode === 'edit' && lignes && endpoints && appareils && (
-        <CrossRef
-          disjoncteurId={d.id}
-          lignes={lignes}
-          endpoints={endpoints}
-          appareils={appareils}
-          pieces={pieces ?? []}
-          onOpenLigne={onOpenLigne}
-          onCreateLigne={onCreateLigne}
-        />
-      )}
+      <Section title="Alimentation">
+        {mode === 'edit' && lignes && endpoints && appareils ? (
+          <CrossRef
+            disjoncteurId={d.id}
+            lignes={lignes}
+            endpoints={endpoints}
+            appareils={appareils}
+            pieces={pieces ?? []}
+            onOpenLigne={onOpenLigne}
+            onCreateLigne={onCreateLigne}
+          />
+        ) : (
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Enregistrez le disjoncteur pour y rattacher des lignes et des
+            end-points.
+          </p>
+        )}
+      </Section>
 
       {error && (
         <div className="text-sm text-red-700 dark:text-red-300">{error}</div>
@@ -352,6 +357,23 @@ export function DisjoncteurEditor({
   )
 }
 
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {title}
+      </h4>
+      {children}
+    </section>
+  )
+}
+
 function CrossRef({
   disjoncteurId,
   lignes,
@@ -381,126 +403,106 @@ function CrossRef({
     (a) => a.branche_sur && endpointIds.has(a.branche_sur),
   )
 
-  if (
+  const isEmpty =
     lignesDuDj.length === 0 &&
     endpointsDuDj.length === 0 &&
     appareilsDirect.length === 0 &&
     appareilsViaPrise.length === 0
-  ) {
-    return (
-      <div className="rounded-md border border-dashed border-slate-300 dark:border-slate-700 px-3 py-3 space-y-2">
+
+  return (
+    <div className="space-y-3">
+      {onCreateLigne && (
+        <button
+          onClick={onCreateLigne}
+          className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1.5 text-xs"
+        >
+          + Créer une ligne sur ce départ
+        </button>
+      )}
+
+      {isEmpty ? (
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Aucune ligne, end-point ni appareil ne référence ce disjoncteur pour
           le moment.
         </p>
-        {onCreateLigne && (
-          <button
-            onClick={onCreateLigne}
-            className="rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1.5 text-xs"
-          >
-            + Créer une ligne sur ce départ
-          </button>
-        )}
-      </div>
-    )
-  }
-
-  return (
-    <details
-      open
-      className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
-    >
-      <summary className="cursor-pointer px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
-        Cartographie aval ({lignesDuDj.length} ligne
-        {lignesDuDj.length > 1 ? 's' : ''}, {endpointsDuDj.length} end-point
-        {endpointsDuDj.length > 1 ? 's' : ''},{' '}
-        {appareilsDirect.length + appareilsViaPrise.length} appareil
-        {appareilsDirect.length + appareilsViaPrise.length > 1 ? 's' : ''})
-      </summary>
-      <div className="px-3 py-2 space-y-3">
-        {onCreateLigne && (
-          <button
-            onClick={onCreateLigne}
-            className="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs hover:bg-white dark:hover:bg-slate-800"
-          >
-            + Créer une ligne sur ce départ
-          </button>
-        )}
-        {lignesDuDj.length > 0 && (
-          <CrossSection title="Lignes au départ">
-            <ul className="space-y-1">
-              {lignesDuDj.map((l) => (
-                <li key={l.id} className="text-xs">
-                  <button
-                    onClick={() => onOpenLigne?.(l.id)}
-                    className="underline decoration-dotted hover:opacity-80 font-mono"
-                  >
-                    {l.id}
-                  </button>{' '}
-                  — {l.libelle}
-                  {l.section_mm2 && (
-                    <span className="text-slate-500 dark:text-slate-400">
-                      {' '}· {l.section_mm2} mm²
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </CrossSection>
-        )}
-
-        {endpointsDuDj.length > 0 && (
-          <CrossSection title="End-points desservis">
-            <ul className="space-y-1">
-              {endpointsDuDj.map((e) => {
-                const piece = pieces.find((p) => p.id === e.piece_id)
-                return (
-                  <li key={e.id} className="text-xs">
-                    <code className="rounded bg-white dark:bg-slate-800 px-1 py-0.5">
-                      {e.id}
-                    </code>{' '}
-                    {endpointTypeLabel(e.type)}
-                    {e.usage_principal && (
+      ) : (
+        <>
+          {lignesDuDj.length > 0 && (
+            <CrossSection title="Lignes au départ">
+              <ul className="space-y-1">
+                {lignesDuDj.map((l) => (
+                  <li key={l.id} className="text-xs">
+                    <button
+                      onClick={() => onOpenLigne?.(l.id)}
+                      className="underline decoration-dotted hover:opacity-80 font-mono"
+                    >
+                      {l.id}
+                    </button>{' '}
+                    — {l.libelle}
+                    {l.section_mm2 && (
                       <span className="text-slate-500 dark:text-slate-400">
-                        {' '}— {e.usage_principal}
-                      </span>
-                    )}
-                    {piece && (
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {' '}· {piece.nom}
+                        {' '}· {l.section_mm2} mm²
                       </span>
                     )}
                   </li>
-                )
-              })}
-            </ul>
-          </CrossSection>
-        )}
+                ))}
+              </ul>
+            </CrossSection>
+          )}
 
-        {(appareilsDirect.length > 0 || appareilsViaPrise.length > 0) && (
-          <CrossSection title="Appareils desservis">
-            <ul className="space-y-1">
-              {appareilsDirect.map((a) => (
-                <li key={a.id} className="text-xs">
-                  <strong>{a.nom}</strong>{' '}
-                  <span className="text-slate-500 dark:text-slate-400">
-                    (direct sur ligne)
-                  </span>
-                </li>
-              ))}
-              {appareilsViaPrise.map((a) => (
-                <li key={a.id} className="text-xs">
-                  <strong>{a.nom}</strong>{' '}
-                  <span className="text-slate-500 dark:text-slate-400">
-                    (via prise {a.branche_sur})
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CrossSection>
-        )}
-      </div>
-    </details>
+          {endpointsDuDj.length > 0 && (
+            <CrossSection title="End-points desservis">
+              <ul className="space-y-1">
+                {endpointsDuDj.map((e) => {
+                  const piece = pieces.find((p) => p.id === e.piece_id)
+                  return (
+                    <li key={e.id} className="text-xs">
+                      <code className="rounded bg-white dark:bg-slate-800 px-1 py-0.5">
+                        {e.id}
+                      </code>{' '}
+                      {endpointTypeLabel(e.type)}
+                      {e.usage_principal && (
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {' '}— {e.usage_principal}
+                        </span>
+                      )}
+                      {piece && (
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {' '}· {piece.nom}
+                        </span>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </CrossSection>
+          )}
+
+          {(appareilsDirect.length > 0 || appareilsViaPrise.length > 0) && (
+            <CrossSection title="Appareils desservis">
+              <ul className="space-y-1">
+                {appareilsDirect.map((a) => (
+                  <li key={a.id} className="text-xs">
+                    <strong>{a.nom}</strong>{' '}
+                    <span className="text-slate-500 dark:text-slate-400">
+                      (direct sur ligne)
+                    </span>
+                  </li>
+                ))}
+                {appareilsViaPrise.map((a) => (
+                  <li key={a.id} className="text-xs">
+                    <strong>{a.nom}</strong>{' '}
+                    <span className="text-slate-500 dark:text-slate-400">
+                      (via prise {a.branche_sur})
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CrossSection>
+          )}
+        </>
+      )}
+    </div>
   )
 }
 
@@ -520,4 +522,3 @@ function CrossSection({
     </div>
   )
 }
-
