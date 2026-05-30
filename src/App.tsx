@@ -123,6 +123,18 @@ function AppContent() {
     )
   }, [user?.themeColor])
 
+  // ⌘K / Ctrl+K : ouvre la recherche globale au clavier.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   const goTo = (next: View) => setView(next)
 
   const closePanel = () => setPanel({ kind: 'none' })
@@ -447,7 +459,7 @@ function AppContent() {
             onClick={() => setSearchOpen(true)}
             className="rounded-full p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
             aria-label="Ouvrir la recherche"
-            title="Rechercher"
+            title="Rechercher (⌘K / Ctrl+K)"
           >
             <SearchIconSvg className="h-5 w-5" />
           </button>
