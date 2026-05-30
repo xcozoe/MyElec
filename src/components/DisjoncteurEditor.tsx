@@ -141,7 +141,7 @@ export function DisjoncteurEditor({
           label="ID"
           hint={
             mode === 'edit'
-              ? 'Renommer met à jour automatiquement les références : autres disjoncteurs (differentiel_parent_id), rangées (differentiel_id), tableaux enfants (parent_disjoncteur_id), lignes (disjoncteur_id).'
+              ? undefined
               : 'Convention : [code-tableau]-[code-rangée]-[code-départ]'
           }
         >
@@ -149,7 +149,7 @@ export function DisjoncteurEditor({
             type="text"
             value={d.id}
             onChange={(e) => setD({ ...d, id: e.target.value })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
           />
         </Field>
 
@@ -163,7 +163,7 @@ export function DisjoncteurEditor({
                 onChange={(e) =>
                   setD({ ...d, position: toPositiveInt(e.target.value, d.position) })
                 }
-                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               />
             </Field>
           </div>
@@ -173,7 +173,7 @@ export function DisjoncteurEditor({
                 type="text"
                 value={d.etiquette}
                 onChange={(e) => setD({ ...d, etiquette: e.target.value })}
-                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               />
             </Field>
           </div>
@@ -188,7 +188,7 @@ export function DisjoncteurEditor({
               onChange={(e) =>
                 setD({ ...d, type_protection: e.target.value as TypeProtection })
               }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               {TYPES_PROTECTION.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -204,7 +204,7 @@ export function DisjoncteurEditor({
               type="text"
               value={d.calibre}
               onChange={(e) => setD({ ...d, calibre: e.target.value })}
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             />
             <datalist id="calibres">
               {SUGGESTIONS_CALIBRE.map((c) => (
@@ -217,7 +217,7 @@ export function DisjoncteurEditor({
             <select
               value={d.poles}
               onChange={(e) => setD({ ...d, poles: e.target.value as Poles })}
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               {POLES.map((p) => (
                 <option key={p.value} value={p.value}>
@@ -233,7 +233,7 @@ export function DisjoncteurEditor({
               onChange={(e) =>
                 setD({ ...d, phase_affectation: e.target.value as Phase })
               }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               {PHASES.map((p) => (
                 <option key={p} value={p}>
@@ -249,7 +249,7 @@ export function DisjoncteurEditor({
               onChange={(e) =>
                 setD({ ...d, statut: e.target.value as StatutDisjoncteur })
               }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               {STATUTS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -268,7 +268,7 @@ export function DisjoncteurEditor({
                   differentiel_parent_id: e.target.value || undefined,
                 })
               }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               <option value="">— Aucun —</option>
               {differentielsDisponibles.map((opt) => (
@@ -285,7 +285,7 @@ export function DisjoncteurEditor({
             value={d.notes ?? ''}
             onChange={(e) => setD({ ...d, notes: e.target.value || undefined })}
             rows={3}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
       </Section>
@@ -365,8 +365,8 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <section className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+    <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4 sm:p-5 shadow-sm space-y-4">
+      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
         {title}
       </h4>
       {children}
