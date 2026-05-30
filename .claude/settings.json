@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm test)",
+      "Bash(npm test:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(npx tsc -b --noEmit)",
+      "Bash(npx tsc -b:*)",
+      "Bash(npx eslint .)",
+      "Bash(npx eslint:*)",
+      "Bash(node --check server.js)",
+      "Bash(node -e:*)",
+      "Bash(node --input-type=module -e:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push origin main)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git restore:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git branch:*)",
+      "Bash(git stash:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(stat:*)",
+      "Bash(file:*)",
+      "Bash(wc:*)",
+      "Bash(curl -s http://127.0.0.1:*)",
+      "Bash(curl -s -X * http://127.0.0.1:*)",
+      "Bash(curl -sI http://localhost:*)",
+      "Bash(curl -s http://localhost:*)",
+      "Bash(lsof:*)",
+      "Bash(ps:*)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(data/auth.json)"
+    ]
+  }
+}
