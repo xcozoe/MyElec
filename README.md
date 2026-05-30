@@ -110,10 +110,18 @@ Plus les routes d'auth : `/api/request-access`, `/api/login`, `/api/logout`,
 
 ### Navigation
 
-Le header propose : **Accueil**, **Lignes**, **Équipements**, **Pièces**, plus
-trois icônes à droite — 🔍 **Recherche** (overlay global), ⚙️ **Paramètres**,
-et l'**avatar** (profil). Sur mobile, une barre d'onglets en bas reprend les
-quatre vues principales.
+Le header propose : **Accueil**, **Lignes**, **Équipements**, **Pièces**,
+**Bilan**, plus trois icônes à droite — 🔍 **Recherche** (overlay global,
+raccourci ⌘K / Ctrl+K), ⚙️ **Paramètres**, et l'**avatar** (profil). Sur
+mobile, une barre d'onglets en bas reprend les cinq vues principales.
+
+### Bilan
+
+Page de synthèse de l'installation. Démarre avec le **bilan de puissance par
+phase** : charge nominale raccordée (appareils fixes + éclairage, hors prises)
+remontée jusqu'à la phase via ligne → disjoncteur, comparée à la capacité par
+phase (18 kVA tri ⇒ 6 kVA/phase). Pensée pour être enrichie (alertes,
+simulations…).
 
 ### Accueil — cheminement électrique
 

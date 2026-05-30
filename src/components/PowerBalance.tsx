@@ -17,8 +17,6 @@ function fmtW(w: number): string {
  */
 export function PowerBalance({ store }: { store: Store }) {
   const res = useMemo(() => computePhasePower(store), [store])
-  if (res.total === 0) return null
-
   const phases = ['L1', 'L2', 'L3'] as const
   const cap = CAPACITE_PAR_PHASE_VA
 
@@ -38,7 +36,15 @@ export function PowerBalance({ store }: { store: Store }) {
         (charge variable).
       </p>
 
-      <div className="space-y-2">
+      {res.total === 0 ? (
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Aucune charge à puissance connue n'est encore renseignée. Renseignez
+          la puissance des appareils fixes et de l'éclairage pour alimenter ce
+          bilan.
+        </p>
+      ) : (
+        <>
+          <div className="space-y-2">
         {phases.map((p) => {
           const v = res.parPhase[p]
           const pct = cap ? (v / cap) * 100 : 0
@@ -80,6 +86,8 @@ export function PowerBalance({ store }: { store: Store }) {
             </span>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   )

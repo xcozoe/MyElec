@@ -9,6 +9,7 @@ import { LigneList } from './components/LigneList'
 import { LigneDetail } from './components/LigneDetail'
 import { LigneEditor, emptyLigne } from './components/LigneEditor'
 import { SettingsView } from './components/SettingsView'
+import { BilanView } from './components/BilanView'
 import { EquipementList } from './components/EquipementList'
 import { AppareilFixeEditor, emptyAppareil } from './components/AppareilFixeEditor'
 import { VoletEditor, emptyVolet } from './components/VoletEditor'
@@ -31,6 +32,7 @@ export type View =
   | { name: 'lignes' }
   | { name: 'ligne'; ligneId: string }
   | { name: 'equipements' }
+  | { name: 'bilan' }
   | { name: 'settings' }
 
 type Panel =
@@ -451,6 +453,12 @@ function AppContent() {
             >
               Pièces
             </NavButton>
+            <NavButton
+              active={view.name === 'bilan'}
+              onClick={() => goTo({ name: 'bilan' })}
+            >
+              Bilan
+            </NavButton>
           </nav>
 
           <div className="flex-1" />
@@ -619,6 +627,8 @@ function AppContent() {
             onOpenLigne={(ligneId) => goTo({ name: 'ligne', ligneId })}
             onOpenPiece={(pieceId) => goTo({ name: 'piece', pieceId })}
           />
+        ) : view.name === 'bilan' ? (
+          <BilanView store={state} />
         ) : (
           <SettingsView
             store={state}
@@ -639,7 +649,7 @@ function AppContent() {
         aria-label="Navigation principale"
         className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-brand-tint bg-brand-tint backdrop-blur pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           <BottomTab
             icon={<HomeIconSvg className="h-6 w-6" />}
             label="Accueil"
@@ -663,6 +673,12 @@ function AppContent() {
             label="Pièces"
             active={view.name === 'pieces' || view.name === 'piece'}
             onClick={() => goTo({ name: 'pieces' })}
+          />
+          <BottomTab
+            icon={<ChartIconSvg className="h-6 w-6" />}
+            label="Bilan"
+            active={view.name === 'bilan'}
+            onClick={() => goTo({ name: 'bilan' })}
           />
         </div>
       </nav>
@@ -896,6 +912,26 @@ function CubeIconSvg({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+      />
+    </svg>
+  )
+}
+
+function ChartIconSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.8}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
       />
     </svg>
   )
