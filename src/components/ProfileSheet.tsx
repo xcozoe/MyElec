@@ -46,6 +46,10 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
+  // Sélecteur d'avatar (import photo + emojis) masqué par défaut : il ne
+  // s'ouvre qu'au clic sur « Changer la photo » pour ne pas encombrer la fiche.
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
+
   if (!user) return null
 
   const flashOk = (setter: (b: boolean) => void) => {
@@ -91,6 +95,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
       // téléphone (~3 Mo) explose la limite serveur (300 Ko).
       const data = await fileToAvatarDataUrl(file)
       await patch({ avatar: data })
+      setShowAvatarPicker(false)
     } catch (err) {
       setErrors({
         name: err instanceof Error ? err.message : 'Impossible de lire le fichier.',
@@ -100,6 +105,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
 
   const onPresetClick = async (emoji: string) => {
     await patch({ avatar: emoji })
+    setShowAvatarPicker(false)
   }
 
   const onRemoveAvatar = async () => {
@@ -170,7 +176,8 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
           <div className="space-y-1.5">
             <button
               type="button"
-              onClick={onPickFile}
+              onClick={() => setShowAvatarPicker((v) => !v)}
+              aria-expanded={showAvatarPicker}
               className="block text-sm rounded-full px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition"
             >
               📷 Changer la photo
@@ -193,33 +200,45 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
             onChange={onFileChange}
           />
         </div>
-        <div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-            Ou choisissez un avatar
-          </p>
-          <div className="grid grid-cols-6 gap-1.5">
-            {AVATAR_PRESETS.map((emoji) => {
-              const selected = user.avatar === emoji
-              return (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => onPresetClick(emoji)}
-                  className={
-                    'aspect-square text-2xl rounded-lg flex items-center justify-center transition ' +
-                    (selected
-                      ? 'bg-(--brand)/15 ring-2 ring-(--brand)'
-                      : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700')
-                  }
-                  aria-pressed={selected}
-                  aria-label={`Avatar ${emoji}`}
-                >
-                  {emoji}
-                </button>
-              )
-            })}
+
+        {showAvatarPicker && (
+          <div className="space-y-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-3">
+            <button
+              type="button"
+              onClick={onPickFile}
+              className="w-full text-sm rounded-lg px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            >
+              📷 Importer une photo…
+            </button>
+            <div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                Ou choisissez un avatar
+              </p>
+              <div className="grid grid-cols-6 gap-1.5">
+                {AVATAR_PRESETS.map((emoji) => {
+                  const selected = user.avatar === emoji
+                  return (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => onPresetClick(emoji)}
+                      className={
+                        'aspect-square text-2xl rounded-lg flex items-center justify-center transition ' +
+                        (selected
+                          ? 'bg-(--brand)/15 ring-2 ring-(--brand)'
+                          : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700')
+                      }
+                      aria-pressed={selected}
+                      aria-label={`Avatar ${emoji}`}
+                    >
+                      {emoji}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* ===== Identité ===== */}
