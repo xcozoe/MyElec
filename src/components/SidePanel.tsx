@@ -47,7 +47,9 @@ export function SidePanel({
 
   // Glisser-vers-le-bas pour fermer (mobile).
   const [dragY, setDragY] = useState(0)
-  const [dragging, setDragging] = useState(false)
+  // dragStartRef != null ⇒ un glissement est en cours. Lu au rendu pour couper
+  // la transition pendant le drag (le panneau colle au doigt) et la rétablir au
+  // relâchement (retour en place ou fermeture animés).
   const dragStartRef = useRef<number | null>(null)
   // Miroir de dragY lu à la fin du geste (indépendant du timing de rendu React).
   const dragYRef = useRef(0)
@@ -141,17 +143,33 @@ export function SidePanel({
     if (dragStartRef.current == null) return
     const dy = Math.max(0, e.touches[0].clientY - dragStartRef.current)
     dragYRef.current = dy
-    if (dy > 0 && !dragging) setDragging(true)
     setDragY(dy)
   }
   const onTouchEnd = () => {
     if (dragStartRef.current == null) return
+    // On coupe le drag AVANT setDragY pour que le rendu rétablisse la transition
+    // (retour en place ou glissement de fermeture animés).
     dragStartRef.current = null
-    setDragging(false)
-    const shouldClose = dragYRef.current > 110
+    const dy = dragYRef.current
     dragYRef.current = 0
-    setDragY(0)
-    if (shouldClose) void requestClose()
+    const height = asideRef.current?.offsetHeight ?? window.innerHeight
+    // Seuil : un tiers de la hauteur de la sheet (borné), comportement classique.
+    const threshold = Math.min(140, height * 0.33)
+    if (dy > threshold) {
+      if (dirty) {
+        // Modifs non enregistrées : on revient en place et on confirme d'abord.
+        setDragY(0)
+        void requestClose()
+      } else {
+        // Au-delà du seuil : la sheet finit de glisser vers le bas toute seule,
+        // puis se ferme (la transition est active car dragging repasse à false).
+        setDragY(height + 40)
+        window.setTimeout(onClose, 240)
+      }
+    } else {
+      // En deçà : retour à la position par défaut.
+      setDragY(0)
+    }
   }
 
   if (!open) return null
@@ -173,7 +191,8 @@ export function SidePanel({
           onTouchEnd={onTouchEnd}
           style={{
             transform: dragY ? `translateY(${dragY}px)` : undefined,
-            transition: dragging ? 'none' : 'transform 0.25s ease',
+            transition:
+              dragStartRef.current != null ? 'none' : 'transform 0.25s ease',
           }}
           className="relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain bg-white dark:bg-slate-950 rounded-t-2xl border-t border-slate-200 dark:border-slate-800 shadow-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] animate-sheet-up"
         >
