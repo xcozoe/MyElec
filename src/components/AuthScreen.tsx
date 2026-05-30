@@ -117,7 +117,7 @@ export function AuthScreen() {
               required
               minLength={2}
               maxLength={40}
-              className="w-full px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[--brand] focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-[--brand]/30 outline-none transition text-slate-900 dark:text-slate-100"
+              className="w-full px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-(--brand) focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-(--brand)/30 outline-none transition text-slate-900 dark:text-slate-100"
             />
           </div>
 
@@ -137,7 +137,7 @@ export function AuthScreen() {
               autoComplete={mode === 'request' ? 'new-password' : 'current-password'}
               required
               minLength={6}
-              className="w-full px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[--brand] focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-[--brand]/30 outline-none transition text-slate-900 dark:text-slate-100"
+              className="w-full px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-(--brand) focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-(--brand)/30 outline-none transition text-slate-900 dark:text-slate-100"
             />
             {mode === 'request' && (
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
@@ -161,7 +161,7 @@ export function AuthScreen() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-full bg-[--brand] text-white font-semibold py-2.5 shadow-md hover:brightness-110 active:brightness-95 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            className="w-full rounded-full bg-(--brand) text-white font-semibold py-2.5 shadow-md hover:brightness-110 active:brightness-95 disabled:opacity-60 disabled:cursor-not-allowed transition"
           >
             {busy
               ? mode === 'login'
