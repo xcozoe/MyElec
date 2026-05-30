@@ -45,14 +45,13 @@ export function SidePanel({
   const confirm = useConfirm()
   const asideRef = useRef<HTMLElement>(null)
 
-  // Glisser-vers-le-bas pour fermer (mobile).
-  const [dragY, setDragY] = useState(0)
-  // dragStartRef != null ⇒ un glissement est en cours. Lu au rendu pour couper
-  // la transition pendant le drag (le panneau colle au doigt) et la rétablir au
-  // relâchement (retour en place ou fermeture animés).
-  const dragStartRef = useRef<number | null>(null)
-  // Miroir de dragY lu à la fin du geste (indépendant du timing de rendu React).
-  const dragYRef = useRef(0)
+  // Miroir de `dirty` lisible dans les écouteurs natifs du glissement (sans
+  // réattacher les écouteurs à chaque frappe).
+  const dirtyRef = useRef(false)
+  dirtyRef.current = dirty
+  // Vrai si le dernier geste tactile était un glissement (≠ tap) : sert à ne
+  // pas déclencher le clic « fermer » de la poignée après un drag annulé.
+  const movedRef = useRef(false)
 
   const requestClose = useCallback(async () => {
     if (dirty) {
@@ -71,7 +70,6 @@ export function SidePanel({
   // propre, y compris après une sauvegarde qui ferme le panneau directement).
   useEffect(() => {
     if (!open) setDirty(false)
-    setDragY(0)
   }, [open])
 
   // Verrouille le scroll de l'arrière-plan tant que la sheet est ouverte :
@@ -132,45 +130,94 @@ export function SidePanel({
     [requestClose],
   )
 
-  // Le glissement ne démarre que depuis la poignée, ou quand la sheet est déjà
-  // en haut de son scroll (sinon on laisse le contenu défiler normalement).
-  const onTouchStart = (e: React.TouchEvent) => {
-    const fromGrip = (e.target as HTMLElement).closest('[data-grip]') != null
-    const atTop = (asideRef.current?.scrollTop ?? 0) <= 0
-    dragStartRef.current = fromGrip || atTop ? e.touches[0].clientY : null
-  }
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (dragStartRef.current == null) return
-    const dy = Math.max(0, e.touches[0].clientY - dragStartRef.current)
-    dragYRef.current = dy
-    setDragY(dy)
-  }
-  const onTouchEnd = () => {
-    if (dragStartRef.current == null) return
-    // On coupe le drag AVANT setDragY pour que le rendu rétablisse la transition
-    // (retour en place ou glissement de fermeture animés).
-    dragStartRef.current = null
-    const dy = dragYRef.current
-    dragYRef.current = 0
-    const height = asideRef.current?.offsetHeight ?? window.innerHeight
-    // Seuil : un tiers de la hauteur de la sheet (borné), comportement classique.
-    const threshold = Math.min(140, height * 0.33)
-    if (dy > threshold) {
-      if (dirty) {
-        // Modifs non enregistrées : on revient en place et on confirme d'abord.
-        setDragY(0)
-        void requestClose()
-      } else {
-        // Au-delà du seuil : la sheet finit de glisser vers le bas toute seule,
-        // puis se ferme (la transition est active car dragging repasse à false).
-        setDragY(height + 40)
-        window.setTimeout(onClose, 240)
+  // Glisser-vers-le-bas pour fermer (mobile). Écouteurs natifs car le touchmove
+  // doit être NON passif pour pouvoir preventDefault() et empêcher le scroll
+  // natif de la page de concurrencer le geste. On manipule directement le
+  // transform (fluide, sans re-render par frame).
+  useEffect(() => {
+    if (!open) return
+    const el = asideRef.current
+    if (!el) return
+
+    let active = false
+    let startY = 0
+    let dy = 0
+
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return
+      const fromGrip =
+        (e.target as HTMLElement)?.closest?.('[data-grip]') != null
+      // On ne capture que depuis la poignée, ou quand le contenu est déjà en
+      // haut de son scroll (sinon on laisse le contenu défiler normalement).
+      if (!fromGrip && el.scrollTop > 0) {
+        active = false
+        return
       }
-    } else {
-      // En deçà : retour à la position par défaut.
-      setDragY(0)
+      active = true
+      movedRef.current = false
+      startY = e.touches[0].clientY
+      dy = 0
+      el.style.transition = 'none'
     }
-  }
+
+    const onMove = (e: TouchEvent) => {
+      if (!active) return
+      const delta = e.touches[0].clientY - startY
+      if (delta <= 0) {
+        // Remontée : on rend la main au contenu (scroll natif).
+        if (dy !== 0) el.style.transform = ''
+        dy = 0
+        active = false
+        el.style.transition = ''
+        return
+      }
+      if (delta > 6) movedRef.current = true
+      if (e.cancelable) e.preventDefault()
+      dy = delta
+      el.style.transform = `translateY(${delta}px)`
+    }
+
+    const onEnd = () => {
+      if (!active) return
+      active = false
+      const height = el.offsetHeight || window.innerHeight
+      // Seuil purement basé sur la distance : sous le seuil on remonte, au-delà
+      // on ferme (comportement prévisible, indépendant de la vitesse).
+      const shouldClose = dy > Math.min(150, height * 0.25)
+      el.style.transition = 'transform 0.25s ease'
+      if (!shouldClose) {
+        el.style.transform = ''
+        return
+      }
+      if (dirtyRef.current) {
+        // Modifs non enregistrées : retour en place + confirmation.
+        el.style.transform = ''
+        void requestClose()
+        return
+      }
+      // Au-delà du seuil : finit de glisser vers le bas tout seul, puis ferme.
+      el.style.transform = `translateY(${height + 40}px)`
+      window.setTimeout(() => onClose(), 220)
+    }
+
+    const onCancel = () => {
+      if (!active) return
+      active = false
+      el.style.transition = 'transform 0.25s ease'
+      el.style.transform = ''
+    }
+
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd)
+    el.addEventListener('touchcancel', onCancel)
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onCancel)
+    }
+  }, [open, onClose, requestClose])
 
   if (!open) return null
   return (
@@ -186,26 +233,22 @@ export function SidePanel({
           ref={asideRef}
           role="dialog"
           aria-modal="true"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          style={{
-            transform: dragY ? `translateY(${dragY}px)` : undefined,
-            transition:
-              dragStartRef.current != null ? 'none' : 'transform 0.25s ease',
-          }}
           className="relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain bg-white dark:bg-slate-950 rounded-t-2xl border-t border-slate-200 dark:border-slate-800 shadow-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] animate-sheet-up"
         >
           {/* Poignée de préhension — affordance « bottom sheet ». Glisser vers
               le bas (ou cliquer) pour fermer ; hors du piège à focus
-              (tabindex=-1) pour que l'ouverture focalise le 1er champ. */}
+              (tabindex=-1) pour que l'ouverture focalise le 1er champ. Le clic
+              est ignoré juste après un glissement (movedRef). */}
           <button
             type="button"
             data-grip
             tabIndex={-1}
             aria-hidden
-            onClick={() => void requestClose()}
-            className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600 touch-none"
+            onClick={() => {
+              if (movedRef.current) return
+              void requestClose()
+            }}
+            className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
           />
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </aside>
