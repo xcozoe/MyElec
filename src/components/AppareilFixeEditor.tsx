@@ -45,7 +45,6 @@ export function AppareilFixeEditor({
   onCancel: () => void
 }) {
   const [a, setA] = useState<AppareilFixe>(initial)
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [raccordement, setRaccordement] = useState<
@@ -58,7 +57,6 @@ export function AppareilFixeEditor({
 
   useEffect(() => {
     setA(initial)
-    setDescription('')
     setError(null)
     setRaccordement(
       initial.ligne_id ? 'ligne' : initial.branche_sur ? 'prise' : 'aucun',
@@ -127,7 +125,7 @@ export function AppareilFixeEditor({
       return setError(`L'end-point ${cleaned.branche_sur} n'existe pas.`)
     setSaving(true)
     try {
-      await onSave(cleaned, description.trim() || undefined, { thenNew })
+      await onSave(cleaned, undefined, { thenNew })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -367,15 +365,6 @@ export function AppareilFixeEditor({
           value={a.notes ?? ''}
           onChange={(e) => setA({ ...a, notes: e.target.value || undefined })}
           rows={2}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Description de la modification">
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>

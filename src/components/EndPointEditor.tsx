@@ -65,7 +65,6 @@ export function EndPointEditor({
   onCancel,
 }: EndPointEditorProps) {
   const [e, setE] = useState<EndPoint>(initial)
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const confirmDialog = useConfirm()
@@ -73,7 +72,6 @@ export function EndPointEditor({
 
   useEffect(() => {
     setE(initial)
-    setDescription('')
     setError(null)
   }, [initial])
 
@@ -118,7 +116,7 @@ export function EndPointEditor({
 
     setSaving(true)
     try {
-      await onSave(e, description.trim() || undefined, { thenNew })
+      await onSave(e, undefined, { thenNew })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -461,15 +459,6 @@ export function EndPointEditor({
           value={e.notes ?? ''}
           onChange={(ev) => setE({ ...e, notes: ev.target.value || undefined })}
           rows={2}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Description de la modification">
-        <input
-          type="text"
-          value={description}
-          onChange={(ev) => setDescription(ev.target.value)}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>

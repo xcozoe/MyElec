@@ -21,7 +21,6 @@ export function RangeeEditor({
   onCancel: () => void
 }) {
   const [r, setR] = useState<Rangee>(initial)
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const confirmDialog = useConfirm()
@@ -29,7 +28,6 @@ export function RangeeEditor({
 
   useEffect(() => {
     setR(initial)
-    setDescription('')
     setError(null)
   }, [initial])
 
@@ -63,7 +61,7 @@ export function RangeeEditor({
       return setError('Numéro invalide — doit être un entier ≥ 1.')
     setSaving(true)
     try {
-      await onSave(r, description.trim() || undefined)
+      await onSave(r, undefined)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -159,15 +157,6 @@ export function RangeeEditor({
           value={r.notes ?? ''}
           onChange={(e) => setR({ ...r, notes: e.target.value || undefined })}
           rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Description de la modification">
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>

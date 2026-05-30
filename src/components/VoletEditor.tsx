@@ -46,7 +46,6 @@ export function VoletEditor({
   onCancel: () => void
 }) {
   const [v, setV] = useState<Volet>(initial)
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const confirmDialog = useConfirm()
@@ -54,7 +53,6 @@ export function VoletEditor({
 
   useEffect(() => {
     setV(initial)
-    setDescription('')
     setError(null)
   }, [initial])
 
@@ -86,7 +84,7 @@ export function VoletEditor({
       return setError(`La ligne ${v.ligne_id} n'existe pas.`)
     setSaving(true)
     try {
-      await onSave(v, description.trim() || undefined, { thenNew })
+      await onSave(v, undefined, { thenNew })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -284,15 +282,6 @@ export function VoletEditor({
           value={v.notes ?? ''}
           onChange={(e) => setV({ ...v, notes: e.target.value || undefined })}
           rows={2}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Description de la modification">
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>

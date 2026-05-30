@@ -56,7 +56,6 @@ export function LigneEditor({
   onCancel: () => void
 }) {
   const [l, setL] = useState<Ligne>(initial)
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const confirmDialog = useConfirm()
@@ -64,7 +63,6 @@ export function LigneEditor({
 
   useEffect(() => {
     setL(initial)
-    setDescription('')
     setError(null)
   }, [initial])
 
@@ -97,7 +95,7 @@ export function LigneEditor({
       return setError(`L'ID ${l.id} existe déjà.`)
     setSaving(true)
     try {
-      await onSave(l, description.trim() || undefined, { thenNew })
+      await onSave(l, undefined, { thenNew })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -220,15 +218,6 @@ export function LigneEditor({
             setL({ ...l, notes: e.target.value || undefined })
           }
           rows={2}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Description de la modification">
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>

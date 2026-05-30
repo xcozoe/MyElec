@@ -58,7 +58,6 @@ export function DisjoncteurEditor({
   onCreateLigne,
 }: DisjoncteurEditorProps) {
   const [d, setD] = useState<Disjoncteur>(initial)
-  const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const confirmDialog = useConfirm()
@@ -66,7 +65,6 @@ export function DisjoncteurEditor({
 
   useEffect(() => {
     setD(initial)
-    setDescription('')
     setError(null)
   }, [initial])
 
@@ -102,7 +100,7 @@ export function DisjoncteurEditor({
     if (!d.etiquette.trim()) return setError('Étiquette requise.')
     setSaving(true)
     try {
-      await onSave(d, description.trim() || undefined)
+      await onSave(d, undefined)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -290,23 +288,6 @@ export function DisjoncteurEditor({
             setD({ ...d, notes: e.target.value || undefined })
           }
           rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field
-        label="Description de la modification"
-        hint="Texte libre — apparaîtra dans l'historique."
-      >
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={
-            mode === 'create'
-              ? 'ex : Création du disjoncteur après test physique.'
-              : 'ex : Identifié comme alimentant le frigo après coupure.'
-          }
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>

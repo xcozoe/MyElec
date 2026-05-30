@@ -27,7 +27,6 @@ export function PieceEditor({
   onCancel: () => void
 }) {
   const [p, setP] = useState<Piece>(initial)
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const confirmDialog = useConfirm()
@@ -35,7 +34,6 @@ export function PieceEditor({
 
   useEffect(() => {
     setP(initial)
-    setDescription('')
     setError(null)
   }, [initial])
 
@@ -54,7 +52,7 @@ export function PieceEditor({
       return setError('Ce trigramme est déjà utilisé par une autre pièce.')
     setSaving(true)
     try {
-      await onSave(p, description.trim() || undefined)
+      await onSave(p, undefined)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -159,15 +157,6 @@ export function PieceEditor({
             setP({ ...p, notes: e.target.value || undefined })
           }
           rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Description de la modification">
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>
