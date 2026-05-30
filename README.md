@@ -137,7 +137,7 @@ alimentés (direct ou via prise) — c'est le cross-ref Phase 1 ↔ 2.
 
 Pièces groupées par niveau (Rez de jardin / Sous-sol / Extérieur /
 Transversal). Chaque carte affiche les compteurs (end-points, volets,
-appareils) et des chips par type (PC, PD, PL, IN, BT, RJ45, TV). La vue détail
+appareils) et des chips par type (PC, PD, ECL, IN, BT, RJ45, TV). La vue détail
 d'une pièce regroupe les éléments par section : Prises, Éclairage, Commandes,
 Réseau & TV, Autres, Volets & stores, Appareils fixes. Boutons « + Ajouter »
 sur chaque section.
@@ -167,7 +167,7 @@ Filtres pièce / catégorie. Bouton de création contextualisé.
 L'éditeur d'end-point s'adapte au type sélectionné :
 
 - **PC / PD** → type de prise, nb combinées, usage principal
-- **PL** → type de luminaire, commande, puissance unitaire, nb sources, lumens
+- **ECL** → type de luminaire, commande, puissance unitaire, nb sources, lumens
 - **IN / BT** → type de commande + alimentation (filaire / pile / autonome)
 - **RJ45 / TV / AUTRE** → champs communs uniquement
 
@@ -218,14 +218,14 @@ Codes tableau : `TP` (Principal), `TSG` (Secondaire Garage), `TI`
 
 `type_TRIGRAMME_mur_numero` — auto-généré par l'éditeur.
 
-Codes type : `PC` (prise courant), `PD` (prise dédiée), `PL` (point
-lumineux), `IN` (interrupteur), `BT` (bouton-poussoir), `RJ45`, `TV`, `AUTRE`.
+Codes type : `PC` (prise courant), `PD` (prise dédiée), `ECL` (éclairage),
+`IN` (interrupteur), `BT` (bouton-poussoir), `RJ45`, `TV`, `AUTRE`.
 
 Codes mur : `ME` (entrée), `MD` (droite), `MF` (face), `MG` (gauche),
 `PL` (plafond), `SO` (sol), `IL` (îlot), `PT` (plan de travail),
 `EF` (extérieur façade), `EP` (extérieur périmétrique).
 
-Exemples : `PC_CUI_MG_1`, `PL_SEJ_PL_2`, `IN_CH1_ME_1`.
+Exemples : `PC_CUI_MG_1`, `ECL_SEJ_PL_2`, `IN_CH1_ME_1`.
 
 ### Lignes électriques (Phase 2)
 

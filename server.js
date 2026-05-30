@@ -88,6 +88,33 @@ for (const resource of Object.keys(RESOURCES)) {
   await ensureFile(pathOf(resource), [])
 }
 
+// Migration ponctuelle : le type d'end-point 'PL' (point lumineux) est renommé
+// 'ECL' (éclairage). On met à jour le champ `type` et le préfixe d'ID. Idempotent
+// (ne réécrit que s'il reste des entrées 'PL'). Le mur 'PL' (plafond), qui
+// apparaît plus loin dans l'ID, n'est pas touché.
+async function migrateEndpointsPLtoECL() {
+  const path = pathOf('endpoints')
+  let list
+  try {
+    list = await readJson(path)
+  } catch {
+    return
+  }
+  if (!Array.isArray(list)) return
+  let changed = false
+  for (const ep of list) {
+    if (ep && ep.type === 'PL') {
+      ep.type = 'ECL'
+      if (typeof ep.id === 'string' && ep.id.startsWith('PL_')) {
+        ep.id = `ECL_${ep.id.slice(3)}`
+      }
+      changed = true
+    }
+  }
+  if (changed) await writeJson(path, list)
+}
+await migrateEndpointsPLtoECL()
+
 // ===== Auth (mécanisme calqué sur MyMemory) =====
 //
 // Stockage : un seul fichier data/auth.json contenant { users, sessions }.

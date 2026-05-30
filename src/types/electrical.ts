@@ -143,7 +143,7 @@ export interface Ligne {
 export type EndPointType =
   | 'PC'
   | 'PD'
-  | 'PL'
+  | 'ECL'
   | 'IN'
   | 'BT'
   | 'RJ45'
@@ -304,7 +304,7 @@ export const CATEGORIES_PIECE: { value: CategoriePiece; label: string }[] = [
 export const ENDPOINT_TYPES: { value: EndPointType; label: string }[] = [
   { value: 'PC', label: 'PC — Prise de courant' },
   { value: 'PD', label: 'PD — Prise dédiée' },
-  { value: 'PL', label: 'PL — Point lumineux' },
+  { value: 'ECL', label: 'ECL — Éclairage' },
   { value: 'IN', label: 'IN — Interrupteur' },
   { value: 'BT', label: 'BT — Bouton-poussoir' },
   { value: 'RJ45', label: 'RJ45 — Réseau' },

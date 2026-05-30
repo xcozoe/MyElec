@@ -11,7 +11,7 @@ import { NIVEAUX } from '../types/electrical'
 interface CountByType {
   PC: number
   PD: number
-  PL: number
+  ECL: number
   IN: number
   BT: number
   RJ45: number
@@ -23,7 +23,7 @@ function countEndpoints(pieceId: string, endpoints: EndPoint[]): CountByType {
   const c: CountByType = {
     PC: 0,
     PD: 0,
-    PL: 0,
+    ECL: 0,
     IN: 0,
     BT: 0,
     RJ45: 0,
@@ -131,7 +131,7 @@ export function PieceList({
               {list.map((p) => {
                 const ec = countEndpoints(p.id, endpoints)
                 const nbEndpoints =
-                  ec.PC + ec.PD + ec.PL + ec.IN + ec.BT + ec.RJ45 + ec.TV + ec.AUTRE
+                  ec.PC + ec.PD + ec.ECL + ec.IN + ec.BT + ec.RJ45 + ec.TV + ec.AUTRE
                 const nbVolets = countVolets(p.id, volets)
                 const nbAppareils = countAppareils(p.id, appareils)
                 return (
@@ -172,7 +172,7 @@ export function PieceList({
                       <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                         {ec.PC > 0 && <Chip>PC × {ec.PC}</Chip>}
                         {ec.PD > 0 && <Chip>PD × {ec.PD}</Chip>}
-                        {ec.PL > 0 && <Chip>PL × {ec.PL}</Chip>}
+                        {ec.ECL > 0 && <Chip>ECL × {ec.ECL}</Chip>}
                         {ec.IN > 0 && <Chip>IN × {ec.IN}</Chip>}
                         {ec.BT > 0 && <Chip>BT × {ec.BT}</Chip>}
                         {ec.RJ45 > 0 && <Chip>RJ45 × {ec.RJ45}</Chip>}

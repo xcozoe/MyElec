@@ -71,7 +71,7 @@ export function PieceDetail({
 
   const groups: { title: string; types: EndPointType[] }[] = [
     { title: 'Prises', types: ['PC', 'PD'] },
-    { title: 'Éclairage', types: ['PL'] },
+    { title: 'Éclairage', types: ['ECL'] },
     { title: 'Commandes', types: ['IN', 'BT'] },
     { title: 'Réseau & TV', types: ['RJ45', 'TV'] },
     { title: 'Autres', types: ['AUTRE'] },

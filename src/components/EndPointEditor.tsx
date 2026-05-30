@@ -93,7 +93,7 @@ export function EndPointEditor({
   }, [mode, e.type, e.piece_id, e.mur, trigramme, allEndpoints])
 
   const showPriseFields = e.type === 'PC' || e.type === 'PD'
-  const showLuminaireFields = e.type === 'PL'
+  const showLuminaireFields = e.type === 'ECL'
   const showCommandeOnly = e.type === 'IN' || e.type === 'BT'
 
   // Alimentation : par défaut 'filaire' pour IN/BT, ignoré pour les autres types.
