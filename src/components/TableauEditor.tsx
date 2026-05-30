@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 import type { Tableau } from '../types/electrical'
@@ -201,7 +202,7 @@ export function TableauEditor({
         </Field>
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={t.notes ?? ''}
             onChange={(e) => setT({ ...t, notes: e.target.value || undefined })}
             rows={3}

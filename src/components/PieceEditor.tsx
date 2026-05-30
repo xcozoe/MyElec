@@ -9,6 +9,7 @@ import {
 import { toOptionalNumber } from '../utils/form'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -155,7 +156,7 @@ export function PieceEditor({
         </Field>
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={p.notes ?? ''}
             onChange={(e) =>
               setP({ ...p, notes: e.target.value || undefined })

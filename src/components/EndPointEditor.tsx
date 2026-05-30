@@ -20,6 +20,7 @@ import { endpointId, getTrigramme, nextNumeroEndpoint } from '../utils/idGenerat
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -459,7 +460,7 @@ export function EndPointEditor({
       )}
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={e.notes ?? ''}
             onChange={(ev) => setE({ ...e, notes: ev.target.value || undefined })}
             rows={2}

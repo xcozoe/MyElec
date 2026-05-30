@@ -3,6 +3,7 @@ import { PHASES, type Phase, type Rangee, type Tableau } from '../types/electric
 import { toPositiveInt } from '../utils/form'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -157,7 +158,7 @@ export function RangeeEditor({
         </Field>
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={r.notes ?? ''}
             onChange={(e) => setR({ ...r, notes: e.target.value || undefined })}
             rows={3}

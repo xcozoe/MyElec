@@ -20,6 +20,7 @@ import {
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -284,7 +285,7 @@ export function VoletEditor({
         </Field>
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={v.notes ?? ''}
             onChange={(e) => setV({ ...v, notes: e.target.value || undefined })}
             rows={2}

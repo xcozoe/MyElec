@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 import { toPositiveInt } from '../utils/form'
@@ -138,25 +139,26 @@ export function DisjoncteurEditor({
       </div>
 
       <Section title="Identification">
-        <Field
-          label="ID"
-          hint={
-            mode === 'edit'
-              ? undefined
-              : 'Convention : [code-tableau]-[code-rangée]-[code-départ]'
-          }
-        >
-          <input
-            type="text"
-            value={d.id}
-            onChange={(e) => setD({ ...d, id: e.target.value })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
-          />
-        </Field>
-
         <div className="flex gap-3 items-start">
+          <div className="flex-1 min-w-0">
+            <Field
+              label="ID"
+              hint={
+                mode === 'edit'
+                  ? undefined
+                  : 'Convention : [code-tableau]-[code-rangée]-[code-départ]'
+              }
+            >
+              <input
+                type="text"
+                value={d.id}
+                onChange={(e) => setD({ ...d, id: e.target.value })}
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
+              />
+            </Field>
+          </div>
           <div className="shrink-0">
-            <Field label="Position dans la rangée">
+            <Field label="Position">
               <input
                 type="number"
                 min={1}
@@ -164,21 +166,20 @@ export function DisjoncteurEditor({
                 onChange={(e) =>
                   setD({ ...d, position: toPositiveInt(e.target.value, d.position) })
                 }
-                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
-              />
-            </Field>
-          </div>
-          <div className="flex-1 min-w-0">
-            <Field label="Étiquette">
-              <input
-                type="text"
-                value={d.etiquette}
-                onChange={(e) => setD({ ...d, etiquette: e.target.value })}
-                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+                className="w-20 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               />
             </Field>
           </div>
         </div>
+
+        <Field label="Étiquette">
+          <input
+            type="text"
+            value={d.etiquette}
+            onChange={(e) => setD({ ...d, etiquette: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
       </Section>
 
       <Section title="Définition">
@@ -282,7 +283,7 @@ export function DisjoncteurEditor({
         </div>
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={d.notes ?? ''}
             onChange={(e) => setD({ ...d, notes: e.target.value || undefined })}
             rows={3}

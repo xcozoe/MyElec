@@ -17,6 +17,7 @@ import {
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -362,7 +363,7 @@ export function AppareilFixeEditor({
         )}
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={a.notes ?? ''}
             onChange={(e) => setA({ ...a, notes: e.target.value || undefined })}
             rows={2}

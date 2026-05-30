@@ -3,6 +3,7 @@ import type { Disjoncteur, Ligne, Tableau } from '../types/electrical'
 import { toOptionalNumber } from '../utils/form'
 import { Field } from './Field'
 import { Section } from './Section'
+import { AutoTextarea } from './AutoTextarea'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -205,7 +206,7 @@ export function LigneEditor({
         </div>
 
         <Field label="Parcours" hint="Texte libre décrivant le cheminement du câble">
-          <textarea
+          <AutoTextarea
             value={l.parcours ?? ''}
             onChange={(e) =>
               setL({ ...l, parcours: e.target.value || undefined })
@@ -216,7 +217,7 @@ export function LigneEditor({
         </Field>
 
         <Field label="Notes">
-          <textarea
+          <AutoTextarea
             value={l.notes ?? ''}
             onChange={(e) =>
               setL({ ...l, notes: e.target.value || undefined })
