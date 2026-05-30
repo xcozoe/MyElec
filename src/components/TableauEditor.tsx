@@ -19,7 +19,6 @@ export function TableauEditor({
   onCancel: () => void
 }) {
   const [t, setT] = useState<Tableau>(initial)
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const confirmDialog = useConfirm()
@@ -27,7 +26,6 @@ export function TableauEditor({
 
   useEffect(() => {
     setT(initial)
-    setDescription('')
     setError(null)
   }, [initial])
 
@@ -52,7 +50,7 @@ export function TableauEditor({
       t.alimentation === 'triphase' ? { ...t, arrivee_phases: undefined } : t
     setSaving(true)
     try {
-      await onSave(cleaned, description.trim() || undefined)
+      await onSave(cleaned, undefined)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -62,7 +60,15 @@ export function TableauEditor({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Éditer le tableau</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Éditer le tableau</h3>
+        <button
+          onClick={handleClose}
+          className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
+        >
+          Fermer
+        </button>
+      </div>
 
       <Field label="Nom">
         <input
@@ -195,15 +201,6 @@ export function TableauEditor({
           value={t.notes ?? ''}
           onChange={(e) => setT({ ...t, notes: e.target.value || undefined })}
           rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Description de la modification">
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>
