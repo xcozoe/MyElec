@@ -26,3 +26,6 @@ data/auth.json
 *.njsproj
 *.sln
 *.sw?
+
+# Réglages Claude Code (allow-list locale, non partagée)
+.claude/settings.json
