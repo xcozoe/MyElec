@@ -45,7 +45,7 @@ export function PieceEditor({
     if (!p.trigramme.trim() || p.trigramme.length > 4)
       return setError('Trigramme requis (1 à 4 caractères).')
     if (!p.nom.trim()) return setError('Nom requis.')
-    if (mode === 'create' && allPieces.some((x) => x.id === p.id))
+    if (allPieces.some((x) => x.id === p.id && x.id !== initial.id))
       return setError('Cet ID existe déjà.')
     // Unicité du trigramme vérifiée dans les DEUX modes (en édition aussi) :
     // le trigramme sert à générer les IDs des end-points/appareils/volets,

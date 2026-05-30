@@ -96,7 +96,7 @@ export function AppareilFixeEditor({
     if (!Number.isInteger(a.numero) || a.numero < 1)
       return setError('Numéro invalide — doit être un entier ≥ 1.')
     if (!a.id.trim()) return setError('ID manquant — vérifiez la pièce.')
-    if (mode === 'create' && allAppareils.some((x) => x.id === a.id))
+    if (allAppareils.some((x) => x.id === a.id && x.id !== initial.id))
       return setError(`L'ID ${a.id} existe déjà.`)
     // XOR strict ligne_id / branche_sur — déjà géré par le picker UI
     // (raccordement = 'aucun' | 'ligne' | 'prise') mais on revalide.
@@ -171,11 +171,15 @@ export function AppareilFixeEditor({
             ))}
           </select>
         </Field>
-        <Field label="Numéro">
+        <Field
+          label="Numéro"
+          hint={mode === 'edit' ? 'Figé en édition (il fait partie de l’ID)' : undefined}
+        >
           <input
             type="number"
             min={1}
             value={a.numero}
+            disabled={mode === 'edit'}
             onChange={(e) => {
               const num = toPositiveInt(e.target.value, a.numero)
               setA({
@@ -184,7 +188,7 @@ export function AppareilFixeEditor({
                 id: mode === 'create' && trigramme ? appareilId(trigramme, num) : a.id,
               })
             }}
-            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </Field>
       </div>

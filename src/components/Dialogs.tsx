@@ -118,11 +118,36 @@ function ConfirmModal({
   onConfirm: () => void
 }) {
   const confirmRef = useRef<HTMLButtonElement | null>(null)
+  const dialogRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     confirmRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
+      if (e.key === 'Escape') {
+        onCancel()
+        return
+      }
+      // Piège à focus : Tab/Shift+Tab restent sur les boutons de la modale.
+      if (e.key !== 'Tab') return
+      const root = dialogRef.current
+      if (!root) return
+      const items = Array.from(
+        root.querySelectorAll<HTMLButtonElement>('button'),
+      ).filter((n) => n.offsetParent !== null)
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      const active = document.activeElement
+      if (active instanceof Node && !root.contains(active)) {
+        e.preventDefault()
+        first.focus()
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     window.addEventListener('keydown', onKey)
     const previousOverflow = document.body.style.overflow
@@ -145,7 +170,10 @@ function ConfirmModal({
         onClick={onCancel}
         aria-hidden
       />
-      <div className="relative w-full max-w-md rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-2xl p-5">
+      <div
+        ref={dialogRef}
+        className="relative w-full max-w-md rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-2xl p-5"
+      >
         <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
           {opts.title}
         </h2>

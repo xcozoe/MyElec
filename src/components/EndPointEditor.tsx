@@ -107,10 +107,7 @@ export function EndPointEditor({
     if (!Number.isInteger(e.numero) || e.numero < 1)
       return setError('Numéro invalide — doit être un entier ≥ 1.')
     if (!e.id.trim()) return setError('ID introuvable — vérifie les 4 champs (type, pièce, mur, numéro).')
-    if (
-      mode === 'create' &&
-      allEndpoints.some((x) => x.id === e.id)
-    )
+    if (allEndpoints.some((x) => x.id === e.id && x.id !== initial.id))
       return setError(`L'ID ${e.id} existe déjà — augmente le numéro.`)
     if (
       e.ligne_id &&
@@ -201,12 +198,17 @@ export function EndPointEditor({
 
         <Field
           label="Numéro"
-          hint={mode === 'create' ? 'Auto-incrémenté pour ce (type, pièce, mur)' : undefined}
+          hint={
+            mode === 'create'
+              ? 'Auto-incrémenté pour ce (type, pièce, mur)'
+              : 'Figé en édition (il fait partie de l’ID)'
+          }
         >
           <input
             type="number"
             min={1}
             value={e.numero}
+            disabled={mode === 'edit'}
             onChange={(ev) => {
               const num = toPositiveInt(ev.target.value, e.numero)
               setE({
@@ -215,7 +217,7 @@ export function EndPointEditor({
                 id: trigramme && mode === 'create' ? endpointId(e.type, trigramme, e.mur, num) : e.id,
               })
             }}
-            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </Field>
       </div>

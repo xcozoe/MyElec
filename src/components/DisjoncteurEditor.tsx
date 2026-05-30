@@ -89,14 +89,16 @@ export function DisjoncteurEditor({
     return all
   }, [tableau, d.id])
 
-  const isCreateInvalidId =
-    mode === 'create' &&
-    tableau.rangees.some((r) => r.disjoncteurs.some((dj) => dj.id === d.id))
+  // Vrai aussi en édition : renommer un disjoncteur vers un ID déjà pris dans
+  // le tableau doit être bloqué (on s'exclut soi-même via initial.id).
+  const isDuplicateId = tableau.rangees.some((r) =>
+    r.disjoncteurs.some((dj) => dj.id === d.id && dj.id !== initial.id),
+  )
 
   const handleSave = async () => {
     setError(null)
     if (!d.id.trim()) return setError('ID requis.')
-    if (isCreateInvalidId) return setError('Cet ID existe déjà dans ce tableau.')
+    if (isDuplicateId) return setError('Cet ID existe déjà dans ce tableau.')
     if (!d.etiquette.trim()) return setError('Étiquette requise.')
     setSaving(true)
     try {

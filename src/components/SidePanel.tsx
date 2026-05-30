@@ -4,10 +4,14 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
 import { useConfirm } from './Dialogs'
+
+const FOCUSABLE_SELECTOR =
+  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
 interface SidePanelGuard {
   /** L'éditeur signale s'il a des modifications non enregistrées. */
@@ -39,6 +43,7 @@ export function SidePanel({
 }) {
   const [dirty, setDirty] = useState(false)
   const confirm = useConfirm()
+  const asideRef = useRef<HTMLElement>(null)
 
   const requestClose = useCallback(async () => {
     if (dirty) {
@@ -59,10 +64,43 @@ export function SidePanel({
     if (!open) setDirty(false)
   }, [open])
 
+  // Focus le premier élément focusable à l'ouverture (accessibilité clavier).
+  useEffect(() => {
+    if (!open) return
+    asideRef.current
+      ?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+      ?.focus()
+  }, [open])
+
+  // Échap pour fermer + piège à focus (Tab/Shift+Tab cyclent dans le panneau,
+  // et tout focus échappé est ramené dedans).
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') void requestClose()
+      if (e.key === 'Escape') {
+        void requestClose()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const root = asideRef.current
+      if (!root) return
+      const items = Array.from(
+        root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((n) => n.offsetParent !== null)
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      const active = document.activeElement
+      if (active instanceof Node && !root.contains(active)) {
+        e.preventDefault()
+        first.focus()
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -82,7 +120,12 @@ export function SidePanel({
           onClick={() => void requestClose()}
           aria-hidden
         />
-        <aside className="w-full sm:w-[480px] h-full overflow-y-auto bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 p-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-xl">
+        <aside
+          ref={asideRef}
+          role="dialog"
+          aria-modal="true"
+          className="w-full sm:w-[480px] h-full overflow-y-auto bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 p-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-xl"
+        >
           {children}
         </aside>
       </div>

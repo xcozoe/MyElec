@@ -178,6 +178,17 @@ export function TableauDetail({
     [state.tableaux, tableau],
   )
 
+  // Map disjoncteur_id → id de la ligne électrique déclarée (la première si
+  // plusieurs), pour l'afficher dans la carte de synthèse du disjoncteur.
+  // ⚠️ Doit rester AVANT tout `return` conditionnel (règles des hooks).
+  const ligneIdByDisjoncteur = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const l of state.lignes) {
+      if (!map.has(l.disjoncteur_id)) map.set(l.disjoncteur_id, l.id)
+    }
+    return map
+  }, [state.lignes])
+
   if (!tableau) {
     return (
       <div>
@@ -194,16 +205,6 @@ export function TableauDetail({
 
   const phaseStyle = PHASE_STYLES[tableau.arrivee_phases ?? 'inconnue']
   const sortedRangees = [...tableau.rangees].sort((a, b) => a.numero - b.numero)
-
-  // Map disjoncteur_id → id de la ligne électrique déclarée (la première si
-  // plusieurs), pour l'afficher dans la carte de synthèse du disjoncteur.
-  const ligneIdByDisjoncteur = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const l of state.lignes) {
-      if (!map.has(l.disjoncteur_id)) map.set(l.disjoncteur_id, l.id)
-    }
-    return map
-  }, [state.lignes])
 
   return (
     <div>
@@ -349,6 +350,7 @@ export function TableauDetail({
           () => setPanel({ kind: 'none' }),
           onOpenLigne,
           setPanel,
+          onBack,
         )}
       </SidePanel>
 
@@ -371,6 +373,7 @@ function renderPanel(
   close: () => void,
   onOpenLigne: ((ligneId: string) => void) | undefined,
   setPanel: (panel: PanelState) => void,
+  onBack: () => void,
 ) {
   if (panel.kind === 'editDisjoncteur') {
     const rangee = tableau.rangees.find((r) => r.id === panel.rangeeId)
@@ -525,6 +528,9 @@ function renderPanel(
             `Suppression du tableau ${tableau.nom}.`,
           )
           close()
+          // Le tableau courant n'existe plus : on quitte sa vue (sinon on
+          // resterait bloqué sur « Tableau introuvable »).
+          onBack()
         }}
         onCancel={close}
       />

@@ -12,13 +12,14 @@ export function toPositiveInt(value: string, fallback: number): number {
 }
 
 /**
- * Parse une saisie numérique optionnelle (≥ 0). Renvoie `undefined` si le
- * champ est vide ou non numérique — au lieu de laisser passer `NaN` qui
- * serait sérialisé en `null` dans le JSON.
+ * Parse une saisie numérique optionnelle. Renvoie `undefined` si le champ est
+ * vide ou non numérique — au lieu de laisser passer `NaN` qui serait sérialisé
+ * en `null` dans le JSON. Accepte la virgule décimale (saisie FR : `2,5`).
  */
 export function toOptionalNumber(value: string): number | undefined {
-  if (value.trim() === '') return undefined
-  const n = Number(value)
+  const trimmed = value.trim()
+  if (trimmed === '') return undefined
+  const n = Number(trimmed.replace(',', '.'))
   return Number.isFinite(n) ? n : undefined
 }
 

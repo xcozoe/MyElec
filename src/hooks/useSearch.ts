@@ -34,9 +34,18 @@ export interface SearchHit {
   voletId?: string
 }
 
+/**
+ * Normalise pour une recherche insensible à la casse ET aux accents :
+ * « Désaffecté » devient « desaffecte », donc `desaffecte` matche bien.
+ * Indispensable sur un vocabulaire FR très accentué (Pièce, Éclairage, Extérieur…).
+ */
+function normalize(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
 function matches(haystack: string | undefined, needle: string): boolean {
   if (!haystack) return false
-  return haystack.toLowerCase().includes(needle)
+  return normalize(haystack).includes(needle)
 }
 
 export interface SearchData {
@@ -52,7 +61,7 @@ export function useSearch(data: SearchData) {
   const [query, setQuery] = useState('')
 
   const results: SearchHit[] = useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = normalize(query.trim())
     if (q.length < 2) return []
     const hits: SearchHit[] = []
 

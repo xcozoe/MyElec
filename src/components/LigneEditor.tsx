@@ -93,7 +93,7 @@ export function LigneEditor({
     if (!l.libelle.trim()) return setError('Libellé requis.')
     if (!l.disjoncteur_id)
       return setError('Disjoncteur source requis.')
-    if (mode === 'create' && allLignes.some((x) => x.id === l.id))
+    if (allLignes.some((x) => x.id === l.id && x.id !== initial.id))
       return setError(`L'ID ${l.id} existe déjà.`)
     setSaving(true)
     try {

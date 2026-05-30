@@ -106,7 +106,12 @@ function AppContent() {
   useEffect(() => {
     if (typeof document === 'undefined') return
     document.documentElement.classList.toggle('dark', dark)
-    localStorage.setItem(DARK_KEY, dark ? '1' : '0')
+    try {
+      localStorage.setItem(DARK_KEY, dark ? '1' : '0')
+    } catch {
+      // localStorage plein / navigation privée Safari : le thème reste
+      // appliqué via la classe, seule la persistance échoue silencieusement.
+    }
   }, [dark])
 
   // Applique la couleur de thème choisie par l'utilisateur à --brand.

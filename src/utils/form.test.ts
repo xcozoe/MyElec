@@ -40,6 +40,10 @@ describe('toOptionalNumber', () => {
     expect(toOptionalNumber('2.5')).toBe(2.5)
     expect(toOptionalNumber('-3')).toBe(-3)
   })
+
+  it('accepte la virgule décimale (saisie FR)', () => {
+    expect(toOptionalNumber('2,5')).toBe(2.5)
+  })
 })
 
 describe('clickableRowProps', () => {

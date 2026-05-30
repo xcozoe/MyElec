@@ -377,11 +377,19 @@ export function useStore(): Store {
       let newTargetItems: Disjoncteur[]
 
       if (isCrossRow) {
-        // Retire de la source
+        // Retire de la source. Si le disjoncteur déplacé était une tête de
+        // différentiel, les disjoncteurs de la source qui le référençaient
+        // comme parent deviendraient orphelins (parent désormais dans une
+        // autre rangée) — on les détache.
         newSourceItems = renumber(
           [...sourceRangee.disjoncteurs]
             .filter((d) => d.id !== disjoncteurId)
-            .sort((a, b) => a.position - b.position),
+            .sort((a, b) => a.position - b.position)
+            .map((d) =>
+              d.differentiel_parent_id === disjoncteurId
+                ? { ...d, differentiel_parent_id: undefined }
+                : d,
+            ),
         )
         // Insère dans la cible à targetIndex
         const targetSorted = [...targetRangee.disjoncteurs].sort(
@@ -409,7 +417,17 @@ export function useStore(): Store {
         ...tableau,
         rangees: tableau.rangees.map((r) => {
           if (isCrossRow) {
-            if (r.id === sourceRangee!.id) return { ...r, disjoncteurs: newSourceItems }
+            if (r.id === sourceRangee!.id)
+              return {
+                ...r,
+                disjoncteurs: newSourceItems,
+                // Si le déplacé était la tête de différentiel de la rangée
+                // source, ce rattachement n'a plus lieu d'être.
+                differentiel_id:
+                  r.differentiel_id === disjoncteurId
+                    ? undefined
+                    : r.differentiel_id,
+              }
             if (r.id === targetRangee.id) return { ...r, disjoncteurs: newTargetItems }
             return r
           }

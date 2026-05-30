@@ -78,7 +78,7 @@ export function VoletEditor({
     if (!Number.isInteger(v.numero) || v.numero < 1)
       return setError('Numéro invalide — doit être un entier ≥ 1.')
     if (!v.id.trim()) return setError('ID manquant — vérifiez la pièce.')
-    if (mode === 'create' && allVolets.some((x) => x.id === v.id))
+    if (allVolets.some((x) => x.id === v.id && x.id !== initial.id))
       return setError(`L'ID ${v.id} existe déjà.`)
     if (motorise && !v.ligne_id)
       return setError('Volet motorisé : la ligne d\'alimentation est obligatoire.')
@@ -130,11 +130,15 @@ export function VoletEditor({
             ))}
           </select>
         </Field>
-        <Field label="Numéro">
+        <Field
+          label="Numéro"
+          hint={mode === 'edit' ? 'Figé en édition (il fait partie de l’ID)' : undefined}
+        >
           <input
             type="number"
             min={1}
             value={v.numero}
+            disabled={mode === 'edit'}
             onChange={(e) => {
               const num = toPositiveInt(e.target.value, v.numero)
               setV({
@@ -143,7 +147,7 @@ export function VoletEditor({
                 id: mode === 'create' && trigramme ? voletId(trigramme, num) : v.id,
               })
             }}
-            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </Field>
       </div>
