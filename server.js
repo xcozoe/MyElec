@@ -277,7 +277,9 @@ async function migrateAuth() {
 await migrateAuth()
 
 const app = express()
-app.use(express.json({ limit: '2mb' }))
+// Limite généreuse : les photos (disjoncteurs, coffrets) sont stockées en
+// data URL inline dans les listes JSON ; un PUT remplace toute la liste.
+app.use(express.json({ limit: '32mb' }))
 
 // Middleware d'authentification : extrait le token du header Authorization,
 // pose req.user et req.token. Renvoie 401 si invalide.
