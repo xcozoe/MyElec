@@ -261,9 +261,10 @@ export function DisjoncteurEditor({
             </select>
           </Field>
 
-          <Field label="Différentiel de protection" hint="Disponible : différentiels du même tableau">
+          <Field label="Différentiel de protection">
             <select
               value={d.differentiel_parent_id ?? ''}
+              title="Disponible : différentiels du même tableau"
               onChange={(e) =>
                 setD({
                   ...d,
