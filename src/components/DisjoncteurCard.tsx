@@ -25,6 +25,8 @@ export function DisjoncteurCard({
   const style = PHASE_STYLES[phase]
   const isLibre = disjoncteur.statut === 'libre'
   const isDesaffecte = disjoncteur.statut === 'desaffecte'
+  // Suivi perso : fiche pas encore traitée (on ignore les désaffectés).
+  const aTraiter = !disjoncteur.traite && !isDesaffecte
 
   const {
     attributes,
@@ -58,6 +60,13 @@ export function DisjoncteurCard({
         isDragging ? 'shadow-lg z-10' : '',
       ].join(' ')}
     >
+      {aTraiter && (
+        <span
+          className="absolute -top-1 -left-1 z-10 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-slate-950"
+          title="Fiche pas encore traitée"
+          aria-label="Fiche pas encore traitée"
+        />
+      )}
       <button
         onClick={onClick}
         title={`${disjoncteur.id} — ${disjoncteur.etiquette}`}

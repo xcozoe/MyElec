@@ -34,6 +34,8 @@ export interface Disjoncteur {
   appareil_pilote?: string
   photo_url?: string
   notes?: string
+  /** Suivi perso : la fiche a été complètement traitée/vérifiée. */
+  traite?: boolean
 }
 
 export interface Rangee {

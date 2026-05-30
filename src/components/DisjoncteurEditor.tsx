@@ -180,6 +180,18 @@ export function DisjoncteurEditor({
             className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
+
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={!!d.traite}
+            onChange={(e) =>
+              setD({ ...d, traite: e.target.checked ? true : undefined })
+            }
+            className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 accent-emerald-600"
+          />
+          <span className="text-sm">Fiche complètement traitée</span>
+        </label>
       </Section>
 
       <Section title="Définition">

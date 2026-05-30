@@ -279,6 +279,7 @@ export function TableauDetail({
             {tableau.notes}
           </p>
         )}
+        <ATraiterCount tableau={tableau} />
         {tableau.alimentation === 'triphase' && <PhaseBalance tableau={tableau} />}
       </header>
 
@@ -362,6 +363,41 @@ export function TableauDetail({
           caption={`${tableau.nom} — ${tableau.emplacement}`}
           onClose={() => setPhotoZoom(false)}
         />
+      )}
+    </div>
+  )
+}
+
+/**
+ * Compteur de fiches disjoncteur restant à traiter (hors désaffectés).
+ * Repère le travail de saisie restant d'un coup d'œil.
+ */
+function ATraiterCount({ tableau }: { tableau: Tableau }) {
+  const { aTraiter, total } = useMemo(() => {
+    let aTraiter = 0
+    let total = 0
+    for (const r of tableau.rangees) {
+      for (const d of r.disjoncteurs) {
+        if (d.statut === 'desaffecte') continue
+        total += 1
+        if (!d.traite) aTraiter += 1
+      }
+    }
+    return { aTraiter, total }
+  }, [tableau])
+
+  if (total === 0) return null
+  return (
+    <div className="mt-3 border-t border-slate-200 dark:border-slate-800 pt-3 text-xs">
+      {aTraiter > 0 ? (
+        <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+          {aTraiter} fiche{aTraiter > 1 ? 's' : ''} à traiter sur {total}
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+          ✓ Toutes les fiches sont traitées
+        </span>
       )}
     </div>
   )

@@ -141,6 +141,11 @@ Sur la fiche d'un disjoncteur, un bloc **« Cartographie aval »** affiche en
 temps réel les lignes qui en partent, les end-points desservis et les appareils
 alimentés (direct ou via prise) — c'est le cross-ref Phase 1 ↔ 2.
 
+**Suivi de saisie** : la fiche d'un disjoncteur a une case « Fiche complètement
+traitée ». Les disjoncteurs non encore traités portent un **point ambre** dans
+la grille, et l'en-tête du tableau affiche le **nombre de fiches restant à
+traiter**. Ce flag de suivi n'est pas journalisé dans l'historique.
+
 ### Pièces (Phase 2)
 
 Pièces groupées par niveau (Rez de jardin / Sous-sol / Extérieur /
