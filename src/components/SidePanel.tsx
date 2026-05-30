@@ -235,10 +235,10 @@ export function SidePanel({
           aria-modal="true"
           className="relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain bg-white dark:bg-slate-950 rounded-t-2xl border-t border-slate-200 dark:border-slate-800 shadow-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] animate-sheet-up"
         >
-          {/* Poignée de préhension — affordance « bottom sheet ». Glisser vers
-              le bas (ou cliquer) pour fermer ; hors du piège à focus
-              (tabindex=-1) pour que l'ouverture focalise le 1er champ. Le clic
-              est ignoré juste après un glissement (movedRef). */}
+          {/* Zone de préhension — bande pleine largeur en `touch-none` pour que
+              le glissement soit fiable sur iOS (aucun scroll natif concurrent).
+              Glisser vers le bas (ou cliquer) pour fermer ; hors du piège à
+              focus ; clic ignoré juste après un glissement (movedRef). */}
           <button
             type="button"
             data-grip
@@ -248,8 +248,10 @@ export function SidePanel({
               if (movedRef.current) return
               void requestClose()
             }}
-            className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
-          />
+            className="-mt-3 mb-1 flex w-full touch-none items-center justify-center py-3"
+          >
+            <span className="block h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700" />
+          </button>
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </aside>
       </div>
