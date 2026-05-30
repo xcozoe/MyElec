@@ -52,6 +52,10 @@ export function SidePanel({
   // Vrai si le dernier geste tactile était un glissement (≠ tap) : sert à ne
   // pas déclencher le clic « fermer » de la poignée après un drag annulé.
   const movedRef = useRef(false)
+  // L'animation d'entrée (keyframes avec fill `both`) prime sur le transform
+  // inline et empêcherait le glissement de bouger le panneau. On retire la
+  // classe une fois l'entrée terminée pour rendre la main au transform.
+  const [entered, setEntered] = useState(false)
 
   const requestClose = useCallback(async () => {
     if (dirty) {
@@ -70,6 +74,7 @@ export function SidePanel({
   // propre, y compris après une sauvegarde qui ferme le panneau directement).
   useEffect(() => {
     if (!open) setDirty(false)
+    else setEntered(false)
   }, [open])
 
   // Verrouille le scroll de l'arrière-plan tant que la sheet est ouverte :
@@ -233,7 +238,10 @@ export function SidePanel({
           ref={asideRef}
           role="dialog"
           aria-modal="true"
-          className="relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain bg-white dark:bg-slate-950 rounded-t-2xl border-t border-slate-200 dark:border-slate-800 shadow-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] animate-sheet-up"
+          onAnimationEnd={() => setEntered(true)}
+          className={`relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain bg-white dark:bg-slate-950 rounded-t-2xl border-t border-slate-200 dark:border-slate-800 shadow-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] ${
+            entered ? '' : 'animate-sheet-up'
+          }`}
         >
           {/* Zone de préhension — bande pleine largeur en `touch-none` pour que
               le glissement soit fiable sur iOS (aucun scroll natif concurrent).
