@@ -60,8 +60,15 @@ export function TableauEditor({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Éditer le tableau</h3>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <PhotoField
+            value={t.photo_url}
+            onChange={(url) => setT({ ...t, photo_url: url })}
+            alt={`${t.nom} — coffret`}
+          />
+          <h3 className="text-lg font-semibold">Éditer le tableau</h3>
+        </div>
         <button
           onClick={handleClose}
           className="text-sm rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5"
@@ -188,13 +195,6 @@ export function TableauEditor({
             )}
         </select>
       </Field>
-
-      <PhotoField
-        value={t.photo_url}
-        onChange={(url) => setT({ ...t, photo_url: url })}
-        alt={`${t.nom} — coffret`}
-        hint="URL d'image du coffret (ex : /sources/coffret-merlin-gerin-2-rangees.png)."
-      />
 
       <Field label="Notes">
         <textarea

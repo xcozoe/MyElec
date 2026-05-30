@@ -112,13 +112,20 @@ export function DisjoncteurEditor({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">
-            {mode === 'create' ? 'Nouveau disjoncteur' : 'Éditer le disjoncteur'}
-          </h3>
-          <div className="text-xs text-slate-500 dark:text-slate-400">
-            {tableau.nom} · {rangee?.libelle ?? rangeeId}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <PhotoField
+            value={d.photo_url}
+            onChange={(url) => setD({ ...d, photo_url: url })}
+            alt={`${d.id} — ${d.etiquette}`}
+          />
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold">
+              {mode === 'create' ? 'Nouveau disjoncteur' : 'Éditer le disjoncteur'}
+            </h3>
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              {tableau.nom} · {rangee?.libelle ?? rangeeId}
+            </div>
           </div>
         </div>
         <button
@@ -273,13 +280,6 @@ export function DisjoncteurEditor({
           className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
         />
       </Field>
-
-      <PhotoField
-        value={d.photo_url}
-        onChange={(url) => setD({ ...d, photo_url: url })}
-        alt={`${d.id} — ${d.etiquette}`}
-        hint="URL d'image (ex : /sources/legrand-086-94.png). Laisser vide pour ne pas afficher de photo."
-      />
 
       <Field label="Notes">
         <textarea
