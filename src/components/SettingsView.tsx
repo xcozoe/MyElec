@@ -18,7 +18,9 @@ import type {
 } from '../types/electrical'
 import { HistoriqueView } from './HistoriqueView'
 import { CartographieEnCours } from './CartographieEnCours'
+import { AdminUsers } from './AdminUsers'
 import { useConfirm, useNotify } from './Dialogs'
+import { useAuth } from '../context/AuthContext'
 
 const PHASE_LABELS: Record<PhaseColorKey, string> = {
   L1: 'Phase 1 (L1)',
@@ -40,6 +42,7 @@ export function SettingsView({
   onOpenTableau: (tableauId: string, focusDisjoncteurId?: string) => void
 }) {
   const { phaseColors, setPhaseColor, resetPhaseColors } = useSettings()
+  const { user } = useAuth()
   const confirmDialog = useConfirm()
   const notify = useNotify()
   const fileRef = useRef<HTMLInputElement | null>(null)
@@ -131,6 +134,8 @@ export function SettingsView({
           Paramètres
         </h1>
       </div>
+
+      {user?.isAdmin && <AdminUsers />}
 
       <Section title="Apparence">
         <div className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-800 px-4 py-3 bg-white dark:bg-slate-900">

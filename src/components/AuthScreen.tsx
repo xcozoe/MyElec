@@ -1,29 +1,46 @@
 /**
- * Écran de connexion/inscription. Calqué sur l'expérience MyMemory :
- *  - une seule vue, segment toggle Connexion/Inscription,
+ * Écran de connexion / demande d'accès.
+ *  - une seule vue, segment toggle Connexion / Demander un accès,
  *  - 2 champs (nom + mot de passe),
- *  - bouton plein brand, message d'erreur sous le formulaire.
+ *  - l'inscription libre n'existe plus : une demande crée un compte INACTIF
+ *    que l'administrateur doit activer avant la première connexion.
  */
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
-type Mode = 'login' | 'register'
+type Mode = 'login' | 'request'
 
 export function AuthScreen() {
-  const { login, register } = useAuth()
+  const { login, requestAccess } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  const switchMode = (next: Mode) => {
+    setMode(next)
+    setError(null)
+    setInfo(null)
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setInfo(null)
     setBusy(true)
     try {
-      if (mode === 'login') await login(name, password)
-      else await register(name, password)
+      if (mode === 'login') {
+        await login(name, password)
+      } else {
+        await requestAccess(name, password)
+        setInfo(
+          "Demande envoyée. L'administrateur doit valider votre accès avant votre première connexion.",
+        )
+        setMode('login')
+        setPassword('')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue.')
     } finally {
@@ -55,10 +72,7 @@ export function AuthScreen() {
             type="button"
             role="tab"
             aria-selected={mode === 'login'}
-            onClick={() => {
-              setMode('login')
-              setError(null)
-            }}
+            onClick={() => switchMode('login')}
             className={
               'flex-1 py-2 rounded-full transition-colors ' +
               (mode === 'login'
@@ -71,19 +85,16 @@ export function AuthScreen() {
           <button
             type="button"
             role="tab"
-            aria-selected={mode === 'register'}
-            onClick={() => {
-              setMode('register')
-              setError(null)
-            }}
+            aria-selected={mode === 'request'}
+            onClick={() => switchMode('request')}
             className={
               'flex-1 py-2 rounded-full transition-colors ' +
-              (mode === 'register'
+              (mode === 'request'
                 ? 'bg-white dark:bg-slate-950 shadow text-slate-900 dark:text-slate-100'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700')
             }
           >
-            Inscription
+            Demander un accès
           </button>
         </div>
 
@@ -122,15 +133,16 @@ export function AuthScreen() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={mode === 'register' ? '6 caractères min.' : '••••••••'}
-              autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+              placeholder={mode === 'request' ? '6 caractères min.' : '••••••••'}
+              autoComplete={mode === 'request' ? 'new-password' : 'current-password'}
               required
               minLength={6}
               className="w-full px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[--brand] focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-[--brand]/30 outline-none transition text-slate-900 dark:text-slate-100"
             />
-            {mode === 'register' && (
+            {mode === 'request' && (
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-                6 caractères minimum.
+                Choisissez vos identifiants. L'accès sera effectif une fois validé
+                par l'administrateur.
               </p>
             )}
           </div>
@@ -138,6 +150,11 @@ export function AuthScreen() {
           {error && (
             <div className="text-sm rounded-md border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 px-3 py-2">
               {error}
+            </div>
+          )}
+          {info && (
+            <div className="text-sm rounded-md border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-3 py-2">
+              {info}
             </div>
           )}
 
@@ -149,10 +166,10 @@ export function AuthScreen() {
             {busy
               ? mode === 'login'
                 ? 'Connexion…'
-                : 'Création…'
+                : 'Envoi…'
               : mode === 'login'
                 ? 'Se connecter'
-                : 'Créer mon compte'}
+                : 'Envoyer ma demande'}
           </button>
         </form>
       </div>

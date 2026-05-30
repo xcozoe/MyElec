@@ -10,11 +10,24 @@ export interface AuthUser {
   email: string
   avatar: string
   themeColor: string
+  isAdmin: boolean
+  active: boolean
 }
 
 export interface AuthSuccess {
   token: string
   user: AuthUser
+}
+
+/** Vue d'un compte côté administration. */
+export interface AdminUser {
+  id: string
+  name: string
+  email: string
+  avatar: string
+  isAdmin: boolean
+  active: boolean
+  createdAt: string
 }
 
 const API_BASE = '/api'
@@ -39,8 +52,9 @@ async function http<T>(path: string, init: RequestInit & { token?: string }): Pr
 }
 
 export const authApi = {
-  register: (name: string, password: string) =>
-    http<AuthSuccess>('/register', {
+  /** Demande d'accès : crée un compte inactif, ne connecte pas. */
+  requestAccess: (name: string, password: string) =>
+    http<{ ok: true }>('/request-access', {
       method: 'POST',
       body: JSON.stringify({ name, password }),
     }),
@@ -79,4 +93,35 @@ export const authApi = {
       body: JSON.stringify({ password }),
       token,
     }),
+
+  // ----- Administration des comptes -----
+
+  adminListUsers: (token: string) =>
+    http<{ users: AdminUser[] }>('/admin/users', { token }),
+
+  adminCreateUser: (
+    token: string,
+    name: string,
+    password: string,
+    isAdmin: boolean,
+  ) =>
+    http<{ user: AdminUser }>('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({ name, password, isAdmin }),
+      token,
+    }),
+
+  adminUpdateUser: (
+    token: string,
+    id: string,
+    patch: { active?: boolean; isAdmin?: boolean },
+  ) =>
+    http<{ user: AdminUser }>(`/admin/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+      token,
+    }),
+
+  adminDeleteUser: (token: string, id: string) =>
+    http<{ ok: true }>(`/admin/users/${id}`, { method: 'DELETE', token }),
 }

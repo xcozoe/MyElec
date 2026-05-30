@@ -3,7 +3,11 @@ import { readFile, writeFile, mkdir, rename } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto'
+import { promisify } from 'node:util'
+
+// scrypt asynchrone : ne bloque pas l'event loop (le hash coûte ~100 ms).
+const scrypt = promisify(scryptCb)
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = process.env.MYELEC_DATA_DIR
@@ -97,19 +101,68 @@ const NAME_MAX = 40
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const AVATAR_RE = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/
 const AVATAR_MAX = 300 * 1024
+
+// Un avatar peut aussi être un emoji/glyphe court parmi les presets (voir
+// AVATAR_PRESETS côté client). On accepte 1 à 6 codepoints, sans caractère
+// sensible HTML, pour rester aligné avec ce que <Avatar> sait afficher.
+function isGlyphAvatar(av) {
+  const segs = Array.from(av)
+  return segs.length >= 1 && segs.length <= 6 && !/[<>"'`&]/.test(av)
+}
 const THEME_RE = /^#[0-9a-f]{6}$/i
 
-function hashPassword(password, salt = randomBytes(16).toString('hex')) {
-  const derived = scryptSync(String(password), salt, SCRYPT_KEYLEN).toString('hex')
+async function hashPassword(password, salt = randomBytes(16).toString('hex')) {
+  const derived = (await scrypt(String(password), salt, SCRYPT_KEYLEN)).toString('hex')
   return { salt, hash: derived }
 }
 
-function verifyPassword(password, salt, expectedHash) {
+async function verifyPassword(password, salt, expectedHash) {
   if (!salt || !expectedHash) return false
-  const derived = scryptSync(String(password), salt, SCRYPT_KEYLEN).toString('hex')
+  const derived = (await scrypt(String(password), salt, SCRYPT_KEYLEN)).toString('hex')
   const a = Buffer.from(derived, 'hex')
   const b = Buffer.from(expectedHash, 'hex')
   return a.length === b.length && timingSafeEqual(a, b)
+}
+
+// Rate-limiting en mémoire (sans dépendance) pour les routes sensibles :
+// freine le brute-force sur login/register/changement de mot de passe.
+const rateBuckets = new Map()
+function rateLimit({ key, max, windowMs }) {
+  return (req, res, next) => {
+    const id = `${key}:${req.ip || req.socket?.remoteAddress || 'unknown'}`
+    const now = Date.now()
+    const bucket = rateBuckets.get(id)
+    if (!bucket || now > bucket.resetAt) {
+      rateBuckets.set(id, { count: 1, resetAt: now + windowMs })
+      return next()
+    }
+    if (bucket.count >= max) {
+      const retry = Math.ceil((bucket.resetAt - now) / 1000)
+      res.set('Retry-After', String(retry))
+      return res
+        .status(429)
+        .json({ error: `Trop de tentatives. Réessayez dans ${retry} s.` })
+    }
+    bucket.count += 1
+    return next()
+  }
+}
+
+// Valide le corps d'un PUT de ressource : un tableau d'objets ayant chacun un
+// `id` texte non vide et unique. Évite de corrompre les JSON métier.
+function validateResourceArray(body) {
+  if (!Array.isArray(body)) return 'Corps attendu : un tableau.'
+  const ids = new Set()
+  for (let i = 0; i < body.length; i++) {
+    const item = body[i]
+    if (!item || typeof item !== 'object' || Array.isArray(item))
+      return `Élément ${i} invalide : objet attendu.`
+    if (typeof item.id !== 'string' || item.id.trim() === '')
+      return `Élément ${i} invalide : champ "id" requis.`
+    if (ids.has(item.id)) return `Identifiant en double : ${item.id}.`
+    ids.add(item.id)
+  }
+  return null
 }
 
 function newId() {
@@ -140,6 +193,21 @@ function publicUser(u) {
     email: u.email || '',
     avatar: u.avatar || '',
     themeColor: u.themeColor || '',
+    isAdmin: !!u.isAdmin,
+    active: u.active !== false,
+  }
+}
+
+// Vue d'un compte exposée à l'administrateur (sans hash ni sel).
+function adminUserView(u) {
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email || '',
+    avatar: u.avatar || '',
+    isAdmin: !!u.isAdmin,
+    active: u.active !== false,
+    createdAt: u.createdAt || '',
   }
 }
 
@@ -171,8 +239,45 @@ async function updateAuth(mutator) {
   })
 }
 
+// Migration : garantit les champs `active`/`isAdmin` sur chaque compte et
+// promeut le compte le plus ancien en administrateur si aucun ne l'est
+// (compatibilité avec l'auth historique sans inscription contrôlée).
+async function migrateAuth() {
+  const db = await readAuth()
+  let changed = false
+  for (const u of db.users) {
+    if (typeof u.active !== 'boolean') {
+      u.active = true
+      changed = true
+    }
+    if (typeof u.isAdmin !== 'boolean') {
+      u.isAdmin = false
+      changed = true
+    }
+  }
+  if (db.users.length > 0 && !db.users.some((u) => u.isAdmin)) {
+    const first = [...db.users].sort((a, b) =>
+      String(a.createdAt || '').localeCompare(String(b.createdAt || '')),
+    )[0]
+    first.isAdmin = true
+    first.active = true
+    changed = true
+  }
+  if (!changed) return
+  await updateAuth((d) => {
+    for (const u of d.users) {
+      const ref = db.users.find((x) => x.id === u.id)
+      if (ref) {
+        u.active = ref.active
+        u.isAdmin = ref.isAdmin
+      }
+    }
+  })
+}
+await migrateAuth()
+
 const app = express()
-app.use(express.json({ limit: '10mb' }))
+app.use(express.json({ limit: '2mb' }))
 
 // Middleware d'authentification : extrait le token du header Authorization,
 // pose req.user et req.token. Renvoie 401 si invalide.
@@ -186,6 +291,8 @@ async function authRequired(req, res, next) {
     if (!session) return res.status(401).json({ error: 'Session invalide.' })
     const user = db.users.find((u) => u.id === session.userId)
     if (!user) return res.status(401).json({ error: 'Session invalide.' })
+    if (user.active === false)
+      return res.status(403).json({ error: 'Compte désactivé par l’administrateur.' })
     req.user = user
     req.token = token
     return next()
@@ -194,9 +301,19 @@ async function authRequired(req, res, next) {
   }
 }
 
+// Réservé aux administrateurs (à chaîner après authRequired).
+function adminRequired(req, res, next) {
+  if (!req.user || !req.user.isAdmin)
+    return res.status(403).json({ error: 'Accès administrateur requis.' })
+  return next()
+}
+
 // ----- Routes Auth -----
 
-app.post('/api/register', async (req, res, next) => {
+// Demande d'accès : crée un compte INACTIF (le visiteur choisit son nom et son
+// mot de passe). Aucune session n'est ouverte : la connexion reste bloquée tant
+// qu'un administrateur n'a pas activé le compte.
+app.post('/api/request-access', rateLimit({ key: 'request', max: 8, windowMs: 60_000 }), async (req, res, next) => {
   try {
     const { name, error: nameErr } = validateName(req.body && req.body.name)
     const password = String((req.body && req.body.password) || '')
@@ -208,7 +325,7 @@ app.post('/api/register', async (req, res, next) => {
     if (db.users.some((u) => u.name.toLowerCase() === name.toLowerCase())) {
       return res.status(409).json({ error: 'Ce nom est déjà utilisé — choisissez-en un autre.' })
     }
-    const { salt, hash } = hashPassword(password)
+    const { salt, hash } = await hashPassword(password)
     const user = {
       id: newId(),
       name,
@@ -217,27 +334,33 @@ app.post('/api/register', async (req, res, next) => {
       email: '',
       avatar: '',
       themeColor: '',
+      active: false,
+      isAdmin: false,
       createdAt: new Date().toISOString(),
     }
-    const token = newToken()
     await updateAuth((d) => {
       d.users.push(user)
-      d.sessions.push({ token, userId: user.id, createdAt: new Date().toISOString() })
     })
-    res.status(201).json({ token, user: publicUser(user) })
+    res.status(201).json({ ok: true })
   } catch (err) {
     next(err)
   }
 })
 
-app.post('/api/login', async (req, res, next) => {
+app.post('/api/login', rateLimit({ key: 'login', max: 10, windowMs: 60_000 }), async (req, res, next) => {
   try {
     const name = cleanName(req.body && req.body.name)
     const password = String((req.body && req.body.password) || '')
     const db = await readAuth()
     const user = db.users.find((u) => u.name.toLowerCase() === name.toLowerCase())
-    if (!user || !verifyPassword(password, user.salt, user.passwordHash)) {
+    if (!user || !(await verifyPassword(password, user.salt, user.passwordHash))) {
       return res.status(401).json({ error: 'Nom ou mot de passe incorrect.' })
+    }
+    // Identifiants corrects mais compte pas (encore) autorisé.
+    if (user.active === false) {
+      return res.status(403).json({
+        error: "Votre accès n'a pas encore été validé par l'administrateur.",
+      })
     }
     const token = newToken()
     await updateAuth((d) => {
@@ -293,8 +416,8 @@ app.patch('/api/me', authRequired, async (req, res, next) => {
       const av = b.avatar.trim()
       if (!av) upd.avatar = ''
       else if (av.length > AVATAR_MAX) errors.push('Photo trop lourde — réduisez-la.')
-      else if (!AVATAR_RE.test(av)) errors.push('Format de photo non pris en charge (PNG, JPEG, WebP ou GIF).')
-      else upd.avatar = av
+      else if (AVATAR_RE.test(av) || isGlyphAvatar(av)) upd.avatar = av
+      else errors.push('Format de photo non pris en charge (PNG, JPEG, WebP ou GIF, ou emoji).')
     }
     if (typeof b.themeColor === 'string') {
       const tc = b.themeColor.trim().toLowerCase()
@@ -317,17 +440,17 @@ app.patch('/api/me', authRequired, async (req, res, next) => {
   }
 })
 
-app.post('/api/me/password', authRequired, async (req, res, next) => {
+app.post('/api/me/password', rateLimit({ key: 'password', max: 10, windowMs: 60_000 }), authRequired, async (req, res, next) => {
   try {
     const current = String((req.body && req.body.currentPassword) || '')
     const nextPw = String((req.body && req.body.newPassword) || '')
-    if (!verifyPassword(current, req.user.salt, req.user.passwordHash)) {
+    if (!(await verifyPassword(current, req.user.salt, req.user.passwordHash))) {
       return res.status(403).json({ error: 'Mot de passe actuel incorrect.' })
     }
     if (nextPw.length < 6) {
       return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 6 caractères.' })
     }
-    const { salt, hash } = hashPassword(nextPw)
+    const { salt, hash } = await hashPassword(nextPw)
     await updateAuth((d) => {
       const u = d.users.find((x) => x.id === req.user.id)
       if (u) {
@@ -346,7 +469,7 @@ app.post('/api/me/password', authRequired, async (req, res, next) => {
 app.post('/api/me/delete', authRequired, async (req, res, next) => {
   try {
     const password = String((req.body && req.body.password) || '')
-    if (!verifyPassword(password, req.user.salt, req.user.passwordHash)) {
+    if (!(await verifyPassword(password, req.user.salt, req.user.passwordHash))) {
       return res.status(403).json({ error: 'Mot de passe incorrect.' })
     }
     const id = req.user.id
@@ -368,8 +491,8 @@ for (const resource of Object.keys(RESOURCES)) {
     res.json(await readJson(file))
   })
   app.put(`/api/${resource}`, authRequired, async (req, res) => {
-    if (!Array.isArray(req.body))
-      return res.status(400).json({ error: 'expected array' })
+    const err = validateResourceArray(req.body)
+    if (err) return res.status(400).json({ error: err })
     await writeJson(file, req.body)
     res.json({ ok: true })
   })
@@ -378,8 +501,117 @@ for (const resource of Object.keys(RESOURCES)) {
 // POST /api/modifications : append d'une entrée d'historique (utilisé par les
 // services côté client à chaque création/modif/suppression).
 app.post('/api/modifications', authRequired, async (req, res) => {
-  await appendJson(pathOf('modifications'), req.body)
+  const m = req.body
+  if (!m || typeof m !== 'object' || Array.isArray(m))
+    return res.status(400).json({ error: "Entrée d'historique invalide." })
+  if (typeof m.id !== 'string' || m.id.trim() === '')
+    return res.status(400).json({ error: "Entrée d'historique : \"id\" requis." })
+  await appendJson(pathOf('modifications'), m)
   res.json({ ok: true })
+})
+
+// ----- Administration des comptes (réservé aux admins) -----
+
+app.get('/api/admin/users', authRequired, adminRequired, async (_req, res, next) => {
+  try {
+    const db = await readAuth()
+    res.json({ users: db.users.map(adminUserView) })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// Création directe d'un compte par l'admin : actif immédiatement.
+app.post('/api/admin/users', authRequired, adminRequired, async (req, res, next) => {
+  try {
+    const { name, error: nameErr } = validateName(req.body && req.body.name)
+    const password = String((req.body && req.body.password) || '')
+    const isAdmin = !!(req.body && req.body.isAdmin)
+    if (nameErr) return res.status(400).json({ error: nameErr })
+    if (password.length < 6)
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères.' })
+    const db = await readAuth()
+    if (db.users.some((u) => u.name.toLowerCase() === name.toLowerCase()))
+      return res.status(409).json({ error: 'Ce nom est déjà utilisé.' })
+    const { salt, hash } = await hashPassword(password)
+    let created
+    await updateAuth((d) => {
+      created = {
+        id: newId(),
+        name,
+        passwordHash: hash,
+        salt,
+        email: '',
+        avatar: '',
+        themeColor: '',
+        active: true,
+        isAdmin,
+        createdAt: new Date().toISOString(),
+      }
+      d.users.push(created)
+    })
+    res.status(201).json({ user: adminUserView(created) })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// Activer/désactiver un compte ou changer son rôle admin.
+app.patch('/api/admin/users/:id', authRequired, adminRequired, async (req, res, next) => {
+  try {
+    const id = req.params.id
+    const b = req.body || {}
+    const db = await readAuth()
+    const target = db.users.find((u) => u.id === id)
+    if (!target) return res.status(404).json({ error: 'Utilisateur introuvable.' })
+    const activeAdmins = db.users.filter((u) => u.isAdmin && u.active !== false).length
+    const willBeAdmin = typeof b.isAdmin === 'boolean' ? b.isAdmin : !!target.isAdmin
+    const willBeActive = typeof b.active === 'boolean' ? b.active : target.active !== false
+    // Garde-fou : ne jamais laisser le système sans administrateur actif.
+    if (
+      target.isAdmin &&
+      target.active !== false &&
+      (!willBeAdmin || !willBeActive) &&
+      activeAdmins <= 1
+    ) {
+      return res.status(400).json({ error: 'Impossible : c’est le dernier administrateur actif.' })
+    }
+    let updated
+    await updateAuth((d) => {
+      const u = d.users.find((x) => x.id === id)
+      if (!u) return
+      if (typeof b.active === 'boolean') u.active = b.active
+      if (typeof b.isAdmin === 'boolean') u.isAdmin = b.isAdmin
+      updated = u
+      // Désactivation : on révoque immédiatement les sessions de ce compte.
+      if (b.active === false) d.sessions = d.sessions.filter((s) => s.userId !== id)
+    })
+    res.json({ user: adminUserView(updated) })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// Refuser une demande / supprimer un compte.
+app.delete('/api/admin/users/:id', authRequired, adminRequired, async (req, res, next) => {
+  try {
+    const id = req.params.id
+    if (id === req.user.id)
+      return res.status(400).json({ error: 'Vous ne pouvez pas supprimer votre propre compte ici.' })
+    const db = await readAuth()
+    const target = db.users.find((u) => u.id === id)
+    if (!target) return res.status(404).json({ error: 'Utilisateur introuvable.' })
+    const activeAdmins = db.users.filter((u) => u.isAdmin && u.active !== false).length
+    if (target.isAdmin && target.active !== false && activeAdmins <= 1)
+      return res.status(400).json({ error: 'Impossible de supprimer le dernier administrateur.' })
+    await updateAuth((d) => {
+      d.users = d.users.filter((u) => u.id !== id)
+      d.sessions = d.sessions.filter((s) => s.userId !== id)
+    })
+    res.json({ ok: true })
+  } catch (err) {
+    next(err)
+  }
 })
 
 // Sert le build Vite (dist/) si présent — mode prod. En dev, dist/ n'existe pas

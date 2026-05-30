@@ -37,7 +37,8 @@ interface AuthContextValue {
   /** true tant qu'on n'a pas terminé la vérification initiale du token. */
   bootstrapping: boolean
   login: (name: string, password: string) => Promise<void>
-  register: (name: string, password: string) => Promise<void>
+  /** Demande d'accès : crée un compte inactif. Ne connecte pas. */
+  requestAccess: (name: string, password: string) => Promise<void>
   logout: () => Promise<void>
   updateProfile: (patch: ProfilePatch) => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>
@@ -59,8 +60,13 @@ function readStoredToken(): string | null {
 
 function writeStoredToken(token: string | null) {
   if (typeof localStorage === 'undefined') return
-  if (token) localStorage.setItem(TOKEN_KEY, token)
-  else localStorage.removeItem(TOKEN_KEY)
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token)
+    else localStorage.removeItem(TOKEN_KEY)
+  } catch {
+    // localStorage indisponible (quota / navigation privée) : on n'interrompt
+    // pas l'authentification pour autant.
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -131,12 +137,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [handleAuthSuccess],
   )
 
-  const register = useCallback(
+  const requestAccess = useCallback(
     async (name: string, password: string) => {
-      const res = await authApi.register(name, password)
-      handleAuthSuccess(res)
+      // Ne connecte pas : le compte est créé inactif côté serveur.
+      await authApi.requestAccess(name, password)
     },
-    [handleAuthSuccess],
+    [],
   )
 
   const logout = useCallback(async () => {
@@ -188,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       bootstrapping,
       login,
-      register,
+      requestAccess,
       logout,
       updateProfile,
       changePassword,
@@ -199,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       bootstrapping,
       login,
-      register,
+      requestAccess,
       logout,
       updateProfile,
       changePassword,
