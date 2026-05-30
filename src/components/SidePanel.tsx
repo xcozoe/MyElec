@@ -114,9 +114,10 @@ export function SidePanel({
   if (!open) return null
   return (
     <SidePanelGuardContext.Provider value={guardValue}>
-      <div className="fixed inset-0 z-40 flex">
+      {/* Bottom sheet : voile + panneau qui remonte du bas, pleine largeur. */}
+      <div className="fixed inset-0 z-40 flex items-end justify-center">
         <div
-          className="flex-1 bg-slate-950/40"
+          className="absolute inset-0 bg-slate-950/45 animate-sheet-backdrop"
           onClick={() => void requestClose()}
           aria-hidden
         />
@@ -124,9 +125,19 @@ export function SidePanel({
           ref={asideRef}
           role="dialog"
           aria-modal="true"
-          className="w-full sm:w-[480px] h-full overflow-y-auto bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 p-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-xl"
+          className="relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain bg-white dark:bg-slate-950 rounded-t-2xl border-t border-slate-200 dark:border-slate-800 shadow-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] animate-sheet-up"
         >
-          {children}
+          {/* Poignée de préhension — affordance « bottom sheet ». Cliquable
+              à la souris pour fermer, mais hors du piège à focus (tabindex=-1)
+              pour que l'ouverture focalise le 1er champ, pas la poignée. */}
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden
+            onClick={() => void requestClose()}
+            className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
+          />
+          <div className="mx-auto w-full max-w-3xl">{children}</div>
         </aside>
       </div>
     </SidePanelGuardContext.Provider>
