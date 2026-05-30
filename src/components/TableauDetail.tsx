@@ -372,8 +372,9 @@ export function TableauDetail({
  * (hors désaffectés) et les compare via des barres. Signale un déséquilibre net.
  */
 function PhaseBalance({ tableau }: { tableau: Tableau }) {
-  const counts = useMemo(() => {
+  const { counts, inconnue } = useMemo(() => {
     const c = { L1: 0, L2: 0, L3: 0 }
+    let inc = 0
     for (const r of tableau.rangees) {
       for (const d of r.disjoncteurs) {
         if (d.statut === 'desaffecte') continue
@@ -383,18 +384,22 @@ function PhaseBalance({ tableau }: { tableau: Tableau }) {
           d.phase_affectation === 'L3'
         ) {
           c[d.phase_affectation] += 1
+        } else if (d.phase_affectation === 'inconnue') {
+          inc += 1
         }
       }
     }
-    return c
+    return { counts: c, inconnue: inc }
   }, [tableau])
 
   const phases = ['L1', 'L2', 'L3'] as const
   const values = phases.map((p) => counts[p])
   const total = values.reduce((a, b) => a + b, 0)
-  if (total === 0) return null
+  // Rien à montrer que si aucune phase n'est affectée ET rien à identifier
+  // (tableau purement triphasé de tête, par ex.).
+  if (total === 0 && inconnue === 0) return null
   const max = Math.max(...values)
-  const unbalanced = max - Math.min(...values) >= 2
+  const unbalanced = total > 0 && max - Math.min(...values) >= 2
 
   return (
     <div className="mt-3 border-t border-slate-200 dark:border-slate-800 pt-3">
@@ -408,27 +413,38 @@ function PhaseBalance({ tableau }: { tableau: Tableau }) {
           </span>
         )}
       </div>
-      <div className="space-y-1">
-        {phases.map((p) => {
-          const v = counts[p]
-          const pct = max ? (v / max) * 100 : 0
-          const st = PHASE_STYLES[p]
-          return (
-            <div key={p} className="flex items-center gap-2">
-              <span className="w-6 text-xs font-medium tabular-nums">{p}</span>
-              <div className="h-2 flex-1 overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
-                <div
-                  className={`h-full rounded ${st.dot}`}
-                  style={{ width: `${pct}%` }}
-                />
+      {total > 0 ? (
+        <div className="space-y-1">
+          {phases.map((p) => {
+            const v = counts[p]
+            const pct = max ? (v / max) * 100 : 0
+            const st = PHASE_STYLES[p]
+            return (
+              <div key={p} className="flex items-center gap-2">
+                <span className="w-6 text-xs font-medium tabular-nums">{p}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
+                  <div
+                    className={`h-full rounded ${st.dot}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="w-6 text-right text-xs tabular-nums text-slate-600 dark:text-slate-400">
+                  {v}
+                </span>
               </div>
-              <span className="w-6 text-right text-xs tabular-nums text-slate-600 dark:text-slate-400">
-                {v}
-              </span>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Aucun départ n'est encore affecté à une phase.
+        </p>
+      )}
+      {inconnue > 0 && (
+        <p className="mt-1.5 text-[11px] text-amber-600 dark:text-amber-400">
+          {inconnue} départ{inconnue > 1 ? 's' : ''} à identifier (phase inconnue).
+        </p>
+      )}
     </div>
   )
 }
