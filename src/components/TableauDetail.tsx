@@ -279,6 +279,7 @@ export function TableauDetail({
             {tableau.notes}
           </p>
         )}
+        {tableau.alimentation === 'triphase' && <PhaseBalance tableau={tableau} />}
       </header>
 
       <DndContext
@@ -362,6 +363,72 @@ export function TableauDetail({
           onClose={() => setPhotoZoom(false)}
         />
       )}
+    </div>
+  )
+}
+
+/**
+ * Indicateur d'équilibre des phases : compte les disjoncteurs affectés à L1/L2/L3
+ * (hors désaffectés) et les compare via des barres. Signale un déséquilibre net.
+ */
+function PhaseBalance({ tableau }: { tableau: Tableau }) {
+  const counts = useMemo(() => {
+    const c = { L1: 0, L2: 0, L3: 0 }
+    for (const r of tableau.rangees) {
+      for (const d of r.disjoncteurs) {
+        if (d.statut === 'desaffecte') continue
+        if (
+          d.phase_affectation === 'L1' ||
+          d.phase_affectation === 'L2' ||
+          d.phase_affectation === 'L3'
+        ) {
+          c[d.phase_affectation] += 1
+        }
+      }
+    }
+    return c
+  }, [tableau])
+
+  const phases = ['L1', 'L2', 'L3'] as const
+  const values = phases.map((p) => counts[p])
+  const total = values.reduce((a, b) => a + b, 0)
+  if (total === 0) return null
+  const max = Math.max(...values)
+  const unbalanced = max - Math.min(...values) >= 2
+
+  return (
+    <div className="mt-3 border-t border-slate-200 dark:border-slate-800 pt-3">
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Équilibre des phases
+        </span>
+        {unbalanced && (
+          <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+            ⚠ déséquilibre
+          </span>
+        )}
+      </div>
+      <div className="space-y-1">
+        {phases.map((p) => {
+          const v = counts[p]
+          const pct = max ? (v / max) * 100 : 0
+          const st = PHASE_STYLES[p]
+          return (
+            <div key={p} className="flex items-center gap-2">
+              <span className="w-6 text-xs font-medium tabular-nums">{p}</span>
+              <div className="h-2 flex-1 overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
+                <div
+                  className={`h-full rounded ${st.dot}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="w-6 text-right text-xs tabular-nums text-slate-600 dark:text-slate-400">
+                {v}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
