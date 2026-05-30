@@ -6,7 +6,6 @@ import { PHASE_STYLES } from '../utils/phaseStyle'
 export function DisjoncteurCard({
   disjoncteur,
   rangeeId,
-  rangeePhase,
   ligneId,
   isDifferentielTete,
   selected,
@@ -26,7 +25,6 @@ export function DisjoncteurCard({
   const style = PHASE_STYLES[phase]
   const isLibre = disjoncteur.statut === 'libre'
   const isDesaffecte = disjoncteur.statut === 'desaffecte'
-  const aIdentifier = phase === 'inconnue' || isLibre
 
   const {
     attributes,
@@ -95,25 +93,6 @@ export function DisjoncteurCard({
         {ligneId && (
           <div className="text-[10px] font-mono opacity-70">
             {ligneId}
-          </div>
-        )}
-        {(aIdentifier || isDifferentielTete) && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {isDifferentielTete && (
-              <span className="text-[9px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
-                Diff
-              </span>
-            )}
-            {isLibre && (
-              <span className="text-[9px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
-                libre
-              </span>
-            )}
-            {phase === 'inconnue' && rangeePhase !== 'inconnue' && (
-              <span className="text-[9px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
-                phase ?
-              </span>
-            )}
           </div>
         )}
       </button>

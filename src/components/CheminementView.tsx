@@ -611,12 +611,6 @@ function DisjoncteurChip({
   onClick: () => void
 }) {
   const style = PHASE_STYLES[dj.phase_affectation]
-  const isBornier = dj.type_protection === 'bornier_repartition'
-  const isDiff =
-    dj.type_protection === 'differentiel_tete_tableau' ||
-    dj.type_protection === 'differentiel_tete_rangee' ||
-    dj.type_protection === 'differentiel_dedie' ||
-    dj.type_protection === 'disjoncteur_diff_dedie'
 
   return (
     <button
@@ -627,16 +621,6 @@ function DisjoncteurChip({
       <div className="flex items-center flex-wrap gap-1">
         <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
         <span className="font-mono text-[10px] truncate">{dj.id}</span>
-        {isBornier && (
-          <span className="text-[8px] uppercase rounded bg-slate-200 dark:bg-slate-700 px-1 py-0.5">
-            Bornier
-          </span>
-        )}
-        {isDiff && (
-          <span className="text-[8px] uppercase rounded bg-white/70 dark:bg-slate-950/40 px-1 py-0.5">
-            Diff
-          </span>
-        )}
       </div>
       <div className="mt-0.5 font-medium leading-tight line-clamp-2">
         {dj.etiquette}
