@@ -208,7 +208,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
                   className={
                     'aspect-square text-2xl rounded-lg flex items-center justify-center transition ' +
                     (selected
-                      ? 'bg-[--brand]/15 ring-2 ring-[--brand]'
+                      ? 'bg-(--brand)/15 ring-2 ring-(--brand)'
                       : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700')
                   }
                   aria-pressed={selected}
@@ -239,7 +239,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
             minLength={2}
             maxLength={40}
             required
-            className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[--brand] focus:bg-white dark:focus:bg-slate-950 outline-none transition"
+            className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-(--brand) focus:bg-white dark:focus:bg-slate-950 outline-none transition"
           />
         </div>
         <div>
@@ -255,7 +255,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="ex. moi@exemple.fr"
-            className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[--brand] focus:bg-white dark:focus:bg-slate-950 outline-none transition"
+            className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-(--brand) focus:bg-white dark:focus:bg-slate-950 outline-none transition"
           />
         </div>
 
@@ -269,7 +269,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
           <button
             type="submit"
             disabled={savingInfo}
-            className="rounded-full bg-[--brand] text-white text-sm font-semibold px-4 py-2 shadow-sm hover:brightness-110 disabled:opacity-60 transition"
+            className="rounded-full bg-(--brand) text-white text-sm font-semibold px-4 py-2 shadow-sm hover:brightness-110 disabled:opacity-60 transition"
           >
             {savingInfo ? 'Enregistrement…' : 'Enregistrer'}
           </button>
@@ -318,7 +318,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
                 onChange={(e) => setCurrentPw(e.target.value)}
                 autoComplete="current-password"
                 required
-                className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[--brand] focus:bg-white dark:focus:bg-slate-950 outline-none transition"
+                className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-(--brand) focus:bg-white dark:focus:bg-slate-950 outline-none transition"
               />
             </div>
             <div>
@@ -336,7 +336,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
                 autoComplete="new-password"
                 minLength={6}
                 required
-                className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[--brand] focus:bg-white dark:focus:bg-slate-950 outline-none transition"
+                className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-(--brand) focus:bg-white dark:focus:bg-slate-950 outline-none transition"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 6 caractères minimum.
@@ -351,7 +351,7 @@ export function ProfileSheet({ onClose }: ProfileSheetProps) {
               <button
                 type="submit"
                 disabled={savingPw}
-                className="rounded-full bg-[--brand] text-white text-sm font-semibold px-4 py-2 shadow-sm hover:brightness-110 disabled:opacity-60 transition"
+                className="rounded-full bg-(--brand) text-white text-sm font-semibold px-4 py-2 shadow-sm hover:brightness-110 disabled:opacity-60 transition"
               >
                 {savingPw ? 'Enregistrement…' : 'Changer le mot de passe'}
               </button>

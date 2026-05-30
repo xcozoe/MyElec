@@ -467,7 +467,7 @@ function AppContent() {
 
           <button
             onClick={() => setPanel({ kind: 'profile' })}
-            className="rounded-full p-0.5 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[--brand] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-950"
+            className="rounded-full p-0.5 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-(--brand) focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-950"
             aria-label="Ouvrir mon profil"
             title={user?.name ?? 'Mon profil'}
           >

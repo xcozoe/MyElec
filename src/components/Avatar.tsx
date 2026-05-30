@@ -79,7 +79,7 @@ export function Avatar({ name, avatar, size = 44, className = '' }: AvatarProps)
 
   return (
     <span
-      className={`${base} bg-gradient-to-br from-[--brand] to-[color-mix(in_srgb,var(--brand)_70%,black)] ${className}`}
+      className={`${base} bg-gradient-to-br from-(--brand) to-[color-mix(in_srgb,var(--brand)_70%,black)] ${className}`}
       style={style}
       aria-label={name ? `Avatar de ${name}` : 'Avatar'}
     >
