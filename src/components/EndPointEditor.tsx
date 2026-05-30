@@ -19,6 +19,7 @@ import {
 import { endpointId, getTrigramme, nextNumeroEndpoint } from '../utils/idGenerator'
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
+import { Section } from './Section'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -143,94 +144,97 @@ export function EndPointEditor({
         </button>
       </div>
 
-      <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-3 py-2">
-        <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          ID auto-généré
+      <Section title="Identification">
+        <div className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2">
+          <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            ID auto-généré
+          </div>
+          <div className="font-mono text-sm">{e.id || '— renseignez les 4 champs —'}</div>
         </div>
-        <div className="font-mono text-sm">{e.id || '— renseignez les 4 champs —'}</div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Type">
-          <select
-            value={e.type}
-            onChange={(ev) => setE({ ...e, type: ev.target.value as EndPointType })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Type">
+            <select
+              value={e.type}
+              onChange={(ev) => setE({ ...e, type: ev.target.value as EndPointType })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {ENDPOINT_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Pièce">
+            <select
+              value={e.piece_id}
+              onChange={(ev) => setE({ ...e, piece_id: ev.target.value })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              <option value="">— Choisir —</option>
+              {pieceOptions.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nom} ({p.trigramme})
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Mur / position">
+            <select
+              value={e.mur}
+              onChange={(ev) => setE({ ...e, mur: ev.target.value as Mur })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {MURS.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.value} — {m.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field
+            label="Numéro"
+            hint={
+              mode === 'create'
+                ? 'Auto-incrémenté pour ce (type, pièce, mur)'
+                : 'Figé en édition (il fait partie de l’ID)'
+            }
           >
-            {ENDPOINT_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </Field>
+            <input
+              type="number"
+              min={1}
+              value={e.numero}
+              disabled={mode === 'edit'}
+              onChange={(ev) => {
+                const num = toPositiveInt(ev.target.value, e.numero)
+                setE({
+                  ...e,
+                  numero: num,
+                  id: trigramme && mode === 'create' ? endpointId(e.type, trigramme, e.mur, num) : e.id,
+                })
+              }}
+              className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            />
+          </Field>
+        </div>
 
-        <Field label="Pièce">
-          <select
-            value={e.piece_id}
-            onChange={(ev) => setE({ ...e, piece_id: ev.target.value })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            <option value="">— Choisir —</option>
-            {pieceOptions.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nom} ({p.trigramme})
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Mur / position">
-          <select
-            value={e.mur}
-            onChange={(ev) => setE({ ...e, mur: ev.target.value as Mur })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {MURS.map((m) => (
-              <option key={m.value} value={m.value}>
-                {m.value} — {m.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field
-          label="Numéro"
-          hint={
-            mode === 'create'
-              ? 'Auto-incrémenté pour ce (type, pièce, mur)'
-              : 'Figé en édition (il fait partie de l’ID)'
-          }
-        >
+        <Field label="Détail de position" hint='ex : "près de la porte", "30 cm du sol"'>
           <input
-            type="number"
-            min={1}
-            value={e.numero}
-            disabled={mode === 'edit'}
-            onChange={(ev) => {
-              const num = toPositiveInt(ev.target.value, e.numero)
-              setE({
-                ...e,
-                numero: num,
-                id: trigramme && mode === 'create' ? endpointId(e.type, trigramme, e.mur, num) : e.id,
-              })
-            }}
-            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            type="text"
+            value={e.position_detail ?? ''}
+            onChange={(ev) =>
+              setE({ ...e, position_detail: ev.target.value || undefined })
+            }
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
-      </div>
+      </Section>
 
-      <Field label="Détail de position" hint='ex : "près de la porte", "30 cm du sol"'>
-        <input
-          type="text"
-          value={e.position_detail ?? ''}
-          onChange={(ev) =>
-            setE({ ...e, position_detail: ev.target.value || undefined })
-          }
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
+      <Section title="Définition">
       {showLigneField && (
         <Field label="Ligne d'alimentation">
           {lignes.length === 0 ? (
@@ -239,13 +243,13 @@ export function EndPointEditor({
               value={e.ligne_id ?? ''}
               onChange={(ev) => setE({ ...e, ligne_id: ev.target.value || undefined })}
               placeholder="Aucune ligne en base — laissez vide ou tapez l'ID prévu"
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
             />
           ) : (
             <select
               value={e.ligne_id ?? ''}
               onChange={(ev) => setE({ ...e, ligne_id: ev.target.value || undefined })}
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               <option value="">— Aucune / à définir —</option>
               {lignes.map((l) => (
@@ -261,8 +265,8 @@ export function EndPointEditor({
       {/* ---------- Champs spécifiques au type ---------- */}
 
       {showPriseFields && (
-        <div className="rounded-md border border-slate-200 dark:border-slate-800 p-3 space-y-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+        <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Caractéristiques prise
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -275,7 +279,7 @@ export function EndPointEditor({
                     type_prise: (ev.target.value || undefined) as TypePrise | undefined,
                   })
                 }
-                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               >
                 <option value="">—</option>
                 {TYPES_PRISE.map((t) => (
@@ -294,7 +298,7 @@ export function EndPointEditor({
                 onChange={(ev) =>
                   setE({ ...e, nb_combinees: toOptionalNumber(ev.target.value) })
                 }
-                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               />
             </Field>
           </div>
@@ -306,7 +310,7 @@ export function EndPointEditor({
               onChange={(ev) =>
                 setE({ ...e, usage_principal: ev.target.value || undefined })
               }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             />
             <datalist id="endpoint-usages">
               {SUGGESTIONS_USAGE.map((s) => (
@@ -318,8 +322,8 @@ export function EndPointEditor({
       )}
 
       {showLuminaireFields && (
-        <div className="rounded-md border border-slate-200 dark:border-slate-800 p-3 space-y-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+        <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Caractéristiques luminaire
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -334,7 +338,7 @@ export function EndPointEditor({
                       | undefined,
                   })
                 }
-                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               >
                 <option value="">—</option>
                 {TYPES_LUMINAIRE.map((t) => (
@@ -353,7 +357,7 @@ export function EndPointEditor({
                     commande: (ev.target.value || undefined) as TypeCommande | undefined,
                   })
                 }
-                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               >
                 <option value="">—</option>
                 {TYPES_COMMANDE.map((c) => (
@@ -372,7 +376,7 @@ export function EndPointEditor({
                 onChange={(ev) =>
                   setE({ ...e, puissance_w: toOptionalNumber(ev.target.value) })
                 }
-                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Nb de sources">
@@ -384,7 +388,7 @@ export function EndPointEditor({
                 onChange={(ev) =>
                   setE({ ...e, nb_sources: toOptionalNumber(ev.target.value) })
                 }
-                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Lumens unitaires (optionnel)">
@@ -396,7 +400,7 @@ export function EndPointEditor({
                 onChange={(ev) =>
                   setE({ ...e, lumens_unitaires: toOptionalNumber(ev.target.value) })
                 }
-                className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               />
             </Field>
           </div>
@@ -404,8 +408,8 @@ export function EndPointEditor({
       )}
 
       {showCommandeOnly && (
-        <div className="rounded-md border border-slate-200 dark:border-slate-800 p-3 space-y-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+        <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Caractéristiques commande
           </div>
           <Field label="Type de commande">
@@ -417,7 +421,7 @@ export function EndPointEditor({
                   commande: (ev.target.value || undefined) as TypeCommande | undefined,
                 })
               }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               <option value="">—</option>
               {TYPES_COMMANDE.map((c) => (
@@ -442,7 +446,7 @@ export function EndPointEditor({
                   ligne_id: next === 'filaire' ? e.ligne_id : undefined,
                 })
               }}
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               {ALIMENTATIONS_COMMANDE.map((a) => (
                 <option key={a.value} value={a.value}>
@@ -454,14 +458,15 @@ export function EndPointEditor({
         </div>
       )}
 
-      <Field label="Notes">
-        <textarea
-          value={e.notes ?? ''}
-          onChange={(ev) => setE({ ...e, notes: ev.target.value || undefined })}
-          rows={2}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
+        <Field label="Notes">
+          <textarea
+            value={e.notes ?? ''}
+            onChange={(ev) => setE({ ...e, notes: ev.target.value || undefined })}
+            rows={2}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+      </Section>
 
       {error && <div className="text-sm text-red-700 dark:text-red-300">{error}</div>}
 

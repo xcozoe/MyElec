@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Disjoncteur, Ligne, Tableau } from '../types/electrical'
 import { toOptionalNumber } from '../utils/form'
 import { Field } from './Field'
+import { Section } from './Section'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -117,110 +118,114 @@ export function LigneEditor({
         </button>
       </div>
 
-      <Field
-        label="ID"
-        hint={
-          mode === 'edit'
-            ? 'Renommer met à jour automatiquement ligne_id sur les end-points, appareils fixes et volets qui pointaient dessus.'
-            : 'Format libre commençant par "L", ex : L-PLAQUE, L-PC-CUI-A'
-        }
-      >
-        <input
-          type="text"
-          value={l.id}
-          onChange={(e) => setL({ ...l, id: e.target.value.toUpperCase() })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
-        />
-      </Field>
-
-      <Field label="Libellé">
-        <input
-          type="text"
-          value={l.libelle}
-          onChange={(e) => setL({ ...l, libelle: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Disjoncteur source">
-        <select
-          value={l.disjoncteur_id}
-          onChange={(e) => setL({ ...l, disjoncteur_id: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+      <Section title="Identification">
+        <Field
+          label="ID"
+          hint={
+            mode === 'edit'
+              ? undefined
+              : 'Format libre commençant par "L", ex : L-PLAQUE, L-PC-CUI-A'
+          }
         >
-          <option value="">— Choisir —</option>
-          {groupedDj.map(([tableauNom, options]) => (
-            <optgroup key={tableauNom} label={tableauNom}>
-              {options.map((o) => (
-                <option key={o.disjoncteur.id} value={o.disjoncteur.id}>
-                  {o.disjoncteur.id} — {o.disjoncteur.etiquette} ({o.disjoncteur.calibre})
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        {selectedDj && (
-          <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            {selectedDj.tableauNom} · {selectedDj.rangeeLibelle} ·{' '}
-            phase {selectedDj.disjoncteur.phase_affectation} · {selectedDj.disjoncteur.calibre}
-          </div>
-        )}
-      </Field>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Section (mm²)">
           <input
-            list="ligne-sections"
-            type="number"
-            min={0.5}
-            step={0.5}
-            value={l.section_mm2 ?? ''}
-            onChange={(e) =>
-              setL({ ...l, section_mm2: toOptionalNumber(e.target.value) })
-            }
-            className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            type="text"
+            value={l.id}
+            onChange={(e) => setL({ ...l, id: e.target.value.toUpperCase() })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
           />
-          <datalist id="ligne-sections">
-            {SECTIONS.map((s) => (
-              <option key={s} value={s} />
+        </Field>
+
+        <Field label="Libellé">
+          <input
+            type="text"
+            value={l.libelle}
+            onChange={(e) => setL({ ...l, libelle: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+
+        <Field label="Disjoncteur source">
+          <select
+            value={l.disjoncteur_id}
+            onChange={(e) => setL({ ...l, disjoncteur_id: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
+          >
+            <option value="">— Choisir —</option>
+            {groupedDj.map(([tableauNom, options]) => (
+              <optgroup key={tableauNom} label={tableauNom}>
+                {options.map((o) => (
+                  <option key={o.disjoncteur.id} value={o.disjoncteur.id}>
+                    {o.disjoncteur.id} — {o.disjoncteur.etiquette} ({o.disjoncteur.calibre})
+                  </option>
+                ))}
+              </optgroup>
             ))}
-          </datalist>
+          </select>
+          {selectedDj && (
+            <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              {selectedDj.tableauNom} · {selectedDj.rangeeLibelle} ·{' '}
+              phase {selectedDj.disjoncteur.phase_affectation} · {selectedDj.disjoncteur.calibre}
+            </div>
+          )}
         </Field>
-        <Field label="Longueur estimée (m)">
-          <input
-            type="number"
-            min={0}
-            step={0.5}
-            value={l.longueur_estimee_m ?? ''}
+      </Section>
+
+      <Section title="Caractéristiques">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Section (mm²)">
+            <input
+              list="ligne-sections"
+              type="number"
+              min={0.5}
+              step={0.5}
+              value={l.section_mm2 ?? ''}
+              onChange={(e) =>
+                setL({ ...l, section_mm2: toOptionalNumber(e.target.value) })
+              }
+              className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+            <datalist id="ligne-sections">
+              {SECTIONS.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+          </Field>
+          <Field label="Longueur estimée (m)">
+            <input
+              type="number"
+              min={0}
+              step={0.5}
+              value={l.longueur_estimee_m ?? ''}
+              onChange={(e) =>
+                setL({ ...l, longueur_estimee_m: toOptionalNumber(e.target.value) })
+              }
+              className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+          </Field>
+        </div>
+
+        <Field label="Parcours" hint="Texte libre décrivant le cheminement du câble">
+          <textarea
+            value={l.parcours ?? ''}
             onChange={(e) =>
-              setL({ ...l, longueur_estimee_m: toOptionalNumber(e.target.value) })
+              setL({ ...l, parcours: e.target.value || undefined })
             }
-            className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            rows={3}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
-      </div>
 
-      <Field label="Parcours" hint="Texte libre décrivant le cheminement du câble">
-        <textarea
-          value={l.parcours ?? ''}
-          onChange={(e) =>
-            setL({ ...l, parcours: e.target.value || undefined })
-          }
-          rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Notes">
-        <textarea
-          value={l.notes ?? ''}
-          onChange={(e) =>
-            setL({ ...l, notes: e.target.value || undefined })
-          }
-          rows={2}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
+        <Field label="Notes">
+          <textarea
+            value={l.notes ?? ''}
+            onChange={(e) =>
+              setL({ ...l, notes: e.target.value || undefined })
+            }
+            rows={2}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+      </Section>
 
       {error && <div className="text-sm text-red-700 dark:text-red-300">{error}</div>}
 

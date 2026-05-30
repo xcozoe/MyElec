@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
 import { Field } from './Field'
+import { Section } from './Section'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 import type { Tableau } from '../types/electrical'
@@ -77,133 +78,137 @@ export function TableauEditor({
         </button>
       </div>
 
-      <Field label="Nom">
-        <input
-          type="text"
-          value={t.nom}
-          onChange={(e) => setT({ ...t, nom: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Emplacement">
-        <input
-          type="text"
-          value={t.emplacement}
-          onChange={(e) => setT({ ...t, emplacement: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Alimentation">
-          <select
-            value={t.alimentation}
-            onChange={(e) => {
-              const alimentation = e.target.value as 'triphase' | 'monophase'
-              setT({
-                ...t,
-                alimentation,
-                // Tri : pas de phase d'arrivée. Mono : défaut L1 si non défini.
-                arrivee_phases:
-                  alimentation === 'triphase'
-                    ? undefined
-                    : (t.arrivee_phases && t.arrivee_phases !== 'TRI'
-                        ? t.arrivee_phases
-                        : 'L1'),
-              })
-            }}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            <option value="triphase">Triphasé</option>
-            <option value="monophase">Monophasé</option>
-          </select>
+      <Section title="Identification">
+        <Field label="Nom">
+          <input
+            type="text"
+            value={t.nom}
+            onChange={(e) => setT({ ...t, nom: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
         </Field>
-        {t.alimentation === 'monophase' && (
-          <Field label="Phase d'arrivée">
+
+        <Field label="Emplacement">
+          <input
+            type="text"
+            value={t.emplacement}
+            onChange={(e) => setT({ ...t, emplacement: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+      </Section>
+
+      <Section title="Définition">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Alimentation">
             <select
-              value={t.arrivee_phases && t.arrivee_phases !== 'TRI' ? t.arrivee_phases : 'L1'}
-              onChange={(e) =>
+              value={t.alimentation}
+              onChange={(e) => {
+                const alimentation = e.target.value as 'triphase' | 'monophase'
                 setT({
                   ...t,
-                  arrivee_phases: e.target.value as 'L1' | 'L2' | 'L3',
+                  alimentation,
+                  // Tri : pas de phase d'arrivée. Mono : défaut L1 si non défini.
+                  arrivee_phases:
+                    alimentation === 'triphase'
+                      ? undefined
+                      : (t.arrivee_phases && t.arrivee_phases !== 'TRI'
+                          ? t.arrivee_phases
+                          : 'L1'),
                 })
-              }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              }}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
-              <option value="L1">L1</option>
-              <option value="L2">L2</option>
-              <option value="L3">L3</option>
+              <option value="triphase">Triphasé</option>
+              <option value="monophase">Monophasé</option>
             </select>
           </Field>
-        )}
-      </div>
+          {t.alimentation === 'monophase' && (
+            <Field label="Phase d'arrivée">
+              <select
+                value={t.arrivee_phases && t.arrivee_phases !== 'TRI' ? t.arrivee_phases : 'L1'}
+                onChange={(e) =>
+                  setT({
+                    ...t,
+                    arrivee_phases: e.target.value as 'L1' | 'L2' | 'L3',
+                  })
+                }
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+              >
+                <option value="L1">L1</option>
+                <option value="L2">L2</option>
+                <option value="L3">L3</option>
+              </select>
+            </Field>
+          )}
+        </div>
 
-      <Field label="Tableau parent (cascade)">
-        <select
-          value={t.parent_tableau_id ?? ''}
-          onChange={(e) =>
-            setT({
-              ...t,
-              parent_tableau_id: e.target.value || undefined,
-            })
-          }
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        >
-          <option value="">— Aucun —</option>
-          {candidatsParent.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nom}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      <Field
-        label="Disjoncteur d'arrivée (dans le tableau parent)"
-        hint={
-          !t.parent_tableau_id
-            ? 'Sélectionnez d\'abord un tableau parent.'
-            : parentDisjoncteurs.length === 0
-              ? 'Le tableau parent n\'a aucun disjoncteur enregistré.'
-              : undefined
-        }
-      >
-        <select
-          value={t.parent_disjoncteur_id ?? ''}
-          disabled={!t.parent_tableau_id}
-          onChange={(e) =>
-            setT({
-              ...t,
-              parent_disjoncteur_id: e.target.value || undefined,
-            })
-          }
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono disabled:opacity-50"
-        >
-          <option value="">— Aucun —</option>
-          {parentDisjoncteurs.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.label}
-            </option>
-          ))}
-          {/* Conserve la valeur courante si elle n'est plus dans le parent. */}
-          {t.parent_disjoncteur_id &&
-            !parentDisjoncteurs.some((d) => d.id === t.parent_disjoncteur_id) && (
-              <option value={t.parent_disjoncteur_id}>
-                {t.parent_disjoncteur_id} (introuvable)
+        <Field label="Tableau parent (cascade)">
+          <select
+            value={t.parent_tableau_id ?? ''}
+            onChange={(e) =>
+              setT({
+                ...t,
+                parent_tableau_id: e.target.value || undefined,
+              })
+            }
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          >
+            <option value="">— Aucun —</option>
+            {candidatsParent.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nom}
               </option>
-            )}
-        </select>
-      </Field>
+            ))}
+          </select>
+        </Field>
 
-      <Field label="Notes">
-        <textarea
-          value={t.notes ?? ''}
-          onChange={(e) => setT({ ...t, notes: e.target.value || undefined })}
-          rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
+        <Field
+          label="Disjoncteur d'arrivée (dans le tableau parent)"
+          hint={
+            !t.parent_tableau_id
+              ? 'Sélectionnez d\'abord un tableau parent.'
+              : parentDisjoncteurs.length === 0
+                ? 'Le tableau parent n\'a aucun disjoncteur enregistré.'
+                : undefined
+          }
+        >
+          <select
+            value={t.parent_disjoncteur_id ?? ''}
+            disabled={!t.parent_tableau_id}
+            onChange={(e) =>
+              setT({
+                ...t,
+                parent_disjoncteur_id: e.target.value || undefined,
+              })
+            }
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono disabled:opacity-50"
+          >
+            <option value="">— Aucun —</option>
+            {parentDisjoncteurs.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.label}
+              </option>
+            ))}
+            {/* Conserve la valeur courante si elle n'est plus dans le parent. */}
+            {t.parent_disjoncteur_id &&
+              !parentDisjoncteurs.some((d) => d.id === t.parent_disjoncteur_id) && (
+                <option value={t.parent_disjoncteur_id}>
+                  {t.parent_disjoncteur_id} (introuvable)
+                </option>
+              )}
+          </select>
+        </Field>
+
+        <Field label="Notes">
+          <textarea
+            value={t.notes ?? ''}
+            onChange={(e) => setT({ ...t, notes: e.target.value || undefined })}
+            rows={3}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+      </Section>
 
       {error && <div className="text-sm text-red-700 dark:text-red-300">{error}</div>}
 

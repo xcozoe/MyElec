@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PhotoField } from './PhotoField'
 import { Field } from './Field'
+import { Section } from './Section'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 import { toPositiveInt } from '../utils/form'
@@ -354,23 +355,6 @@ export function DisjoncteurEditor({
         )}
       </div>
     </div>
-  )
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4 sm:p-5 shadow-sm space-y-4">
-      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-        {title}
-      </h4>
-      {children}
-    </section>
   )
 }
 

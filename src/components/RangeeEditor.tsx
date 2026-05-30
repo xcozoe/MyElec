@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PHASES, type Phase, type Rangee, type Tableau } from '../types/electrical'
 import { toPositiveInt } from '../utils/form'
 import { Field } from './Field'
+import { Section } from './Section'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -83,83 +84,87 @@ export function RangeeEditor({
         </button>
       </div>
 
-      <Field label="ID">
-        <input
-          type="text"
-          value={r.id}
-          disabled={mode === 'edit'}
-          onChange={(e) => setR({ ...r, id: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
-        />
-      </Field>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Numéro">
+      <Section title="Identification">
+        <Field label="ID">
           <input
-            type="number"
-            min={1}
-            value={r.numero}
-            onChange={(e) => setR({ ...r, numero: toPositiveInt(e.target.value, r.numero) })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            type="text"
+            value={r.id}
+            disabled={mode === 'edit'}
+            onChange={(e) => setR({ ...r, id: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
           />
         </Field>
-        <Field label="Phase">
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Numéro">
+            <input
+              type="number"
+              min={1}
+              value={r.numero}
+              onChange={(e) => setR({ ...r, numero: toPositiveInt(e.target.value, r.numero) })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+          </Field>
+          <Field label="Phase">
+            <select
+              value={r.phase}
+              onChange={(e) => setR({ ...r, phase: e.target.value as Phase })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {PHASES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        <Field label="Libellé">
+          <input
+            type="text"
+            value={r.libelle}
+            onChange={(e) => setR({ ...r, libelle: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+      </Section>
+
+      <Section title="Définition">
+        <Field label="Différentiel de tête" hint="Disjoncteur différentiel en tête de rangée (parmi ceux du tableau)">
           <select
-            value={r.phase}
-            onChange={(e) => setR({ ...r, phase: e.target.value as Phase })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            value={r.differentiel_id ?? ''}
+            onChange={(e) =>
+              setR({ ...r, differentiel_id: e.target.value || undefined })
+            }
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
           >
-            {PHASES.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            <option value="">— Aucun —</option>
+            {diffOptions.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
               </option>
             ))}
+            {/* Conserve la valeur courante si elle ne correspond à aucun
+                différentiel listé (donnée existante à ne pas perdre). */}
+            {r.differentiel_id &&
+              !diffOptions.some((o) => o.id === r.differentiel_id) && (
+                <option value={r.differentiel_id}>
+                  {r.differentiel_id} (introuvable dans le tableau)
+                </option>
+              )}
           </select>
         </Field>
-      </div>
 
-      <Field label="Libellé">
-        <input
-          type="text"
-          value={r.libelle}
-          onChange={(e) => setR({ ...r, libelle: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Différentiel de tête" hint="Disjoncteur différentiel en tête de rangée (parmi ceux du tableau)">
-        <select
-          value={r.differentiel_id ?? ''}
-          onChange={(e) =>
-            setR({ ...r, differentiel_id: e.target.value || undefined })
-          }
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
-        >
-          <option value="">— Aucun —</option>
-          {diffOptions.map((opt) => (
-            <option key={opt.id} value={opt.id}>
-              {opt.label}
-            </option>
-          ))}
-          {/* Conserve la valeur courante si elle ne correspond à aucun
-              différentiel listé (donnée existante à ne pas perdre). */}
-          {r.differentiel_id &&
-            !diffOptions.some((o) => o.id === r.differentiel_id) && (
-              <option value={r.differentiel_id}>
-                {r.differentiel_id} (introuvable dans le tableau)
-              </option>
-            )}
-        </select>
-      </Field>
-
-      <Field label="Notes">
-        <textarea
-          value={r.notes ?? ''}
-          onChange={(e) => setR({ ...r, notes: e.target.value || undefined })}
-          rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
+        <Field label="Notes">
+          <textarea
+            value={r.notes ?? ''}
+            onChange={(e) => setR({ ...r, notes: e.target.value || undefined })}
+            rows={3}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+      </Section>
 
       {error && <div className="text-sm text-red-700 dark:text-red-300">{error}</div>}
 

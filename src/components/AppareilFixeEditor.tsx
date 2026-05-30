@@ -16,6 +16,7 @@ import {
 } from '../utils/idGenerator'
 import { toOptionalNumber, toPositiveInt } from '../utils/form'
 import { Field } from './Field'
+import { Section } from './Section'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -147,135 +148,147 @@ export function AppareilFixeEditor({
         </button>
       </div>
 
-      <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-3 py-2">
-        <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          ID auto-généré
+      <Section title="Identification">
+        <div className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2">
+          <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            ID auto-généré
+          </div>
+          <div className="font-mono text-sm">{a.id || '— renseignez la pièce —'}</div>
         </div>
-        <div className="font-mono text-sm">{a.id || '— renseignez la pièce —'}</div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Pièce">
-          <select
-            value={a.piece_id}
-            onChange={(e) => setA({ ...a, piece_id: e.target.value })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Pièce">
+            <select
+              value={a.piece_id}
+              onChange={(e) => setA({ ...a, piece_id: e.target.value })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              <option value="">— Choisir —</option>
+              {pieces.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nom} ({p.trigramme})
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="Numéro"
+            hint={mode === 'edit' ? 'Figé en édition (il fait partie de l’ID)' : undefined}
           >
-            <option value="">— Choisir —</option>
-            {pieces.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nom} ({p.trigramme})
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field
-          label="Numéro"
-          hint={mode === 'edit' ? 'Figé en édition (il fait partie de l’ID)' : undefined}
-        >
-          <input
-            type="number"
-            min={1}
-            value={a.numero}
-            disabled={mode === 'edit'}
-            onChange={(e) => {
-              const num = toPositiveInt(e.target.value, a.numero)
-              setA({
-                ...a,
-                numero: num,
-                id: mode === 'create' && trigramme ? appareilId(trigramme, num) : a.id,
-              })
-            }}
-            className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-          />
-        </Field>
-      </div>
+            <input
+              type="number"
+              min={1}
+              value={a.numero}
+              disabled={mode === 'edit'}
+              onChange={(e) => {
+                const num = toPositiveInt(e.target.value, a.numero)
+                setA({
+                  ...a,
+                  numero: num,
+                  id: mode === 'create' && trigramme ? appareilId(trigramme, num) : a.id,
+                })
+              }}
+              className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            />
+          </Field>
+        </div>
 
-      <Field label="Nom" hint='ex : "Lave-vaisselle", "Plaque induction Neff"'>
-        <input
-          type="text"
-          value={a.nom}
-          onChange={(e) => setA({ ...a, nom: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Catégorie">
-          <select
-            value={a.categorie}
-            onChange={(e) =>
-              setA({ ...a, categorie: e.target.value as CategorieAppareil })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {CATEGORIES_APPAREIL.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Profil d'usage">
-          <select
-            value={a.profil_usage}
-            onChange={(e) =>
-              setA({ ...a, profil_usage: e.target.value as ProfilUsage })
-            }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {PROFILS_USAGE.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Marque">
+        <Field label="Nom" hint='ex : "Lave-vaisselle", "Plaque induction Neff"'>
           <input
             type="text"
-            value={a.marque ?? ''}
-            onChange={(e) => setA({ ...a, marque: e.target.value || undefined })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            value={a.nom}
+            onChange={(e) => setA({ ...a, nom: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
-        <Field label="Modèle">
+      </Section>
+
+      <Section title="Définition">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Catégorie">
+            <select
+              value={a.categorie}
+              onChange={(e) =>
+                setA({ ...a, categorie: e.target.value as CategorieAppareil })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {CATEGORIES_APPAREIL.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Profil d'usage">
+            <select
+              value={a.profil_usage}
+              onChange={(e) =>
+                setA({ ...a, profil_usage: e.target.value as ProfilUsage })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {PROFILS_USAGE.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Marque">
+            <input
+              type="text"
+              value={a.marque ?? ''}
+              onChange={(e) => setA({ ...a, marque: e.target.value || undefined })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+          </Field>
+          <Field label="Modèle">
+            <input
+              type="text"
+              value={a.modele ?? ''}
+              onChange={(e) => setA({ ...a, modele: e.target.value || undefined })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+          </Field>
+          <Field label="Puissance nominale (W)">
+            <input
+              type="number"
+              min={0}
+              value={a.puissance_nominale_w ?? ''}
+              onChange={(e) =>
+                setA({ ...a, puissance_nominale_w: toOptionalNumber(e.target.value) })
+              }
+              className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+          </Field>
+          <Field label="Puissance crête (W)">
+            <input
+              type="number"
+              min={0}
+              value={a.puissance_pic_w ?? ''}
+              onChange={(e) =>
+                setA({ ...a, puissance_pic_w: toOptionalNumber(e.target.value) })
+              }
+              className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+          </Field>
+        </div>
+
+        <Field label="Usage principal">
           <input
             type="text"
-            value={a.modele ?? ''}
-            onChange={(e) => setA({ ...a, modele: e.target.value || undefined })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          />
-        </Field>
-        <Field label="Puissance nominale (W)">
-          <input
-            type="number"
-            min={0}
-            value={a.puissance_nominale_w ?? ''}
+            value={a.usage_principal ?? ''}
             onChange={(e) =>
-              setA({ ...a, puissance_nominale_w: toOptionalNumber(e.target.value) })
+              setA({ ...a, usage_principal: e.target.value || undefined })
             }
-            className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
-        <Field label="Puissance crête (W)">
-          <input
-            type="number"
-            min={0}
-            value={a.puissance_pic_w ?? ''}
-            onChange={(e) =>
-              setA({ ...a, puissance_pic_w: toOptionalNumber(e.target.value) })
-            }
-            className="w-28 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          />
-        </Field>
-      </div>
+      </Section>
 
-      <div className="rounded-md border border-slate-200 dark:border-slate-800 p-3 space-y-3">
-        <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
-          Raccordement électrique
-        </div>
-        <div className="flex gap-3 text-sm">
+      <Section title="Alimentation">
+        <div className="flex flex-wrap gap-3 text-sm">
           {(['aucun', 'ligne', 'prise'] as const).map((mode) => (
             <label key={mode} className="flex items-center gap-1.5">
               <input
@@ -301,7 +314,7 @@ export function AppareilFixeEditor({
                   setA({ ...a, ligne_id: e.target.value || undefined })
                 }
                 placeholder="Tapez l'ID de la ligne (à créer si nécessaire)"
-                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
               />
             ) : (
               <select
@@ -309,7 +322,7 @@ export function AppareilFixeEditor({
                 onChange={(e) =>
                   setA({ ...a, ligne_id: e.target.value || undefined })
                 }
-                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
               >
                 <option value="">— Choisir —</option>
                 {lignes.map((l) => (
@@ -336,7 +349,7 @@ export function AppareilFixeEditor({
               onChange={(e) =>
                 setA({ ...a, branche_sur: e.target.value || undefined })
               }
-              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             >
               <option value="">— Choisir —</option>
               {prisesPiece.map((e) => (
@@ -347,27 +360,16 @@ export function AppareilFixeEditor({
             </select>
           </Field>
         )}
-      </div>
 
-      <Field label="Usage principal">
-        <input
-          type="text"
-          value={a.usage_principal ?? ''}
-          onChange={(e) =>
-            setA({ ...a, usage_principal: e.target.value || undefined })
-          }
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Notes">
-        <textarea
-          value={a.notes ?? ''}
-          onChange={(e) => setA({ ...a, notes: e.target.value || undefined })}
-          rows={2}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
+        <Field label="Notes">
+          <textarea
+            value={a.notes ?? ''}
+            onChange={(e) => setA({ ...a, notes: e.target.value || undefined })}
+            rows={2}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+        </Field>
+      </Section>
 
       {error && <div className="text-sm text-red-700 dark:text-red-300">{error}</div>}
 

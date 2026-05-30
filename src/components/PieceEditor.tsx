@@ -8,6 +8,7 @@ import {
 } from '../types/electrical'
 import { toOptionalNumber } from '../utils/form'
 import { Field } from './Field'
+import { Section } from './Section'
 import { useConfirm } from './Dialogs'
 import { useEditorGuard } from './useEditorGuard'
 
@@ -74,92 +75,96 @@ export function PieceEditor({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="ID" hint="Sert d'identifiant interne — souvent le trigramme.">
+      <Section title="Identification">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="ID" hint="Sert d'identifiant interne — souvent le trigramme.">
+            <input
+              type="text"
+              value={p.id}
+              disabled={mode === 'edit'}
+              onChange={(e) => setP({ ...p, id: e.target.value })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono"
+            />
+          </Field>
+          <Field label="Trigramme" hint="1 à 4 caractères utilisés dans les IDs (PC_CUI_…)">
+            <input
+              type="text"
+              value={p.trigramme}
+              onChange={(e) =>
+                setP({ ...p, trigramme: e.target.value.toUpperCase() })
+              }
+              maxLength={4}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-mono uppercase"
+            />
+          </Field>
+        </div>
+
+        <Field label="Nom">
           <input
             type="text"
-            value={p.id}
-            disabled={mode === 'edit'}
-            onChange={(e) => setP({ ...p, id: e.target.value })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono"
+            value={p.nom}
+            onChange={(e) => setP({ ...p, nom: e.target.value })}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
-        <Field label="Trigramme" hint="1 à 4 caractères utilisés dans les IDs (PC_CUI_…)">
+      </Section>
+
+      <Section title="Caractéristiques">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Niveau">
+            <select
+              value={p.niveau}
+              onChange={(e) => setP({ ...p, niveau: e.target.value as Niveau })}
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {NIVEAUX.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Catégorie">
+            <select
+              value={p.categorie}
+              onChange={(e) =>
+                setP({ ...p, categorie: e.target.value as CategoriePiece })
+              }
+              className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {CATEGORIES_PIECE.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        <Field label="Surface (m²) — optionnel">
           <input
-            type="text"
-            value={p.trigramme}
+            type="number"
+            min={0}
+            step={0.5}
+            value={p.surface_m2 ?? ''}
             onChange={(e) =>
-              setP({ ...p, trigramme: e.target.value.toUpperCase() })
+              setP({ ...p, surface_m2: toOptionalNumber(e.target.value) })
             }
-            maxLength={4}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-mono uppercase"
+            className="w-32 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           />
         </Field>
-      </div>
 
-      <Field label="Nom">
-        <input
-          type="text"
-          value={p.nom}
-          onChange={(e) => setP({ ...p, nom: e.target.value })}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Niveau">
-          <select
-            value={p.niveau}
-            onChange={(e) => setP({ ...p, niveau: e.target.value as Niveau })}
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {NIVEAUX.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Catégorie">
-          <select
-            value={p.categorie}
+        <Field label="Notes">
+          <textarea
+            value={p.notes ?? ''}
             onChange={(e) =>
-              setP({ ...p, categorie: e.target.value as CategoriePiece })
+              setP({ ...p, notes: e.target.value || undefined })
             }
-            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-          >
-            {CATEGORIES_PIECE.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+            rows={3}
+            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
         </Field>
-      </div>
-
-      <Field label="Surface (m²) — optionnel">
-        <input
-          type="number"
-          min={0}
-          step={0.5}
-          value={p.surface_m2 ?? ''}
-          onChange={(e) =>
-            setP({ ...p, surface_m2: toOptionalNumber(e.target.value) })
-          }
-          className="w-32 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
-
-      <Field label="Notes">
-        <textarea
-          value={p.notes ?? ''}
-          onChange={(e) =>
-            setP({ ...p, notes: e.target.value || undefined })
-          }
-          rows={3}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm"
-        />
-      </Field>
+      </Section>
 
       {error && <div className="text-sm text-red-700 dark:text-red-300">{error}</div>}
 
