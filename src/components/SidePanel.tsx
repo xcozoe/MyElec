@@ -45,6 +45,13 @@ export function SidePanel({
   const confirm = useConfirm()
   const asideRef = useRef<HTMLElement>(null)
 
+  // Glisser-vers-le-bas pour fermer (mobile).
+  const [dragY, setDragY] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const dragStartRef = useRef<number | null>(null)
+  // Miroir de dragY lu à la fin du geste (indépendant du timing de rendu React).
+  const dragYRef = useRef(0)
+
   const requestClose = useCallback(async () => {
     if (dirty) {
       const ok = await confirm({
@@ -62,6 +69,18 @@ export function SidePanel({
   // propre, y compris après une sauvegarde qui ferme le panneau directement).
   useEffect(() => {
     if (!open) setDirty(false)
+    setDragY(0)
+  }, [open])
+
+  // Verrouille le scroll de l'arrière-plan tant que la sheet est ouverte :
+  // sans ça, le geste de défilement fait bouger la page derrière, pas la sheet.
+  useEffect(() => {
+    if (!open) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
   }, [open])
 
   // Focus le premier élément focusable à l'ouverture (accessibilité clavier).
@@ -111,6 +130,30 @@ export function SidePanel({
     [requestClose],
   )
 
+  // Le glissement ne démarre que depuis la poignée, ou quand la sheet est déjà
+  // en haut de son scroll (sinon on laisse le contenu défiler normalement).
+  const onTouchStart = (e: React.TouchEvent) => {
+    const fromGrip = (e.target as HTMLElement).closest('[data-grip]') != null
+    const atTop = (asideRef.current?.scrollTop ?? 0) <= 0
+    dragStartRef.current = fromGrip || atTop ? e.touches[0].clientY : null
+  }
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (dragStartRef.current == null) return
+    const dy = Math.max(0, e.touches[0].clientY - dragStartRef.current)
+    dragYRef.current = dy
+    if (dy > 0 && !dragging) setDragging(true)
+    setDragY(dy)
+  }
+  const onTouchEnd = () => {
+    if (dragStartRef.current == null) return
+    dragStartRef.current = null
+    setDragging(false)
+    const shouldClose = dragYRef.current > 110
+    dragYRef.current = 0
+    setDragY(0)
+    if (shouldClose) void requestClose()
+  }
+
   if (!open) return null
   return (
     <SidePanelGuardContext.Provider value={guardValue}>
@@ -125,17 +168,25 @@ export function SidePanel({
           ref={asideRef}
           role="dialog"
           aria-modal="true"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          style={{
+            transform: dragY ? `translateY(${dragY}px)` : undefined,
+            transition: dragging ? 'none' : 'transform 0.25s ease',
+          }}
           className="relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain bg-white dark:bg-slate-950 rounded-t-2xl border-t border-slate-200 dark:border-slate-800 shadow-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] animate-sheet-up"
         >
-          {/* Poignée de préhension — affordance « bottom sheet ». Cliquable
-              à la souris pour fermer, mais hors du piège à focus (tabindex=-1)
-              pour que l'ouverture focalise le 1er champ, pas la poignée. */}
+          {/* Poignée de préhension — affordance « bottom sheet ». Glisser vers
+              le bas (ou cliquer) pour fermer ; hors du piège à focus
+              (tabindex=-1) pour que l'ouverture focalise le 1er champ. */}
           <button
             type="button"
+            data-grip
             tabIndex={-1}
             aria-hidden
             onClick={() => void requestClose()}
-            className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
+            className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600 touch-none"
           />
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </aside>
