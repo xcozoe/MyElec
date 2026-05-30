@@ -3,6 +3,7 @@ import type { Store } from '../hooks/useStore'
 import type { Disjoncteur, Tableau } from '../types/electrical'
 import { PHASE_STYLES } from '../utils/phaseStyle'
 import { Lightbox } from './Lightbox'
+import { PowerBalance } from './PowerBalance'
 
 interface Props {
   store: Store
@@ -25,6 +26,9 @@ export function CheminementView({ store, onOpenTableau }: Props) {
 
   return (
     <div>
+      <div className="max-w-5xl mx-auto mb-6">
+        <PowerBalance store={store} />
+      </div>
       <div className="max-w-5xl mx-auto flex flex-col items-center gap-0">
         <SourceNode
           label="TotalEnergies"
